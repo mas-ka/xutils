@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html ng-app="braggApp">
+    <head>
+        <meta charset="UTF-8">
+        <script src="http://cdn.jsdelivr.net/angularjs/1.5.5/angular.min.js"></script>
+        <script type="text/javascript">
+            var app = angular.module('braggApp', []);
+            app.controller('braggController', function(){
+                this.status = "init";
+
+                this.val = 8.000;
+                this.energy = 8.000;
+                this.wavelength = 1.54975;
+
+                this.action = "eng";
+                this.changeVal = function(){
+                    if (this.action == "eng") {
+                        this.energy = this.val;
+                        this.wavelength = 12.3980 / this.energy;
+                    } else {
+                        this.wavelength = this.val;
+                        this.energy = 12.3980 / this.val;
+                    }
+                }
+            });
+        </script>
+        <title>Unit Conversion for Monochromatic Crystal</title>
+    </head>
+    <body ng-controller="braggController as Cntl">
+        <input type="number" ng-model="Cntl.val" ng-change="Cntl.changeVal()">
+        <select name="action" ng-model="Cntl.action" ng-change="Cntl.changeVal()">
+            <option value="eng">keV</option>
+            <option value="wav">Angstrom</option>
+        </select>
+        <hr/>
+        <div>
+            <p>Energy: {{Cntl.energy | number:4}} keV</p>
+            <p>Wavelength: {{Cntl.wavelength | number:6}} angstrom</p>
+            <p>Status: {{Cntl.status}}</p>
+        </div>
+    </body>
+</html>
