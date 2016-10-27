@@ -1,5 +1,5 @@
 var app = angular.module('myApp', ['ngMaterial']);
-app.controller('myController', function(){
+app.controller('myController', function(numberFilter){
     this.EL = 12398.4264684;
 
     this.xtals = [
@@ -85,7 +85,7 @@ app.controller('myController', function(){
     }
 
     this.updateTheta = function(idx) {
-        this.energies[idx] = this.theta2energy(this.thetas[idx]);
+        this.energies[idx] = numberFilter(this.theta2energy(this.thetas[idx]), 2);
         if (idx == 0) this.divs[0] = parseInt(Math.round((this.thetas[0]-this.thetas[1])/this.steps[0]));
         else if (idx == 10) this.divs[idx-1] = parseInt(Math.round((this.thetas[idx-1]-this.thetas[idx])/this.steps[idx-1]));
         else {
