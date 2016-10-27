@@ -125,6 +125,36 @@
                         </td>
                     </tr>
                     <tr>
+                        <td rowspan="2">
+                            <md-input-container>
+                                <input ng-model="Cntl.steps[2]" type="number" ng-change="Cntl.updateStep(2)">
+                            </md-input-container>
+                        </td>
+                        <td rowspan="2">
+                            <md-input-container>
+                                <input ng-model="Cntl.divs[2]" type="number" ng-change="Cntl.updateDiv(2)">
+                            </md-input-container>
+                        </td>
+                        <td rowspan="2">{{Cntl.exps[2]}}</td>
+                    </tr>
+                    <tr>
+                        <td rowspan="2">
+                            <md-input-container>
+                                <input ng-model="Cntl.ks[3]" type="number" step="0.00001" ng-change="Cntl.updateK(3)">
+                            </md-input-container>
+                        </td>
+                        <td rowspan="2">
+                            <md-input-container>
+                                <input ng-model="Cntl.energies[3]" type="number" step="0.01" ng-change="Cntl.updateEnergy(3)">
+                            </md-input-container>
+                        </td>
+                        <td rowspan="2">
+                            <md-input-container>
+                                <input ng-model="Cntl.thetas[3]" type="number" step="0.00001" ng-change="Cntl.updateTheta(3)">
+                            </md-input-container>
+                        </td>
+                    </tr>
+                    <tr>
                         <td></td>
                         <td></td>
                         <td></td>
