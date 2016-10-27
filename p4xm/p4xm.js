@@ -74,7 +74,7 @@ app.controller('myController', function(numberFilter){
     }
 
     this.updateEnergy = function(idx) {
-        this.thetas[idx] = 0.01 * Math.round(100 * this.energy2theta(this.energies[idx]));
+        this.thetas[idx] = this.energy2theta(this.energies[idx]);
         if (idx == 0) this.divs[0] = parseInt(Math.round((this.thetas[0]-this.thetas[1])/this.steps[0]));
         else if (idx == 10) this.divs[idx-1] = parseInt(Math.round((this.thetas[idx-1]-this.thetas[idx])/this.steps[idx-1]));
         else {
