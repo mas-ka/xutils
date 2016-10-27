@@ -96,7 +96,7 @@ app.controller('myController', function(numberFilter){
     }
 
     this.updateK = function(idx) {
-        this.energies[idx] = this.k2energy(this.ks[idx], this.AbsEnergy);
+        this.energies[idx] = 0.01 * Math.round(100 * this.k2energy(this.ks[idx], this.AbsEnergy));
         this.thetas[idx] = this.energy2theta(this.energies[idx]);
         if (idx == 0) this.divs[0] = parseInt(Math.round((this.thetas[0]-this.thetas[1])/this.steps[0]));
         else if (idx == 10) this.divs[idx-1] = parseInt(Math.round((this.thetas[idx-1]-this.thetas[idx])/this.steps[idx-1]));
@@ -109,7 +109,7 @@ app.controller('myController', function(numberFilter){
     this.updateDiv = function(idx) {
         var be = this.thetas[idx] - this.thetas[idx+1];
         var n = this.divs[idx];
-        this.steps[idx] = 0.00001*Math.round(100000*be/n)||0.00001;
+        this.steps[idx] = 0.00001 * Math.round(100000 * be/n)||0.00001;
         this.divs[idx] = parseInt(Math.round(be/this.steps[idx]));
     }
 
