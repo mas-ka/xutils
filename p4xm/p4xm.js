@@ -81,7 +81,7 @@ app.controller('myController', function(numberFilter){
             this.divs[idx-1] = parseInt(Math.round((this.thetas[idx-1]-this.thetas[idx])/this.steps[idx-1]));
             this.divs[idx] = parseInt(Math.round((this.thetas[idx]-this.thetas[idx+1])/this.steps[idx]));
         }
-        if (idx > 1) this.ks[idx] = this.energy2k(this.energies[idx], this.AbsEnergy);
+        if (idx > 1) this.ks[idx] = 0.00001 * Math.round(100000 * this.energy2k(this.energies[idx], this.AbsEnergy));
     }
 
     this.updateTheta = function(idx) {
@@ -92,7 +92,7 @@ app.controller('myController', function(numberFilter){
             this.divs[idx-1] = parseInt(Math.round((this.thetas[idx-1]-this.thetas[idx])/this.steps[idx-1]));
             this.divs[idx] = parseInt(Math.round((this.thetas[idx]-this.thetas[idx+1])/this.steps[idx]));
         }
-        if (idx > 1) this.ks[idx] = this.energy2k(this.energies[idx], this.AbsEnergy);
+        if (idx > 1) this.ks[idx] = 0.00001 * Math.round(100000 * this.energy2k(this.energies[idx], this.AbsEnergy));
     }
 
     this.updateK = function(idx) {
