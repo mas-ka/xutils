@@ -81,6 +81,18 @@ app.controller('myController', function(numberFilter){
     this.k2energy = function(k, e0) { return e0 + k*k / 0.262467191; }
     this.energy2k = function(e, e0) { return Math.sqrt(0.262467191 * (e - e0)); }
 
+    this.refresh;
+    this.refreshDivs = function() {
+        this.divs = [ 50, 250,  40,  40,  40,  40,  40,  40,  40,  40];
+        for (i = 0 ; i < 10 ; i++) {
+            var be = this.thetas[i] - this.thetas[i+1];
+            var n = this.divs[i];
+            this.steps[i] = Math.formatFloat((0.00001 * Math.round(100000 * be/n))||0.00001, 5);
+            this.divs[i] = parseInt(Math.round(be/this.steps[i]));
+        }
+        this.divs[this.block-1]++;
+    }
+
     this.changeBlock = function() {
         this.divs[this.block_prev-1]--;
         this.divs[this.block-1]++;

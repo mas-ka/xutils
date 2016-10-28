@@ -2,6 +2,8 @@
 <html ng-app="myApp">
     <head>
         <meta charset="UTF-8">
+        <link href="https://fonts.googleapis.com/css?family=Roboto+Mono|Open+Sans" rel="stylesheet">
+        <link href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.css" rel="stylesheet">
         <link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/angular_material/1.0.0/angular-material.min.css">
         <link rel="stylesheet" type="text/css" href="p4xm.css">
         <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.5/angular.min.js"></script>
@@ -46,11 +48,11 @@
             <table class="table_01">
                 <thead>
                     <tr>
-                        <th>k [A-1]</th>
+                        <th>k [A<sup>-1</sup>]</th>
                         <th>E [eV]</th>
                         <th>θ [°]</th>
                         <th>Step [°]</th>
-                        <th>Num</th>
+                        <th>Num <input type="submit" value="&#xf021;" ng-model="Cntl.refresh" ng-click="Cntl.refreshDivs()"></th>
                         <th>Time [s]</th>
                     </tr>
                 </thead>
@@ -59,9 +61,9 @@
                         <td rowspan="2"></td>
                         <td rowspan="2"><md-input-container><input ng-model="Cntl.energies[0]" type="number" step="0.01" ng-change="Cntl.updateEnergy(0)"></md-input-container></td>
                         <td rowspan="2"><md-input-container><input ng-model="Cntl.thetas[0]" type="number" step="0.00001" ng-change="Cntl.updateTheta(0)"></md-input-container></td>
-                        <td></td>
-                        <td></td>
-                        <td></td>
+                        <td style="border: none; height: 15px"></td>
+                        <td style="border: none; height: 15px"></td>
+                        <td style="border: none; height: 15px"></td>
                     </tr>
                     <tr>
                         <td rowspan="2"><md-input-container><input ng-model="Cntl.steps[0]" type="number" step="0.00001" ng-change="Cntl.updateStep(0)"></md-input-container></td>
@@ -164,14 +166,14 @@
                         <td rowspan="2"><md-input-container><input ng-model="Cntl.thetas[10]" type="number" step="0.00001" ng-change="Cntl.updateTheta(10)"></md-input-container></td>
                     </tr>
                     <tr>
-                        <td></td>
-                        <td></td>
-                        <td></td>
+                        <td style="border: none; height: 15px"></td>
+                        <td style="border: none; height: 15px"></td>
+                        <td style="border: none; height: 15px"></td>
                     </tr>
                 </tbody>
             </table>
         <h1>Download</h1>
-            <a id="download" href="#" download={{Cntl.fname}} ng-click="Cntl.downloadAsPFOld()">File as PF old format</a>
+            <a class="download" href="#" download={{Cntl.fname}} ng-click="Cntl.downloadAsPFOld()">PF Old Format</a><br/>
         <hr />
             <p>
                 block: {{Cntl.block}} {{Cntl.block_shows}} {{Cntl.block_prev}}<br/>
