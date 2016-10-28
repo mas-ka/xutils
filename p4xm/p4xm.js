@@ -177,9 +177,9 @@ app.controller('myController', function(numberFilter){
     this.saveTextFile = function(txt, fname) {
         var blob = new Blob([ txt ], { "type" : "text/plain" });
         if (window.navigator.msSaveBlob) {
-            window.navigator.msSaveBlob(blob, "qwer.txt");
+            window.navigator.msSaveBlob(blob, fname);
             // msSaveOrOpenBlobの場合はファイルを保存せずに開ける
-            window.navigator.msSaveOrOpenBlob(blob, "qwer.txt");
+            window.navigator.msSaveOrOpenBlob(blob, fname);
         } else document.getElementById("download").href = window.URL.createObjectURL(blob);
     }
 
