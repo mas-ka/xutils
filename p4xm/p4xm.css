@@ -1,4 +1,11 @@
 
+h2 {
+    font-size: 16px;
+    color: white;
+    background-color: steelblue;
+    border-left: 6px solid darkorange;
+}
+
 .table_01 {
     width: 600px;
     border-collapse: collapse;
@@ -12,13 +19,13 @@
     width: 16.7%;
     border-collapse: collapse;
     padding: 5px;
-    background-color: darkslategray;
-    border: 1px solid #b9b9b9;
+    background-color: cornflowerblue;
+    border: 2px solid darkslategray;
 }
 
 .table_01 td {
     font-family: 'Roboto Mono', monospace;
-    font-size: 16px;
+    font-size: 14px;
     padding: 0px 5px 0px 5px;
     background-color: white;
     border: 1px solid #b9b9b9;
@@ -43,13 +50,13 @@ a.download {
     display:block;
     text-align:center;
     padding:8px 0 10px;
-    color:#fff;
-    background-color:#49a9d4;
+    color: white;
+    background-color:deepskyblue;
     box-shadow:0px 2px 3px #aaa;
 }
 a.download:hover {
 	top: -1px;
-	background-color: rgba(73, 168, 212, 0.9);
+	background-color: skyblue;
     box-shadow:0px 3px 3px #aaa;
 }
 a.download:active {
