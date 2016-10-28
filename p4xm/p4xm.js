@@ -33,6 +33,8 @@ app.controller('myController', function(numberFilter){
         this.updateAllThetas();
     }
 
+    this.blocks = [1,2,3,4,5,6,7,8,9,10]; this.block = this.blocks[9];
+    this.block_shows = [true,true,true,true,true,true,true,true,true,true];
     this.ks = [0, 0, 4, 6, 8, 10, 12, 14, 16, 18, 20];
     this.energies = [8651,8951,9041.96,9118.16,9224.84,9362,9529.64,9727.76,9956.36,10215.44,10505];
     this.thetas = [13.21113,12.76074,12.63024,12.52296,12.37583,12.19171,11.97403,11.72666,11.45373,11.15946,10.84808];
@@ -58,6 +60,11 @@ app.controller('myController', function(numberFilter){
     this.theta2energy = function(t) { return this.EL/(2*this.xtal.d*Math.sin(Math.toRadians(t))); }
     this.k2energy = function(k, e0) { return e0 + k*k / 0.262467191; }
     this.energy2k = function(e, e0) { return Math.sqrt(0.262467191 * (e - e0)); }
+
+    this.changeBlock = function() {
+        for (i = 0 ; i < this.block ; i++) this.block_shows[i] = true;
+        for (i = this.block ; i < 10 ; i++) this.block_shows[i] = false;
+    }
 
     this.updateAllThetas = function() {
         var E0 = this.AbsEnergy;
