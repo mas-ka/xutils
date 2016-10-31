@@ -2,7 +2,7 @@
 <html ng-app="myApp">
     <head>
         <meta charset="UTF-8">
-        <link href="https://fonts.googleapis.com/css?family=Roboto+Mono|Open+Sans" rel="stylesheet">
+        <link href="https://fonts.googleapis.com/css?family=Noto+Serif:700|Roboto+Mono|Open+Sans" rel="stylesheet">
         <link href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.css" rel="stylesheet">
         <link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/angular_material/1.0.0/angular-material.min.css">
         <link rel="stylesheet" type="text/css" href="p4xm.css">
@@ -13,9 +13,13 @@
         <script src="https://ajax.googleapis.com/ajax/libs/angular_material/1.1.0/angular-material.min.js"></script>
         <script type="text/javascript" src="elements.js"></script>
         <script type="text/javascript" src="p4xm.js"></script>
-        <title>Parameters for XAS Measurement</title>
+        <title>P4XM</title>
     </head>
     <body ng-controller="myController as Cntl"><md-content md-theme="docs-dark" layout-padding>
+        <h1>
+            <div class="title_main">P 4 X M</div>
+            <div class="title_sub">- Parameters for XAS Measurement -</div>
+        </h1>
         <h2>Monochrometer</h2>
             <div layout="row" layout-align="start end" layout-margin>
                 <md-input-container>
@@ -188,8 +192,8 @@
             <div layout="row" layout-align="start end" layout-margin>
                 <a class="download" id="download" href="#" download={{Cntl.fname}} ng-click="Cntl.downloadAsPFOld()">PF Old Format</a>
             </div>
-        <hr />
-            <p>
+        <md-divider></md-divider>
+            <!--<p>
                 xtals: {{Cntl.xtals}}<br/>
                 xtal: {{Cntl.xtal}}<br/>
                 block: {{Cntl.block}} {{Cntl.block_shows}} {{Cntl.block_prev}}<br/>
@@ -199,6 +203,6 @@
                 steps: {{Cntl.steps}}<br/>
                 divs: {{Cntl.divs}}<br/>
                 exps: {{Cntl.exps}}
-            </p>
+            </p>-->
     </md-content></body>
 </html>

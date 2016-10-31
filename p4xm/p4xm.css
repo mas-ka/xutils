@@ -80,3 +80,21 @@ input[type=submit] {
     font-family: 'Open Sans', sans-serif;
     font-size: 14px;
 }
+
+h1 {
+    text-align: center;
+    color: white;
+    background-color: hsl(207, 44%, 25%);
+}
+
+.title_main {
+    font-family: 'Noto Serif', serif;
+    font-size: 36px;
+    font-style: normal;
+}
+
+.title_sub {
+    font-family: 'Noto Serif', serif;
+    font-size: 14px;
+    font-style: italic;
+}
