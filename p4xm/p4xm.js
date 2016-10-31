@@ -5,9 +5,15 @@ app.controller('myController', function(numberFilter){
     this.xtals = [
         {name:'Si(111)', d:3.13551},
         {name:'Si(311)', d:1.63747},
-        {name:'Si(220)', d:1.92010}
+        {name:'Si(220)', d:1.92010},
+        {name:'Other...', d:3.13551}
     ];
     this.xtal = this.xtals[0];
+    this.isNotIntrinsicPlane = false;
+    this.changeXtalPlane = function() {
+        this.isNotIntrinsicPlane = (this.xtal.name=="Other...");
+        this.applyAbsEnergy();
+    }
 
     this.ElementNames = getElementNames();
     this.element_name = "Cu";

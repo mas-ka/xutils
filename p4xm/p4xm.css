@@ -75,3 +75,8 @@ input[type=submit] {
     background: none;
     border-style: none;
 }
+
+#other_d {
+    font-family: 'Open Sans', sans-serif;
+    font-size: 14px;
+}

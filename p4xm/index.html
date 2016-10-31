@@ -20,11 +20,15 @@
             <div layout="row" layout-align="start end" layout-margin>
                 <md-input-container>
                     <label>Plane</label>
-                    <md-select ng-model="Cntl.xtal" ng-change="Cntl.applyAbsEnergy()">
+                    <md-select ng-model="Cntl.xtal"  ng-change="Cntl.changeXtalPlane()">
                         <md-option ng-value="x" ng-repeat="x in Cntl.xtals">{{x.name}}</md-option>
                     </md-select>
                 </md-input-container>
-                <p> d = {{Cntl.xtal.d}} &Aring;</p>
+                <md-input-container ng-show="Cntl.isNotIntrinsicPlane">
+                    <label>d</label>
+                    <input id="other_d" type="number" step="0.00001" ng-model="Cntl.xtals[3].d" ng-change="Cntl.applyAbsEnergy()">
+                </md-input-container>
+                <p> {{Cntl.isNotIntrinsicPlane?"":"d = "+Cntl.xtal.d}} &Aring;</p>
             </div>
         <h2>Element</h2>
             <div layout="row" layout-align="start end" layout-margin>
@@ -186,6 +190,8 @@
             </div>
         <hr />
             <p>
+                xtals: {{Cntl.xtals}}<br/>
+                xtal: {{Cntl.xtal}}<br/>
                 block: {{Cntl.block}} {{Cntl.block_shows}} {{Cntl.block_prev}}<br/>
                 k: {{Cntl.ks}}<br/>
                 energy: {{Cntl.energies}}<br/>
