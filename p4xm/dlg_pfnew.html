@@ -1,0 +1,53 @@
+<md-dialog aria-label="Dialog for PF new">
+    <form ng-cloak>
+
+        <md-dialog-content>
+            <div class="md-dialog-content">
+                <div layout-margin>
+                    <md-input-container class="md-block">
+                        <label>Beamline</label>
+                        <input type="text" ng-model="dialogCtrl.bl_name">
+                    </md-input-container>
+                </div><br/>
+                <div layout="row" layout-align="center center" layout-margin>
+                    <div layout="row" layout-align="start end" layout-margin>
+                        <md-input-container>
+                            <label>Initial angle</label>
+                            <input type="number" step="0.00001" ng-model="dialogCtrl.angle_ini">
+                        </md-input-container>
+                        <p>&deg;</p>
+                    </div>
+                    <div layout="row" layout-align="start end" layout-margin>
+                        <md-input-container>
+                            <label>Loop</label>
+                            <input type="number" ng-model="dialogCtrl.loop">
+                        </md-input-container>
+                        <p> times</p>
+                    </div>
+                </div>
+                <div layout="row" layout-align="space-around start" layout-margin>
+                    <div>
+                        <p>Mode</p>
+                        <md-radio-group ng-model="dialogCtrl.mode">
+                            <md-radio-button value="2"> Transmission </md-radio-button>
+                            <md-radio-button value="3"> Fluorescence </md-radio-button>
+                            <md-radio-button value="4"> Yield </md-radio-button>
+                        </md-radio-group>
+                    </div>
+                    <div>
+                        <p>Axis</p>
+                        <md-radio-group ng-model="dialogCtrl.axis">
+                            <md-radio-button value="1"> Angle </md-radio-button>
+                            <md-radio-button value="2"> Energy </md-radio-button>
+                        </md-radio-group>
+                    </div>
+                </div>
+                <div layout="row" layout-align="space-around start" layout-margin>
+                    <a class="cancel" ng-click="dialogCtrl.closeDialog()">Cancel</a>
+                    <a class="download" id="download_new" href="#" download={{dialogCtrl.globals.fname}} ng-click="dialogCtrl.downloadAsPFNew()">Download</a>
+                </div>
+            </div>
+        </md-dialog-content>
+    </form>
+</md-dialog>
+

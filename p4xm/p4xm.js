@@ -1,5 +1,5 @@
 var app = angular.module('myApp', ['ngMaterial']);
-app.controller('myController', function(numberFilter){
+app.controller('myController', function($mdDialog, numberFilter){
     this.EL = 12398.4264684;
 
     this.xtals = [
@@ -180,13 +180,13 @@ app.controller('myController', function(numberFilter){
         this.divs[this.block-1]++;
     }
 
-    this.saveTextFile = function(txt, fname) {
+    this.saveTextFile = function(txt, fname, id) {
         var blob = new Blob([ txt ], { "type" : "text/plain" });
         if (window.navigator.msSaveBlob) {
             window.navigator.msSaveBlob(blob, fname);
             // msSaveOrOpenBlobの場合はファイルを保存せずに開ける
             window.navigator.msSaveOrOpenBlob(blob, fname);
-        } else document.getElementById("download").href = window.URL.createObjectURL(blob);
+        } else document.getElementById(id).href = window.URL.createObjectURL(blob);
     }
 
     this.createText4PFOld = function() {
@@ -199,10 +199,73 @@ app.controller('myController', function(numberFilter){
         return l;
     }
 
+    this.createText4PFNew = function(bl_name, angle_ini, loop, mode, axis) {
+        var l = " Mono :"+String.formatI(this.xtal.name.toUpperCase(), 10);
+        l += "       D="+String.formatF(this.xtal.d, 9, 5)+" A";
+        l += "    Initial angle="+String.formatF(angle_ini, 9, 5)+" deg\r\n";
+        l += " "+(bl_name+"     ").substr(0, 5);
+        var mode_txt = ["", "", "Transmission", "Fluorescence", "E-yield"][mode];
+        l += "    "+("             "+mode_txt).split("").reverse().join("").substr(0, 13).split("").reverse().join("");
+        l += "("+String.formatI(mode, 2)+")   Repetition="+String.formatI(loop, 3);
+        l += "     Points="+String.formatI(this.divs.reduce(function(p,c,i,a){return p+c;}), 5)+"\r\n";
+        l += " Param file : "+(this.element_name+"-"+this.edge+".param                ").substr(0, 15);
+        if (axis == 1) l += " angle axis (1)";
+        else l += " energy axis(2)";
+        l += "     Block ="+String.formatI(this.block, 5)+"\r\n\r\n";
+        l += " Block      Init-ang  final-ang     Step/deg     Time/s       Num\r\n";
+        for (var i = 1 ; i <= this.block ; i++) {
+            l += " "+String.formatI(i, 5)+"     ";
+            if (axis == 1) {
+                l += String.formatF(this.thetas[i-1], 10, 5)+String.formatF(this.thetas[i], 10, 5);
+                l += " "+(new Number(-1*this.steps[i-1])).toExponential(6).toUpperCase();
+            } else {
+                l += String.formatF(this.energies[i-1], 10, 2)+String.formatF(this.energies[i], 10, 2);
+                l += String.formatF((this.energies[i]-this.energies[i-1])/(this.divs[i-1]-(i<this.block?0:1)), 13, 2);
+            }
+            l += " "+String.formatF(this.exps[i-1], 11, 2)+String.formatI(this.divs[i-1], 10)+"\r\n";
+        }
+        if (axis == 1) l += " Edge angle "+String.formatF(this.energy2theta(this.AbsEnergy), 10, 5)+" deg\r\n";
+        else l += " Edge energy "+String.formatF(this.AbsEnergy, 10, 2)+" eV\r\n";
+        return l;
+    }
+
     this.downloadAsPFOld = function() {
         var txt = this.createText4PFOld();
-        this.saveTextFile(txt, this.element_name+"-"+this.edge+".param");
+        this.saveTextFile(txt, this.element_name+"-"+this.edge+".param", "download_old");
     }
+
+    this.status = "null";
+    this.openDialogForPFNew = function($event) {
+        var globals = this;
+        var parentEl = angular.element(document.body);
+        $mdDialog.show({
+            locals: {
+                globals: this,
+                bl_name: "BL7C",
+                angle_ini: Math.formatFloat(this.energy2theta(this.AbsEnergy), 5),
+                loop: 1,
+                mode: 2,
+                axis: 1
+            },
+            parent: angular.element(document.body),
+            targetEvent: $event,
+            clickOutsideToClose:true,
+            templateUrl: 'dlg_pfnew.html',
+            bindToController: true,
+            controllerAs: 'dialogCtrl',
+            controller: function($mdDialog) {
+                this.closeDialog = function() {
+                    $mdDialog.hide();
+                }
+                this.downloadAsPFNew = function() {
+                    var txt = globals.createText4PFNew(this.bl_name, this.angle_ini, this.loop, this.mode, this.axis);
+                    globals.saveTextFile(txt, this.element_name+"-"+this.edge+".param", "download_new");
+                    $mdDialog.hide();
+                }
+            }
+        });
+    }
+
 
 
 });

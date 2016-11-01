@@ -190,7 +190,9 @@
             </div>
         <h2>Download</h2>
             <div layout="row" layout-align="start end" layout-margin>
-                <a class="download" id="download" href="#" download={{Cntl.fname}} ng-click="Cntl.downloadAsPFOld()">PF Old Format</a>
+                <a class="download" id="download_old" href="#" download={{Cntl.fname}} ng-click="Cntl.downloadAsPFOld()">PF Old Format</a>
+                <a class="download" ng-click="Cntl.openDialogForPFNew($event)">PF New Format</a>
+    </md-button>
             </div>
         <md-divider></md-divider>
             <!--<p>
@@ -204,5 +206,8 @@
                 divs: {{Cntl.divs}}<br/>
                 exps: {{Cntl.exps}}
             </p>-->
+            <p>
+                Status: {{Cntl.status}}
+            </p>
     </md-content></body>
 </html>
