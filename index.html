@@ -1,13 +1,58 @@
 <!DOCTYPE html>
-<html>
+<html ng-app="myApp">
+
 <head>
-<meta charset="UTF-8">
-<title>xutils</title>
+    <meta charset="UTF-8">
+    <!-- import Web font -->
+    <link href="https://fonts.googleapis.com/css?family=Noto+Serif:700|Roboto+Mono|Open+Sans" rel="stylesheet">
+
+    <!-- import AngularJS -->
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.5/angular.min.js"></script>
+
+    <!-- import Angular Material -->
+    <link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/angular_material/1.0.0/angular-material.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.5/angular-animate.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.5/angular-aria.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.5/angular-messages.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/angular_material/1.1.0/angular-material.min.js"></script>
+
+    <!-- import local scripts -->
+    <link rel="stylesheet" type="text/css" href="index.css">
+    <script type="text/javascript" src="index.js"></script>
+    <title>xutils</title>
 </head>
+
 <body>
-	<ul>
-		<li><a href="bragg/index.html">bragg</a></li>
-		<li><a href="p4xm/index.html">P4XM</a></li>
-	</ul>
+    <div  ng-controller="myController as Cntl" layout="column" layout-fill ng-cloak>
+    <section layout="row" flex>
+        <md-sidenav
+            class="md-sidenav-left"
+            md-component-id="left"
+            md-is-locked-open="true"
+            md-whiteframe="2">
+            <md-toolbar class="md-theme-indigo">
+                <h1 class="md-toolbar-tools">xutils : Menu</h1>
+            </md-toolbar>
+            <md-content layout-padding>
+                <md-subheader class="md-no-sticky">General</md-subheader>
+                <md-list-item flex>
+                    <md-button class="btn_sidenav" href="bragg/index.html" target="main_column" flex>bragg</md-button>
+                </md-list-item>
+                <md-subheader class="md-no-sticky">XAFS</md-subheader>
+                <md-list-item flex>
+                    <md-button class="btn_sidenav" href="p4xm/index.html" target="main_column" flex>p4xm</md-button>
+                </md-list-item>
+            </md-content>
+        </md-sidenav>
+        <md-content layout-fill>
+            <div layout-fill>
+                <iframe id="parent-iframe"
+                        width='100%'
+                        name="main_column" layout-fill></iframe>
+            </div>
+        </md-content>
+    </section>
+    </div>
 </body>
+
 </html>

@@ -1,0 +1,13 @@
+
+.md-toolbar-tools {
+    font-family: 'Noto Serif', serif;
+    font-size: 18px;
+    font-style: oblique;
+}
+md-content {
+    font-family: 'Open Sans', sans-serif;
+    font-size: 14px;
+}
+.btn_sidenav {
+    text-align: left
+}
