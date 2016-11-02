@@ -1,5 +1,5 @@
-var app = angular.module('myApp', ['ngMaterial']);
-app.controller('myController', function($mdDialog, numberFilter){
+var app = angular.module('myApp', ['ngMaterial', 'ngResource', 'ngSanitize']);
+app.controller('myController', function($resource, $mdDialog, numberFilter){
     this.EL = 12398.4264684;
 
     this.xtals = [
@@ -266,7 +266,21 @@ app.controller('myController', function($mdDialog, numberFilter){
         });
     }
 
-
+    this.showLicenseDlg = function($event) {
+        $resource('./license.html', {}, {
+            'get': {
+                transformResponse: function(data, headersGetter, status) {
+                    return {content: data};
+        }}}).get(function(d) {
+            $mdDialog.show(
+                $mdDialog.alert()
+                .clickOutsideToClose(true)
+                .htmlContent(d.content)
+                .ok('OK')
+                .targetEvent($event)
+            );
+        });
+    }
 
 });
 app.config(function($mdThemingProvider) {
