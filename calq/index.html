@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang=""  ng-app="myApp">
+<head>
+    <meta charset="UTF-8">
+    <!-- include AngularJS -->
+    <link href="https://fonts.googleapis.com/css?family=Noto+Serif:700|Roboto+Mono|Open+Sans" rel="stylesheet">
+    <link href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/angular_material/1.0.0/angular-material.min.css">
+    <link rel="stylesheet" type="text/css" href="calq.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.5/angular.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.5/angular-resource.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.5/angular-sanitize.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.5/angular-animate.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.5/angular-aria.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.5/angular-messages.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/angular_material/1.1.0/angular-material.min.js"></script>
+    <script type="text/javascript" src="calq.js"></script>
+    <!-- title -->
+    <title>CALQ</title>
+</head>
+
+<body ng-controller="myController as Cntl" layout-padding>
+    <h1>
+        <div class="title_main">C A L Q</div>
+        <div class="title_sub">- Q-range calcurator for SAXS measurement -</div>
+    </h1>
+    <h2>X-ray</h2>
+    <div layout="row" layout-align="start end" layout-margin>
+        <md-input-container>
+            <label>Wavelength</label>
+            <input type="number" step="0.0001" ng-model="Cntl.Lambda" ng-change="Cntl.changeLambda()">
+        </md-input-container>
+        <p> &Aring;</p>
+    </div>
+    <h2>Detector</h2>
+    <div layout="row" layout-align="start end" layout-margin>
+        <md-input-container>
+            <label>Radius</label>
+            <input type="number" step="1" ng-model="Cntl.Radius" ng-change="Cntl.changeRadius()">
+        </md-input-container>
+        <p> mm</p>
+    </div>
+    <h2>Results</h2>
+    <div layout="column" layout-align="space-around start" layout-margin>
+        <table class="table_result">
+            <tbody>
+                <tr>
+                    <td colspan="2" rowspan="2">
+                        <!-- ここにモード切り替えを入れる -->
+                    </td>
+                    <td class="bs_whole" colspan="4">Beam stop diameter [mm]</td>
+                </tr>
+                <tr>
+                    <td class="td_diameter">
+                        <md-input-container>
+                            <input type="number" step="1" ng-model="Cntl.Diameters[0]">
+                        </md-input-container>
+                    </td>
+                    <td class="td_diameter">
+                        <md-input-container>
+                            <input type="number" step="1" ng-model="Cntl.Diameters[1]">
+                        </md-input-container>
+                    </td>
+                    <td class="td_diameter">
+                        <md-input-container>
+                            <input type="number" step="1" ng-model="Cntl.Diameters[2]">
+                        </md-input-container>
+                    </td>
+                    <td class="td_diameter">
+                        <md-input-container>
+                            <input type="number" step="1" ng-model="Cntl.Diameters[3]">
+                        </md-input-container>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="pl_whole" rowspan="10">Path length [mm]</td>
+                    <td class="td_length">
+                        <md-input-container>
+                            <input type="number" step="1" ng-model="Cntl.Lengths[0]" ng-change="Cntl.changeLength()">
+                        </md-input-container>
+                    </td>
+                    <td>A</td>
+                    <td>B</td>
+                    <td>C</td>
+                    <td>D</td>
+                </tr>
+                <tr>
+                    <td class="td_length">
+                        <md-input-container>
+                            <input type="number" step="1" ng-model="Cntl.Lengths[1]" ng-change="Cntl.changeLength()">
+                        </md-input-container>
+                    </td><td>E</td>
+                    <td>F</td>
+                    <td>G</td>
+                    <td>H</td>
+                </tr>
+                <tr>
+                    <td class="td_length">
+                        <md-input-container>
+                            <input type="number" step="1" ng-model="Cntl.Lengths[2]" ng-change="Cntl.changeLength()">
+                        </md-input-container>
+                    </td><td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td class="td_length">
+                        <md-input-container>
+                            <input type="number" step="1" ng-model="Cntl.Lengths[3]" ng-change="Cntl.changeLength()">
+                        </md-input-container>
+                    </td><td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td class="td_length">
+                        <md-input-container>
+                            <input type="number" step="1" ng-model="Cntl.Lengths[4]" ng-change="Cntl.changeLength()">
+                        </md-input-container>
+                    </td><td>E</td>
+                    <td>F</td>
+                    <td>G</td>
+                    <td>H</td>
+                </tr>
+                <tr>
+                    <td class="td_length">
+                        <md-input-container>
+                            <input type="number" step="1" ng-model="Cntl.Lengths[5]" ng-change="Cntl.changeLength()">
+                        </md-input-container>
+                    </td><td>E</td>
+                    <td>F</td>
+                    <td>G</td>
+                    <td>H</td>
+                </tr>
+                <tr>
+                    <td class="td_length">
+                        <md-input-container>
+                            <input type="number" step="1" ng-model="Cntl.Lengths[6]" ng-change="Cntl.changeLength()">
+                        </md-input-container>
+                    </td><td>E</td>
+                    <td>F</td>
+                    <td>G</td>
+                    <td>H</td>
+                </tr>
+                <tr>
+                    <td class="td_length">
+                        <md-input-container>
+                            <input type="number" step="1" ng-model="Cntl.Lengths[7]" ng-change="Cntl.changeLength()">
+                        </md-input-container>
+                    </td><td>E</td>
+                    <td>F</td>
+                    <td>G</td>
+                    <td>H</td>
+                </tr>
+                <tr>
+                    <td class="td_length">
+                        <md-input-container>
+                            <input type="number" step="1" ng-model="Cntl.Lengths[8]" ng-change="Cntl.changeLength()">
+                        </md-input-container>
+                    </td><td>E</td>
+                    <td>F</td>
+                    <td>G</td>
+                    <td>H</td>
+                </tr>
+                <tr>
+                    <td class="td_length">
+                        <md-input-container>
+                            <input type="number" step="1" ng-model="Cntl.Lengths[9]" ng-change="Cntl.changeLength()">
+                        </md-input-container>
+                    </td><td>E</td>
+                    <td>F</td>
+                    <td>G</td>
+                    <td>H</td>
+                </tr>
+            </tbody>
+        </table>
+
+    </div>
+
+</body>
+</html>
