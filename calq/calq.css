@@ -96,6 +96,12 @@ input[type=number].bs {
     border-left: 1px solid #b9b9b9;
     border-bottom: 2px solid darkslategray;
 }
+
 td {
     text-align: center;
+}
+
+td.even {
+    text-align: center;
+    background-color: ghostwhite;
 }
