@@ -28,7 +28,7 @@
     <div layout="row" layout-align="start end" layout-margin>
         <md-input-container>
             <label>Wavelength</label>
-            <input type="number" step="0.0001" ng-model="Cntl.Lambda" ng-change="Cntl.changeLambda()">
+            <input type="number" step="0.0001" ng-model="Cntl.Lambda" ng-change="Cntl.updateAll()">
         </md-input-container>
         <p> &Aring;</p>
     </div>
@@ -36,7 +36,7 @@
     <div layout="row" layout-align="start end" layout-margin>
         <md-input-container>
             <label>Radius</label>
-            <input type="number" step="1" ng-model="Cntl.Radius" ng-change="Cntl.changeRadius()">
+            <input type="number" step="1" ng-model="Cntl.Radius" ng-change="Cntl.updateAll()">
         </md-input-container>
         <p> mm</p>
     </div>
@@ -46,29 +46,34 @@
             <tbody>
                 <tr>
                     <td colspan="2" rowspan="2">
-                        <!-- ここにモード切り替えを入れる -->
+                        <md-input-container>
+                            <label>Mode</label>
+                            <md-select ng-model="Cntl.Mode" ng-change="Cntl.updateAll()">
+                                <md-option ng-value="mode" ng-repeat="mode in Cntl.Modes">{{mode.name}}</md-option>
+                            </md-select>
+                        </md-input-container>
                     </td>
                     <td class="bs_whole" colspan="4">Beam stop diameter [mm]</td>
                 </tr>
                 <tr>
                     <td class="td_diameter">
                         <md-input-container>
-                            <input type="number" step="1" ng-model="Cntl.Diameters[0]">
+                            <input class = "bs" type="number" step="1" ng-model="Cntl.Diameters[0]" ng-change="Cntl.updateAll()">
                         </md-input-container>
                     </td>
                     <td class="td_diameter">
                         <md-input-container>
-                            <input type="number" step="1" ng-model="Cntl.Diameters[1]">
+                            <input class = "bs" type="number" step="1" ng-model="Cntl.Diameters[1]" ng-change="Cntl.updateAll()">
                         </md-input-container>
                     </td>
                     <td class="td_diameter">
                         <md-input-container>
-                            <input type="number" step="1" ng-model="Cntl.Diameters[2]">
+                            <input class = "bs" type="number" step="1" ng-model="Cntl.Diameters[2]" ng-change="Cntl.updateAll()">
                         </md-input-container>
                     </td>
                     <td class="td_diameter">
                         <md-input-container>
-                            <input type="number" step="1" ng-model="Cntl.Diameters[3]">
+                            <input class = "bs" type="number" step="1" ng-model="Cntl.Diameters[3]" ng-change="Cntl.updateAll()">
                         </md-input-container>
                     </td>
                 </tr>
@@ -76,108 +81,121 @@
                     <td class="pl_whole" rowspan="10">Path length [mm]</td>
                     <td class="td_length">
                         <md-input-container>
-                            <input type="number" step="1" ng-model="Cntl.Lengths[0]" ng-change="Cntl.changeLength()">
+                            <input type="number" step="1" ng-model="Cntl.Lengths[0]" ng-change="Cntl.updateAll()">
                         </md-input-container>
                     </td>
-                    <td>A</td>
-                    <td>B</td>
-                    <td>C</td>
-                    <td>D</td>
+                    <td>{{Cntl.Ranges[0][0]}}</td>
+                    <td>{{Cntl.Ranges[0][1]}}</td>
+                    <td>{{Cntl.Ranges[0][2]}}</td>
+                    <td>{{Cntl.Ranges[0][3]}}</td>
                 </tr>
                 <tr>
                     <td class="td_length">
                         <md-input-container>
-                            <input type="number" step="1" ng-model="Cntl.Lengths[1]" ng-change="Cntl.changeLength()">
+                            <input type="number" step="1" ng-model="Cntl.Lengths[1]" ng-change="Cntl.updateAll()">
                         </md-input-container>
-                    </td><td>E</td>
-                    <td>F</td>
-                    <td>G</td>
-                    <td>H</td>
+                    </td>
+                    <td>{{Cntl.Ranges[1][0]}}</td>
+                    <td>{{Cntl.Ranges[1][1]}}</td>
+                    <td>{{Cntl.Ranges[1][2]}}</td>
+                    <td>{{Cntl.Ranges[1][3]}}</td>
                 </tr>
                 <tr>
                     <td class="td_length">
                         <md-input-container>
-                            <input type="number" step="1" ng-model="Cntl.Lengths[2]" ng-change="Cntl.changeLength()">
+                            <input type="number" step="1" ng-model="Cntl.Lengths[2]" ng-change="Cntl.updateAll()">
                         </md-input-container>
-                    </td><td></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
+                    </td>
+                    <td>{{Cntl.Ranges[2][0]}}</td>
+                    <td>{{Cntl.Ranges[2][1]}}</td>
+                    <td>{{Cntl.Ranges[2][2]}}</td>
+                    <td>{{Cntl.Ranges[2][3]}}</td>
                 </tr>
                 <tr>
                     <td class="td_length">
                         <md-input-container>
-                            <input type="number" step="1" ng-model="Cntl.Lengths[3]" ng-change="Cntl.changeLength()">
+                            <input type="number" step="1" ng-model="Cntl.Lengths[3]" ng-change="Cntl.updateAll()">
                         </md-input-container>
-                    </td><td></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
+                    </td>
+                    <td>{{Cntl.Ranges[3][0]}}</td>
+                    <td>{{Cntl.Ranges[3][1]}}</td>
+                    <td>{{Cntl.Ranges[3][2]}}</td>
+                    <td>{{Cntl.Ranges[3][3]}}</td>
                 </tr>
                 <tr>
                     <td class="td_length">
                         <md-input-container>
-                            <input type="number" step="1" ng-model="Cntl.Lengths[4]" ng-change="Cntl.changeLength()">
+                            <input type="number" step="1" ng-model="Cntl.Lengths[4]" ng-change="Cntl.updateAll()">
                         </md-input-container>
-                    </td><td>E</td>
-                    <td>F</td>
-                    <td>G</td>
-                    <td>H</td>
+                    </td>
+                    <td>{{Cntl.Ranges[4][0]}}</td>
+                    <td>{{Cntl.Ranges[4][1]}}</td>
+                    <td>{{Cntl.Ranges[4][2]}}</td>
+                    <td>{{Cntl.Ranges[4][3]}}</td>
                 </tr>
                 <tr>
                     <td class="td_length">
                         <md-input-container>
-                            <input type="number" step="1" ng-model="Cntl.Lengths[5]" ng-change="Cntl.changeLength()">
+                            <input type="number" step="1" ng-model="Cntl.Lengths[5]" ng-change="Cntl.updateAll()">
                         </md-input-container>
-                    </td><td>E</td>
-                    <td>F</td>
-                    <td>G</td>
-                    <td>H</td>
+                    </td>
+                    <td>{{Cntl.Ranges[5][0]}}</td>
+                    <td>{{Cntl.Ranges[5][1]}}</td>
+                    <td>{{Cntl.Ranges[5][2]}}</td>
+                    <td>{{Cntl.Ranges[5][3]}}</td>
                 </tr>
                 <tr>
                     <td class="td_length">
                         <md-input-container>
-                            <input type="number" step="1" ng-model="Cntl.Lengths[6]" ng-change="Cntl.changeLength()">
+                            <input type="number" step="1" ng-model="Cntl.Lengths[6]" ng-change="Cntl.updateAll()">
                         </md-input-container>
-                    </td><td>E</td>
-                    <td>F</td>
-                    <td>G</td>
-                    <td>H</td>
+                    </td>
+                    <td>{{Cntl.Ranges[6][0]}}</td>
+                    <td>{{Cntl.Ranges[6][1]}}</td>
+                    <td>{{Cntl.Ranges[6][2]}}</td>
+                    <td>{{Cntl.Ranges[6][3]}}</td>
                 </tr>
                 <tr>
                     <td class="td_length">
                         <md-input-container>
-                            <input type="number" step="1" ng-model="Cntl.Lengths[7]" ng-change="Cntl.changeLength()">
+                            <input type="number" step="1" ng-model="Cntl.Lengths[7]" ng-change="Cntl.updateAll()">
                         </md-input-container>
-                    </td><td>E</td>
-                    <td>F</td>
-                    <td>G</td>
-                    <td>H</td>
+                    </td>
+                    <td>{{Cntl.Ranges[7][0]}}</td>
+                    <td>{{Cntl.Ranges[7][1]}}</td>
+                    <td>{{Cntl.Ranges[7][2]}}</td>
+                    <td>{{Cntl.Ranges[7][3]}}</td>
                 </tr>
                 <tr>
                     <td class="td_length">
                         <md-input-container>
                             <input type="number" step="1" ng-model="Cntl.Lengths[8]" ng-change="Cntl.changeLength()">
                         </md-input-container>
-                    </td><td>E</td>
-                    <td>F</td>
-                    <td>G</td>
-                    <td>H</td>
+                    </td>
+                    <td>{{Cntl.Ranges[8][0]}}</td>
+                    <td>{{Cntl.Ranges[8][1]}}</td>
+                    <td>{{Cntl.Ranges[8][2]}}</td>
+                    <td>{{Cntl.Ranges[8][3]}}</td>
                 </tr>
                 <tr>
                     <td class="td_length">
                         <md-input-container>
                             <input type="number" step="1" ng-model="Cntl.Lengths[9]" ng-change="Cntl.changeLength()">
                         </md-input-container>
-                    </td><td>E</td>
-                    <td>F</td>
-                    <td>G</td>
-                    <td>H</td>
+                    </td>
+                    <td>{{Cntl.Ranges[9][0]}}</td>
+                    <td>{{Cntl.Ranges[9][1]}}</td>
+                    <td>{{Cntl.Ranges[9][2]}}</td>
+                    <td>{{Cntl.Ranges[9][3]}}</td>
                 </tr>
             </tbody>
         </table>
-
     </div>
+    <hr />
+    <p>
+        {{Cntl.Mode}}
+        {{Cntl.Ranges}}
+    </p>
 
 </body>
 </html>

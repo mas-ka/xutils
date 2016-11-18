@@ -42,12 +42,19 @@ input[type=submit] {
 }
 
 input[type=number] {
+    text-align : right;
+    font-family: 'Open Sans', sans-serif;
+    font-size: 14px;
+}
+
+input[type=number].bs {
+    text-align : center;
     font-family: 'Open Sans', sans-serif;
     font-size: 14px;
 }
 
 .table_result {
-    width: 640px;
+    width: 600px;
     border-collapse: collapse;
     border: 2px solid darkslategray;
 }
@@ -88,4 +95,7 @@ input[type=number] {
     background-color: azure;
     border-left: 1px solid #b9b9b9;
     border-bottom: 2px solid darkslategray;
+}
+td {
+    text-align: center;
 }
