@@ -72,6 +72,21 @@ app.controller('myController', function($resource, $mdDialog, numberFilter){
         }
     };
 
+    this.showLicenseDlg = function($event) {
+        $resource('./license.html', {}, {
+            'get': {
+                transformResponse: function(data, headersGetter, status) {
+                    return {content: data};
+        }}}).get(function(d) {
+            $mdDialog.show(
+                $mdDialog.alert()
+                .clickOutsideToClose(true)
+                .htmlContent(d.content)
+                .ok('OK')
+                .targetEvent($event)
+            );
+        });
+    }
 
 });
 app.config(function($mdThemingProvider) {
