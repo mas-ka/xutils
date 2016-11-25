@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang=""  ng-app="myApp">
+<head>
+    <meta charset="UTF-8">
+    <!-- include AngularJS -->
+    <link href="https://fonts.googleapis.com/css?family=Noto+Serif:700|Roboto+Mono|Open+Sans" rel="stylesheet">
+    <link href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/angular_material/1.0.0/angular-material.min.css">
+    <link rel="stylesheet" type="text/css" href="samxam.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.5/angular.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.5/angular-resource.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.5/angular-sanitize.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.5/angular-animate.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.5/angular-aria.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.5/angular-messages.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/angular_material/1.1.0/angular-material.min.js"></script>
+    <script type="text/javascript" src="victoreens.js"></script>
+    <script type="text/javascript" src="samxam.js"></script>
+    <!-- title -->
+    <title>SAMXAM</title>
+</head>
+
+<body ng-controller="myController as Cntl" layout-padding>
+    <h1>
+        <div class="title_main">S A M X A M</div>
+        <div class="title_sub">- Sample preparation for XAS measurement -</div>
+    </h1>
+    <h2>Sample size</h2>
+    <div layout="row" layout-align="start end" layout-margin>
+        <p>&phi; = </p>
+        <md-input-container>
+            <label>Diameter</label>
+            <input type="number" step="1" ng-model="Cntl.Pellet_D">
+        </md-input-container>
+        <p> mm,  </p>
+        <p> t = </p>
+        <md-input-container>
+            <label>Thickness</label>
+            <input type="number" step="0.1" ng-model="Cntl.Pellet_T">
+        </md-input-container>
+        <p> mm</p>
+    </div>
+    <h2>Edge</h2>
+    <div layout="row" layout-align="start end" layout-margin>
+        <md-input-container>
+            <label>Edge</label>
+            <md-select ng-model="Cntl.edge" ng-change="Cntl.updateWeightRatio()">
+                <md-option ng-value="e.Id" ng-repeat="e in Cntl.Edges">{{e.Name}}</md-option>
+            </md-select>
+        </md-input-container>
+    </div>
+    <h2>Components</h2>
+        <div layout="column" layout-align="space-around start" layout-margin>
+            <md-radio-group ng-model="Cntl.targetId" ng-change="Cntl.updateWeightRatio()">
+            <table class="table_components">
+                <thead>
+                    <tr>
+                        <th>Target</th>
+                        <th>Element</th>
+                        <th style="width:80px">
+                            <md-input-container>
+                                <md-select ng-model="Cntl.ratio" ng-change="Cntl.updateWeightRatio()">
+                                    <md-option ng-value="e.Id" ng-repeat="e in Cntl.RatioTypes">{{e.Type}}</md-option>
+                                </md-select>
+                            </md-input-container>
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="target"><md-radio-button value="0" class="md-primary"></md-radio-button></td>
+                        <td>
+                            <md-input-container>
+                                <md-select ng-model="Cntl.Z[0]" ng-change="Cntl.updateWeightRatio()">
+                                    <md-option ng-value="e.Z" ng-repeat="e in Cntl.ElementNamesZ">{{e.Name}}</md-option>
+                                </md-select>
+                            </md-input-container>
+                        </td>
+                        <td>
+                            <md-input-container>
+                                <input ng-model="Cntl.Ratio[0]" type="number" step="0.001" ng-change="Cntl.updateWeightRatio()">
+                            </md-input-container>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="target"><md-radio-button value="1" class="md-primary"></md-radio-button></td>
+                        <td>
+                            <md-input-container>
+                                <md-select ng-model="Cntl.Z[1]" ng-change="Cntl.updateWeightRatio()">
+                                    <md-option ng-value="e.Z" ng-repeat="e in Cntl.ElementNamesZ">{{e.Name}}</md-option>
+                                </md-select>
+                            </md-input-container>
+                        </td>
+                        <td>
+                            <md-input-container>
+                                <input ng-model="Cntl.Ratio[1]" type="number" step="0.001" ng-change="Cntl.updateWeightRatio()">
+                            </md-input-container>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            </md-radio-group>
+        </div>
+    <p>RatioType: {{Cntl.ratio}}, targetId: {{Cntl.targetId}}</p>
+    <p>Z: {{Cntl.Z}}</p>
+    <p>Ratio: {{Cntl.Ratio}}</p>
+    <p>Weight: {{Cntl.Weight}}</p>
+    <p>(&Delta;&mu;t = 1: {{Cntl.MG_dMuT}} mg, H:{{Cntl.MuT_H_dMuT}}, L:{{Cntl.MuT_L_dMuT}})</p>
+    <md-divider ></md-divider>
+    <footer>
+        <a href="https://twitter.com/share" class="twitter-share-button" data-text="SAMXAM - Sample preparation for XAS measurement -">Tweet</a>
+<script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0],p=/^http:/.test(d.location)?'http':'https';if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src=p+'://platform.twitter.com/widgets.js';fjs.parentNode.insertBefore(js,fjs);}}(document, 'script', 'twitter-wjs');</script>
+        <p>&diams; Code licensed under <a href="" ng-click="Cntl.showLicenseDlg($event)">MIT license</a>.</p>
+    </footer>
+</body>
+</html>

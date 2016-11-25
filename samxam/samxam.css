@@ -1,0 +1,74 @@
+body {
+    font-family: 'Open Sans', sans-serif;
+    font-size: 14px;
+}
+
+h1 {
+    text-align: center;
+    color: white;
+    background-color: hsl(207, 44%, 25%);
+}
+
+.title_main {
+    font-family: 'Noto Serif', serif;
+    font-size: 36px;
+    font-style: normal;
+}
+
+.title_sub {
+    font-family: 'Noto Serif', serif;
+    font-size: 14px;
+    font-style: italic;
+}
+
+h2 {
+    font-size: 16px;
+    color: white;
+    background-color: steelblue;
+    border-left: 6px solid darkorange;
+}
+
+md-input-container {
+    height: 30px;
+    padding: 0px;
+    margin: 0px;
+}
+
+input[type=submit] {
+    font-family: FontAwesome;
+    color: white;
+    background: none;
+    border-style: none;
+}
+
+input[type=number] {
+    text-align : right;
+    font-family: 'Open Sans', sans-serif;
+    font-size: 14px;
+}
+
+.table_components {
+    border-collapse: collapse;
+    border: 2px solid darkslategray;
+}
+
+.table_components th {
+    font-family: 'Open Sans', sans-serif;
+    font-size: 12px;
+    color: white;
+    border-collapse: collapse;
+    padding: 5px;
+    background-color: cornflowerblue;
+    border: 2px solid darkslategray;
+}
+
+.table_components td {
+    text-align: center;
+    padding: 0px 5px 0px 5px;
+    background-color: white;
+    border: 1px solid #b9b9b9;
+}
+
+td.target {
+    padding: 13px 0px 0px 13px;
+}
