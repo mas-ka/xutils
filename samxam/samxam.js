@@ -27,6 +27,10 @@ app.controller('myController', function($resource, $mdDialog, numberFilter){
     this.Pellet_D = 10; // [mm]
     this.Pellet_T = 1; // [mm]
 
+
+
+    this.X = elements[29].A;
+
     // functions
     this.updateWeightRatio = function() {
         // 念のためエッジ波長を再設定しておく
@@ -34,8 +38,8 @@ app.controller('myController', function($resource, $mdDialog, numberFilter){
         // 重量分率を再計算する
         if (this.ratio == 0) { // Atom
             var M_total = 0;
-            for (var i = 0 ; i < 10 ; i++) M_total += this.Ratio[i]*this.Z[i] / elements[this.Z[i]].ZoA;
-            for (var i = 0 ; i < 10 ; i++) this.Weight[i] = this.Ratio[i]*this.Z[i] / elements[this.Z[i]].ZoA / M_total;
+            for (var i = 0 ; i < 10 ; i++) M_total += this.Ratio[i]*elements[this.Z[i]].A;
+            for (var i = 0 ; i < 10 ; i++) this.Weight[i] = this.Ratio[i]*elements[this.Z[i]].A / M_total;
         } else { // Mass
             var M_total = 0;
             for (var i = 0 ; i < 10 ; i++) M_total += this.Ratio[i];
@@ -65,11 +69,11 @@ app.controller('myController', function($resource, $mdDialog, numberFilter){
         for (var i = 0 ; i < 10 ; i++) {
             if (i == this.targetId) continue;
             var Z = this.Z[i];
-            MoR += getMoR(Z, this.Lambda) * G * this.Weight[i] / PRR;
+            MoR += getMoR(this.Z[i], this.Lambda) * this.Weight[i];
         }
         var BothMoR = getBothMoR(this.Z[this.targetId], this.edge); // ターゲット元素の指定吸収端前後の質量吸収係数を求める
-        this.MuT_H_dMuT = BothMoR[0] * G * this.Weight[this.targetId] / PRR + MoR;
-        this.MuT_L_dMuT = BothMoR[1] * G * this.Weight[this.targetId] / PRR + MoR;
+        this.MuT_H_dMuT = (MoR + BothMoR[0]*this.Weight[this.targetId]) * G / PRR;
+        this.MuT_L_dMuT = (MoR + BothMoR[1]*this.Weight[this.targetId]) * G / PRR;
     }
 
 
