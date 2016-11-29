@@ -50,13 +50,17 @@ app.controller('myController', function($resource, $mdDialog, numberFilter){
         this.calcBothMuTByWeight(this.MG_dMuT);
     }
 
+    this.MoR_H = 0;
+    this.MoR_L = 0;
+
     this.MG_dMuT = 0;
     // Δμtが指定値となる重量を求める
     this.calcWeightByDeltaMuT = function(d) {
         var Z = this.Z[this.targetId];
         var BothMoR = getBothMoR(Z, this.edge); // ターゲット元素の指定吸収端前後の質量吸収係数を求める
         this.MG_dMuT = 1000 * Math.PI*Math.pow(this.Pellet_D/20.0, 2)*d/(BothMoR[0]-BothMoR[1]) / this.Weight[this.targetId];
-
+        this.MoR_H = BothMoR[0];
+        this.MoR_L = BothMoR[1];
     }
 
     this.MuT_H_dMuT = 0;
