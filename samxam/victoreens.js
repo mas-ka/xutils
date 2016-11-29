@@ -120,7 +120,7 @@ function getMoR(Z, L) {
     var E = elements[Z];
     var NSigmaKN = calcNSigmaKN(L);
     var i = 0;
-    if (L <= E.E[0]) i = 1; // shorter than K-edge
+    if (E.E[0] < 0 || L <= E.E[0]) i = 1; // shorter than K-edge
     else if (E.E[1] < 0 || L <= E.E[1]) i = 2; // shorter than L1-edge
     else if (E.E[2] < 0 || L <= E.E[2]) i = 3; // shorter than L2-edge
     else if (E.E[3] < 0 || L <= E.E[3]) i = 4; // shorter than L3-edge
