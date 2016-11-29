@@ -149,7 +149,7 @@ app.controller('myController', function($resource, $mdDialog, numberFilter){
     this.calcCMByDeltaMuT = function(d) { // Δμtが指定値となるフォイル厚さ[cm]を求める
         var Z = this.Z[this.targetId];
         var BothMoR = getBothMoR(Z, this.edge); // ターゲット元素の指定吸収端前後の質量吸収係数を求める
-        return d / this.Foil_R / (BothMoR[0]-BothMoR[1]);
+        return d / this.Foil_R / (BothMoR[0]-BothMoR[1]) / this.Weight[this.targetId];
     }
 
     this.calcCMByMuTH = function(H) { // μt_Hが指定値となるフォイル厚さ[cm]を求める
