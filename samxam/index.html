@@ -69,8 +69,8 @@
         </md-input-container>
         <p> g/cm<sup>3</sup></p>
     </div>
-    <h2>Components</h2>
-        <div layout="column" layout-align="space-around start" layout-margin>
+    <h2>Components &amp; Results</h2>
+        <div layout="row" layout-align="none start" layout-margin>
             <md-radio-group ng-model="Cntl.targetId" ng-change="Cntl.calcResult()">
             <table class="table_components">
                 <thead>
@@ -134,10 +134,7 @@
                 </tbody>
             </table>
             </md-radio-group>
-        </div>
-    <h2>Result</h2>
-        <div layout="column" layout-align="space-around start" layout-margin ng-if="Cntl.sample==0||Cntl.sample==1"> <!-- Pellet --><!-- Foil -->
-            <table class="table_results">
+            <table class="table_results" ng-if="Cntl.sample==0||Cntl.sample==1">
                 <thead><tr>
                     <th>&mu;t<sub>H</sub></th>
                     <th>&mu;t<sub>L</sub></th>
