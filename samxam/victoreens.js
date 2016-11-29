@@ -111,8 +111,8 @@ function getBothMoR(Z, typeEdge) {
     var E = elements[Z];
     var L = E.E[typeEdge];
     var NSigmaKN = calcNSigmaKN(L);
-    var MoR_S = L*L*L*(E.C[typeEdge+1] - L*E.D[typeEdge+1]) + (Z>10?0.0:Z/E.A*NSigmaKN);
-    var MoR_L = L*L*L*(E.C[typeEdge+2] - L*E.D[typeEdge+2]) + (Z>10?0.0:Z/E.A*NSigmaKN);
+    var MoR_S = L*L*L*(E.C[typeEdge+1] - L*E.D[typeEdge+1]) + Z/E.A*NSigmaKN;
+    var MoR_L = L*L*L*(E.C[typeEdge+2] - L*E.D[typeEdge+2]) + Z/E.A*NSigmaKN;
     return [MoR_S, MoR_L];
 }
 
@@ -125,5 +125,5 @@ function getMoR(Z, L) {
     else if (E.E[2] < 0 || L <= E.E[2]) i = 3; // shorter than L2-edge
     else if (E.E[3] < 0 || L <= E.E[3]) i = 4; // shorter than L3-edge
     else i = 5; // longer than L3-edge
-    return L*L*L*(E.C[i] - L*E.D[i]) + (Z>10?0.0:Z/E.A*NSigmaKN);
+    return L*L*L*(E.C[i] - L*E.D[i]) + Z/E.A*NSigmaKN;
 }
