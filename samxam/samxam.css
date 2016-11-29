@@ -42,6 +42,7 @@ input[type=submit] {
 }
 
 input[type=number] {
+    width: 80px;
     text-align : right;
     font-family: 'Open Sans', sans-serif;
     font-size: 14px;
@@ -53,11 +54,12 @@ input[type=number] {
 }
 
 .table_components th {
+    width: 60px;
     font-family: 'Open Sans', sans-serif;
     font-size: 12px;
     color: white;
     border-collapse: collapse;
-    padding: 5px;
+    padding: 0px;
     background-color: cornflowerblue;
     border: 2px solid darkslategray;
 }
@@ -96,3 +98,5 @@ td.target {
     border: 1px solid #b9b9b9;
 }
 
+md-select.edge {
+}

@@ -12,6 +12,7 @@ app.controller('myController', function($resource, $mdDialog, numberFilter){
     this.sample = 0; // Pellet
     this.Lambda = 1.380840; // Cu-K
     this.ratio = 0; // Atom
+    this.ratio_step = 1; // for Atom
     this.targetId = 0;
     this.Z = [29,0,0,0,0,0,0,0,0,0];
     this.Ratio = [1,0,0,0,0,0,0,0,0,0];
@@ -39,6 +40,7 @@ app.controller('myController', function($resource, $mdDialog, numberFilter){
 
     // functions
     this.calcResult = function() {
+        this.ratio_step = (this.ratio==0)?1:0.001; // ここでやっとく
         switch (this.sample) {
             case 0: // Pellet
                 this.calc4Pellet();
