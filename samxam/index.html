@@ -148,6 +148,7 @@
                         <td>{{Cntl.dMuT_4 | number:3}}</td>
                         <td>{{Cntl.Res_4 | number:2}} <span ng-if="Cntl.sample==0">mg</span><span ng-if="Cntl.sample==1">&mu;m</span></td>
                     </tr>
+                    <tr>
                         <td style="font-weight:bold">{{Cntl.MuT_H_2 | number:3}}</td>
                         <td>{{Cntl.MuT_L_2 | number:3}}</td>
                         <td>{{Cntl.dMuT_2 | number:3}}</td>
@@ -158,6 +159,17 @@
                         <td>{{Cntl.MuT_L_1 | number:3}}</td>
                         <td style="font-weight:bold">{{Cntl.dMuT_1 | number:3}}</td>
                         <td>{{Cntl.Res_1 | number:2}} <span ng-if="Cntl.sample==0">mg</span><span ng-if="Cntl.sample==1">&mu;m</span></td>
+                    </tr>
+                    <tr style="border-top:3px double #b9b9b9">
+                        <td>{{Cntl.MuT_H_o | number:3}}</td>
+                        <td>{{Cntl.MuT_L_o | number:3}}</td>
+                        <td>{{Cntl.dMuT_o | number:3}}</td>
+                        <td style="font-weight:bold">
+                            <md-input-container>
+                                <input type="number" step="0.01" style="width:60px" ng-model="Cntl.Res_o" ng-change="Cntl.calcResult()">
+                            </md-input-container>
+                            <span ng-if="Cntl.sample==0"> mg</span><span ng-if="Cntl.sample==1"> &mu;m</span>
+                        </td>
                     </tr>
                 </tbody>
             </table>

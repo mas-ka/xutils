@@ -34,7 +34,7 @@ app.controller('myController', function($resource, $mdDialog, numberFilter){
     this.MuT_H_4 = 4.000; this.MuT_L_4 = 1.286; this.dMuT_4 = 2.714; this.Res_4 = 8.47;
     this.MuT_H_2 = 2.500; this.MuT_L_2 = 1.098; this.dMuT_2 = 1.402; this.Res_2 = 4.38;
     this.MuT_H_1 = 2.041; this.MuT_L_1 = 1.041; this.dMuT_1 = 1.000; this.Res_1 = 3.12;
-
+    this.MuT_H_o = 1.263; this.MuT_L_o = 0.943; this.dMuT_o = 0.320; this.Res_o = 1.00;
 
     this.X = elements[29].A;
 
@@ -70,6 +70,9 @@ app.controller('myController', function($resource, $mdDialog, numberFilter){
         t = this.calcCMByMuTH(this.MuT_H_2);
         r = this.calcAllMuTByCM(t);
         this.MuT_H_2 = r[0]; this.MuT_L_2 = r[1]; this.dMuT_2 = r[0]-r[1]; this.Res_2 = t*10000;
+        // Res_oからμt_H,μt_Lを求める
+        r = this.calcAllMuTByCM(this.Res_o / 10000.0);
+        this.MuT_H_o = r[0]; this.MuT_L_o = r[1]; this.dMuT_o = r[0]-r[1];
     }
 
     this.calc4Pellet = function() {
@@ -90,6 +93,9 @@ app.controller('myController', function($resource, $mdDialog, numberFilter){
         g = this.calcGramByMuTH(this.MuT_H_2);
         r = this.calcAllMuTByGram(g);
         this.MuT_H_2 = r[0]; this.MuT_L_2 = r[1]; this.dMuT_2 = r[0]-r[1]; this.Res_2 = g*1000;
+        // Res_oからμt_H,μt_Lを求める
+        r = this.calcAllMuTByGram(this.Res_o / 1000.0);
+        this.MuT_H_o = r[0]; this.MuT_L_o = r[1]; this.dMuT_o = r[0]-r[1];
     }
 
     this.updateWeightRatio = function() {

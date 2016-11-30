@@ -61,7 +61,8 @@ input[type=number] {
     border-collapse: collapse;
     padding: 0px;
     background-color: cornflowerblue;
-    border: 2px solid darkslategray;
+    border: 1px solid royalblue;
+    border-bottom: 2px solid darkslategray;
 }
 
 .table_components td {
@@ -71,8 +72,9 @@ input[type=number] {
     border: 1px solid #b9b9b9;
 }
 
-td.target {
+.table_components td.target {
     padding: 13px 0px 0px 13px;
+    border: 1px solid #b9b9b9;
 }
 
 .table_results {
@@ -88,7 +90,8 @@ td.target {
     border-collapse: collapse;
     padding: 5px;
     background-color: mediumaquamarine;
-    border: 2px solid darkslategray;
+    border: 1px solid seagreen;
+    border-bottom: 2px solid darkslategray;
 }
 
 .table_results td {
