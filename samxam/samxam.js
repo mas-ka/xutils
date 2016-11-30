@@ -42,6 +42,22 @@ app.controller('myController', function($resource, $mdDialog, numberFilter){
     this.X = elements[29].A;
 
     // functions
+    this.changeComponentsElement = function(i) { // i番目の元素が変更された
+        if (i == 0) {
+
+        } else {
+            if (this.Z[i] == 0) { // i番目の元素が「なし」に変更された
+                for (var j = i ; j < 10 ; j++) {
+                    this.Z[j] = 0; // i番目以降の全ての元素を「なし」にする
+                    this.Ratio[j] = 0; // i番目以降の全てのRatioをゼロにする
+                }
+                if (this.targetId >= i) this.targetId = 0; // ターゲットが削除された元素より後だったら、ターゲットを0番目に戻す
+            }
+        }
+        this.calcResult();
+    }
+
+
     this.changePelletMedium = function() {
         if (this.Pellet_Medium == 1) { // BN
             this.Pellet_T = 1;
