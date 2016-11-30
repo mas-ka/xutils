@@ -5,14 +5,14 @@ app.controller('myController', function($resource, $mdDialog, numberFilter){
     this.Edges = [{Id: 0, Name:"K"}, {Id: 1, Name:"L1"}, {Id: 2, Name:"L2"}, {Id: 3, Name:"L3"}];
     this.RatioTypes = [{Id: 0, Type:"Atom"}, {Id: 1, Type:"Mass"}];
     this.SampleType = [{Id: 0, Type: "Pellet"}, {Id: 1, Type: "Foil"}];
-    this.PelletMediumType = [{Id: 0, Type: "-"}, {Id: 1, Type: "BN"}];
+    this.PelletMediumType = [{Id: 0, Type: "-"}, {Id: 1, Type: "BN"}, {Id: 2, Type: "Other..."}];
     this.PelletMediumValueType = [{Id: 0, Type: "Thickness"}, {Id: 1, Type: "Weight"}];
 
     // for Component parameters
     this.sample = 0; // Pellet
     this.Lambda = 1.380840; // Cu-K
     this.ratio = 0; // Atom
-    this.ratio_step = 1; // for Atom
+    this.ratio_step = 0.01; // for Atom
     this.targetId = 0;
     this.Z = [29,0,0,0,0,0,0,0,0,0];
     this.Ratio = [1,0,0,0,0,0,0,0,0,0];
@@ -26,6 +26,9 @@ app.controller('myController', function($resource, $mdDialog, numberFilter){
     this.Pellet_T = 1; // [mm || mg]
     this.Pellet_Medium = 1; // medium = BN
     this.Pellet_Medium_unit = 0; //Thickness
+    this.Pellet_Medium_Z = [5,7,0,0,0,0,0,0,0,0]; // BN
+    this.Pellet_Medium_Ratio = [1,1,0,0,0,0,0,0,0,0];
+    this.Pellet_Medium_Weight = [0.435535858178888,0.564464141821112,0,0,0,0,0,0,0,0];
 
     // for Sample as Foil
     this.Foil_R = 8.94; // [g/cm^-3] Rho of Cu (Meteal)
@@ -39,8 +42,21 @@ app.controller('myController', function($resource, $mdDialog, numberFilter){
     this.X = elements[29].A;
 
     // functions
+    this.changePelletMedium = function() {
+        if (this.Pellet_Medium == 1) { // BN
+            this.Pellet_T = 1;
+            this.Pellet_Medium_unit = 0; // Thickness
+            this.Pellet_Medium_Z = [5,7,0,0,0,0,0,0,0,0]; // BN
+            this.Pellet_Medium_Ratio = [1,1,0,0,0,0,0,0,0,0];
+            this.Pellet_Medium_Weight = [0.435535858178888,0.564464141821112,0,0,0,0,0,0,0,0];
+        } else if (this.Pellet_Medium == 2) { // Other...
+            this.Pellet_Medium_unit = 1; // Weight
+        }
+        this.calcResult();
+    }
+
     this.calcResult = function() {
-        this.ratio_step = (this.ratio==0)?1:0.001; // ここでやっとく
+        this.ratio_step = (this.ratio==0)?0.01:0.001; // ここでやっとく
         switch (this.sample) {
             case 0: // Pellet
                 this.calc4Pellet();
@@ -81,6 +97,7 @@ app.controller('myController', function($resource, $mdDialog, numberFilter){
         this.Lambda = getLambdaOfEdge(this.Z[this.targetId], this.edge);
         // 重量分率を再計算する
         this.updateWeightRatio();
+        this.updatePelletMediumWeightRatio();
         // Δμt=1となるグラムを求め、そこからμt_H,μt_Lを求める
         g = this.calcGramByDeltaMuT(this.dMuT_1);
         r = this.calcAllMuTByGram(g);
@@ -98,8 +115,7 @@ app.controller('myController', function($resource, $mdDialog, numberFilter){
         this.MuT_H_o = r[0]; this.MuT_L_o = r[1]; this.dMuT_o = r[0]-r[1];
     }
 
-    this.updateWeightRatio = function() {
-        // 重量分率を再計算する
+    this.updateWeightRatio = function() { // 重量分率を再計算する
         if (this.ratio == 0) { // Atom
             var M_total = 0;
             for (var i = 0 ; i < 10 ; i++) M_total += this.Ratio[i]*elements[this.Z[i]].A;
@@ -109,6 +125,12 @@ app.controller('myController', function($resource, $mdDialog, numberFilter){
             for (var i = 0 ; i < 10 ; i++) M_total += this.Ratio[i];
             for (var i = 0 ; i < 10 ; i++) this.Weight[i] = this.Ratio[i] / M_total;
         }
+    }
+
+    this.updatePelletMediumWeightRatio = function() { // 重量分率を再計算する
+        var M_total = 0;
+        for (var i = 0 ; i < 10 ; i++) M_total += this.Pellet_Medium_Ratio[i]*elements[this.Pellet_Medium_Z[i]].A;
+        for (var i = 0 ; i < 10 ; i++) this.Pellet_Medium_Weight[i] = this.Pellet_Medium_Ratio[i]*elements[this.Pellet_Medium_Z[i]].A / M_total;
     }
 
     this.calcGramByDeltaMuT = function(d) { // Δμtが指定値となる重量を求める
@@ -151,6 +173,11 @@ app.controller('myController', function($resource, $mdDialog, numberFilter){
                 if (this.Pellet_Medium_unit == 0) G = this.Pellet_T * 0.1735; // BN 173.5mg/mm
                 else G = this.Pellet_T / 1000.0; // mg -> g
                 return G*(getMoR(5, this.Lambda)*0.435536 + getMoR(7, this.Lambda)*0.564464);
+            case 2: // Other...
+                G = this.Pellet_T / 1000.0; // mg -> g
+                var MoR = 0.0;
+                for (var i = 0 ; i < 10 ; i++) MoR += getMoR(this.Pellet_Medium_Z[i], this.Lambda) * this.Pellet_Medium_Weight[i];
+                return G*MoR;
         }
     }
 
