@@ -39,8 +39,6 @@ app.controller('myController', function($resource, $mdDialog, numberFilter){
     this.MuT_H_1 = 2.041; this.MuT_L_1 = 1.041; this.dMuT_1 = 1.000; this.Res_1 = 3.12;
     this.MuT_H_o = 1.263; this.MuT_L_o = 0.943; this.dMuT_o = 0.320; this.Res_o = 1.00;
 
-    this.X = elements[29].A;
-
     // functions
     this.changeComponentsElement = function(i) { // i番目の元素が変更された
         if (i == 0) {

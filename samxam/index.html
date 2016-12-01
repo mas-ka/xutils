@@ -77,48 +77,21 @@
                 </tr>
             </thead>
             <tbody>
-                <tr>
+                <tr ng-repeat="i in [0,1,2,3]">
                     <td><md-input-container>
-                        <md-select ng-model="Cntl.Pellet_Medium_Z[0]" ng-change="Cntl.calcResult()">
+                        <md-select ng-model="Cntl.Pellet_Medium_Z[i]" ng-change="Cntl.calcResult()">
                             <md-option ng-value="e.Z" ng-repeat="e in Cntl.ElementNamesZ">{{e.Name}}</md-option>
                         </md-select>
                     </md-input-container></td>
                     <td><md-input-container>
-                        <input ng-model="Cntl.Pellet_Medium_Ratio[0]" type="number" step="1" ng-change="Cntl.calcResult()">
-                    </md-input-container></td>
-                </tr>
-                <tr>
-                    <td><md-input-container>
-                        <md-select ng-model="Cntl.Pellet_Medium_Z[1]" ng-change="Cntl.calcResult()">
-                            <md-option ng-value="e.Z" ng-repeat="e in Cntl.ElementNamesZ">{{e.Name}}</md-option>
-                        </md-select>
-                    </md-input-container></td>
-                    <td><md-input-container>
-                        <input ng-model="Cntl.Pellet_Medium_Ratio[1]" type="number" step="1" ng-change="Cntl.calcResult()">
-                    </md-input-container></td>
-                </tr>
-                <tr>
-                    <td><md-input-container>
-                        <md-select ng-model="Cntl.Pellet_Medium_Z[2]" ng-change="Cntl.calcResult()">
-                            <md-option ng-value="e.Z" ng-repeat="e in Cntl.ElementNamesZ">{{e.Name}}</md-option>
-                        </md-select>
-                    </md-input-container></td>
-                    <td><md-input-container>
-                        <input ng-model="Cntl.Pellet_Medium_Ratio[2]" type="number" step="1" ng-change="Cntl.calcResult()">
-                    </md-input-container></td>
-                </tr>
-                <tr>
-                    <td><md-input-container>
-                        <md-select ng-model="Cntl.Pellet_Medium_Z[3]" ng-change="Cntl.calcResult()">
-                            <md-option ng-value="e.Z" ng-repeat="e in Cntl.ElementNamesZ">{{e.Name}}</md-option>
-                        </md-select>
-                    </md-input-container></td>
-                    <td><md-input-container>
-                        <input ng-model="Cntl.Pellet_Medium_Ratio[3]" type="number" step="1" ng-change="Cntl.calcResult()">
+                        <input ng-model="Cntl.Pellet_Medium_Ratio[i]" type="number" step="1" ng-change="Cntl.calcResult()">
                     </md-input-container></td>
                 </tr>
             </tbody>
         </table>
+        <p>Z: {{Cntl.Pellet_Medium_Z}}</p>
+        <p>Ratio: {{Cntl.Pellet_Medium_Ratio}}</p>
+        <p>Weight: {{Cntl.Pellet_Medium_Weight}}</p>
     </div>
     <div layout="row" layout-align="start end" layout-margin ng-if="Cntl.sample==1"> <!-- Foil -->
         <p>&rho; = </p>
@@ -369,6 +342,8 @@
                 </tbody>
             </table>
             </md-radio-group>
+            <p>Ratio: {{Cntl.Ratio}}</p>
+            <p>Weight: {{Cntl.Weight}}</p>
             <table class="table_results" ng-if="Cntl.sample==0||Cntl.sample==1">
                 <thead><tr>
                     <th>&mu;t<sub>H</sub></th>
