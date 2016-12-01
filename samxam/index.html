@@ -89,9 +89,6 @@
                 </tr>
             </tbody>
         </table>
-        <p>Z: {{Cntl.Pellet_Medium_Z}}</p>
-        <p>Ratio: {{Cntl.Pellet_Medium_Ratio}}</p>
-        <p>Weight: {{Cntl.Pellet_Medium_Weight}}</p>
     </div>
     <div layout="row" layout-align="start end" layout-margin ng-if="Cntl.sample==1"> <!-- Foil -->
         <p>&rho; = </p>
@@ -163,10 +160,10 @@
                             </md-input-container>
                         </td>
                     </tr>
-                    <tr ng-if="Cntl.Z[1]>0"> <!-- 2 -->
+                    <tr ng-repeat="i in [2,3,4,5,6,7,8,9]" ng-if="Cntl.Z[i-1]>0"> <!-- 2...9 -->
                         <td class="target" layout="row" layout-align="start end">
-                            <md-radio-button value="2" class="md-primary" ng-disabled="Cntl.Z[2]==0"></md-radio-button>
-                            <md-input-container style="padding:0px 0px 13px 0px" ng-if="Cntl.targetId==2">
+                            <md-radio-button value={{i}} class="md-primary" ng-disabled="Cntl.Z[i]==0"></md-radio-button>
+                            <md-input-container style="padding:0px 0px 13px 0px" ng-if="Cntl.targetId==i">
                                 <md-select class="edge" ng-model="Cntl.edge" ng-change="Cntl.calcResult()">
                                     <md-option ng-value="e.Id" ng-repeat="e in Cntl.Edges">{{e.Name}}</md-option>
                                 </md-select>
@@ -174,176 +171,20 @@
                         </td>
                         <td>
                             <md-input-container>
-                                <md-select ng-model="Cntl.Z[2]" ng-change="Cntl.changeComponentsElement(2)">
-                                    <md-option ng-value="e.Z" ng-disabled="Cntl.targetId==2&&e.Z==0" ng-repeat="e in Cntl.ElementNamesZ">{{e.Name}}</md-option>
+                                <md-select ng-model="Cntl.Z[i]" ng-change="Cntl.changeComponentsElement(i)">
+                                    <md-option ng-value="e.Z" ng-disabled="Cntl.targetId==i&&e.Z==0" ng-repeat="e in Cntl.ElementNamesZ">{{e.Name}}</md-option>
                                 </md-select>
                             </md-input-container>
                         </td>
                         <td>
                             <md-input-container>
-                                <input ng-model="Cntl.Ratio[2]" type="number" step={{Cntl.ratio_step}} ng-change="Cntl.calcResult()">
-                            </md-input-container>
-                        </td>
-                    </tr>
-                    <tr ng-if="Cntl.Z[2]>0"> <!-- 3 -->
-                        <td class="target" layout="row" layout-align="start end">
-                            <md-radio-button value="3" class="md-primary" ng-disabled="Cntl.Z[3]==0"></md-radio-button>
-                            <md-input-container style="padding:0px 0px 13px 0px" ng-if="Cntl.targetId==3">
-                                <md-select class="edge" ng-model="Cntl.edge" ng-change="Cntl.calcResult()">
-                                    <md-option ng-value="e.Id" ng-repeat="e in Cntl.Edges">{{e.Name}}</md-option>
-                                </md-select>
-                            </md-input-container>
-                        </td>
-                        <td>
-                            <md-input-container>
-                                <md-select ng-model="Cntl.Z[3]" ng-change="Cntl.changeComponentsElement(3)">
-                                    <md-option ng-value="e.Z" ng-disabled="Cntl.targetId==3&&e.Z==0" ng-repeat="e in Cntl.ElementNamesZ">{{e.Name}}</md-option>
-                                </md-select>
-                            </md-input-container>
-                        </td>
-                        <td>
-                            <md-input-container>
-                                <input ng-model="Cntl.Ratio[3]" type="number" step={{Cntl.ratio_step}} ng-change="Cntl.calcResult()">
-                            </md-input-container>
-                        </td>
-                    </tr>
-                    <tr ng-if="Cntl.Z[3]>0"> <!-- 4 -->
-                        <td class="target" layout="row" layout-align="start end">
-                            <md-radio-button value="4" class="md-primary" ng-disabled="Cntl.Z[4]==0"></md-radio-button>
-                            <md-input-container style="padding:0px 0px 13px 0px" ng-if="Cntl.targetId==4">
-                                <md-select class="edge" ng-model="Cntl.edge" ng-change="Cntl.calcResult()">
-                                    <md-option ng-value="e.Id" ng-repeat="e in Cntl.Edges">{{e.Name}}</md-option>
-                                </md-select>
-                            </md-input-container>
-                        </td>
-                        <td>
-                            <md-input-container>
-                                <md-select ng-model="Cntl.Z[4]" ng-change="Cntl.changeComponentsElement(4)">
-                                    <md-option ng-value="e.Z" ng-disabled="Cntl.targetId==4&&e.Z==0" ng-repeat="e in Cntl.ElementNamesZ">{{e.Name}}</md-option>
-                                </md-select>
-                            </md-input-container>
-                        </td>
-                        <td>
-                            <md-input-container>
-                                <input ng-model="Cntl.Ratio[4]" type="number" step={{Cntl.ratio_step}} ng-change="Cntl.calcResult()">
-                            </md-input-container>
-                        </td>
-                    </tr>
-                    <tr ng-if="Cntl.Z[4]>0"> <!-- 5 -->
-                        <td class="target" layout="row" layout-align="start end">
-                            <md-radio-button value="5" class="md-primary" ng-disabled="Cntl.Z[5]==0"></md-radio-button>
-                            <md-input-container style="padding:0px 0px 13px 0px" ng-if="Cntl.targetId==5">
-                                <md-select class="edge" ng-model="Cntl.edge" ng-change="Cntl.calcResult()">
-                                    <md-option ng-value="e.Id" ng-repeat="e in Cntl.Edges">{{e.Name}}</md-option>
-                                </md-select>
-                            </md-input-container>
-                        </td>
-                        <td>
-                            <md-input-container>
-                                <md-select ng-model="Cntl.Z[5]" ng-change="Cntl.changeComponentsElement(5)">
-                                    <md-option ng-value="e.Z" ng-disabled="Cntl.targetId==5&&e.Z==0" ng-repeat="e in Cntl.ElementNamesZ">{{e.Name}}</md-option>
-                                </md-select>
-                            </md-input-container>
-                        </td>
-                        <td>
-                            <md-input-container>
-                                <input ng-model="Cntl.Ratio[5]" type="number" step={{Cntl.ratio_step}} ng-change="Cntl.calcResult()">
-                            </md-input-container>
-                        </td>
-                    </tr>
-                    <tr ng-if="Cntl.Z[5]>0"> <!-- 6 -->
-                        <td class="target" layout="row" layout-align="start end">
-                            <md-radio-button value="6" class="md-primary" ng-disabled="Cntl.Z[6]==0"></md-radio-button>
-                            <md-input-container style="padding:0px 0px 13px 0px" ng-if="Cntl.targetId==6">
-                                <md-select class="edge" ng-model="Cntl.edge" ng-change="Cntl.calcResult()">
-                                    <md-option ng-value="e.Id" ng-repeat="e in Cntl.Edges">{{e.Name}}</md-option>
-                                </md-select>
-                            </md-input-container>
-                        </td>
-                        <td>
-                            <md-input-container>
-                                <md-select ng-model="Cntl.Z[6]" ng-change="Cntl.changeComponentsElement(6)">
-                                    <md-option ng-value="e.Z" ng-disabled="Cntl.targetId==6&&e.Z==0" ng-repeat="e in Cntl.ElementNamesZ">{{e.Name}}</md-option>
-                                </md-select>
-                            </md-input-container>
-                        </td>
-                        <td>
-                            <md-input-container>
-                                <input ng-model="Cntl.Ratio[6]" type="number" step={{Cntl.ratio_step}} ng-change="Cntl.calcResult()">
-                            </md-input-container>
-                        </td>
-                    </tr>
-                    <tr ng-if="Cntl.Z[6]>0"> <!-- 7 -->
-                        <td class="target" layout="row" layout-align="start end">
-                            <md-radio-button value="7" class="md-primary" ng-disabled="Cntl.Z[7]==0"></md-radio-button>
-                            <md-input-container style="padding:0px 0px 13px 0px" ng-if="Cntl.targetId==7">
-                                <md-select class="edge" ng-model="Cntl.edge" ng-change="Cntl.calcResult()">
-                                    <md-option ng-value="e.Id" ng-repeat="e in Cntl.Edges">{{e.Name}}</md-option>
-                                </md-select>
-                            </md-input-container>
-                        </td>
-                        <td>
-                            <md-input-container>
-                                <md-select ng-model="Cntl.Z[7]" ng-change="Cntl.changeComponentsElement(7)">
-                                    <md-option ng-value="e.Z" ng-disabled="Cntl.targetId==7&&e.Z==0" ng-repeat="e in Cntl.ElementNamesZ">{{e.Name}}</md-option>
-                                </md-select>
-                            </md-input-container>
-                        </td>
-                        <td>
-                            <md-input-container>
-                                <input ng-model="Cntl.Ratio[7]" type="number" step={{Cntl.ratio_step}} ng-change="Cntl.calcResult()">
-                            </md-input-container>
-                        </td>
-                    </tr>
-                    <tr ng-if="Cntl.Z[7]>0"> <!-- 8 -->
-                        <td class="target" layout="row" layout-align="start end">
-                            <md-radio-button value="8" class="md-primary" ng-disabled="Cntl.Z[8]==0"></md-radio-button>
-                            <md-input-container style="padding:0px 0px 13px 0px" ng-if="Cntl.targetId==8">
-                                <md-select class="edge" ng-model="Cntl.edge" ng-change="Cntl.calcResult()">
-                                    <md-option ng-value="e.Id" ng-repeat="e in Cntl.Edges">{{e.Name}}</md-option>
-                                </md-select>
-                            </md-input-container>
-                        </td>
-                        <td>
-                            <md-input-container>
-                                <md-select ng-model="Cntl.Z[8]" ng-change="Cntl.changeComponentsElement(8)">
-                                    <md-option ng-value="e.Z" ng-disabled="Cntl.targetId==8&&e.Z==0" ng-repeat="e in Cntl.ElementNamesZ">{{e.Name}}</md-option>
-                                </md-select>
-                            </md-input-container>
-                        </td>
-                        <td>
-                            <md-input-container>
-                                <input ng-model="Cntl.Ratio[8]" type="number" step={{Cntl.ratio_step}} ng-change="Cntl.calcResult()">
-                            </md-input-container>
-                        </td>
-                    </tr>
-                    <tr ng-if="Cntl.Z[8]>0"> <!-- 9 -->
-                        <td class="target" layout="row" layout-align="start end">
-                            <md-radio-button value="9" class="md-primary" ng-disabled="Cntl.Z[9]==0"></md-radio-button>
-                            <md-input-container style="padding:0px 0px 13px 0px" ng-if="Cntl.targetId==9">
-                                <md-select class="edge" ng-model="Cntl.edge" ng-change="Cntl.calcResult()">
-                                    <md-option ng-value="e.Id" ng-repeat="e in Cntl.Edges">{{e.Name}}</md-option>
-                                </md-select>
-                            </md-input-container>
-                        </td>
-                        <td>
-                            <md-input-container>
-                                <md-select ng-model="Cntl.Z[9]" ng-change="Cntl.changeComponentsElement(9)">
-                                    <md-option ng-value="e.Z" ng-disabled="Cntl.targetId==9&&e.Z==0" ng-repeat="e in Cntl.ElementNamesZ">{{e.Name}}</md-option>
-                                </md-select>
-                            </md-input-container>
-                        </td>
-                        <td>
-                            <md-input-container>
-                                <input ng-model="Cntl.Ratio[9]" type="number" step={{Cntl.ratio_step}} ng-change="Cntl.calcResult()">
+                                <input ng-model="Cntl.Ratio[i]" type="number" step={{Cntl.ratio_step}} ng-change="Cntl.calcResult()">
                             </md-input-container>
                         </td>
                     </tr>
                 </tbody>
             </table>
             </md-radio-group>
-            <p>Ratio: {{Cntl.Ratio}}</p>
-            <p>Weight: {{Cntl.Weight}}</p>
             <table class="table_results" ng-if="Cntl.sample==0||Cntl.sample==1">
                 <thead><tr>
                     <th>&mu;t<sub>H</sub></th>
