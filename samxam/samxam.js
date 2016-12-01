@@ -44,14 +44,15 @@ app.controller('myController', function($resource, $mdDialog, numberFilter){
     // functions
     this.changeComponentsElement = function(i) { // i番目の元素が変更された
         if (i == 0) {
-
+            // 特にすることも現状ないが、なんとなく残しておくｗ
         } else {
             if (this.Z[i] == 0) { // i番目の元素が「なし」に変更された
-                for (var j = i ; j < 10 ; j++) {
-                    this.Z[j] = 0; // i番目以降の全ての元素を「なし」にする
-                    this.Ratio[j] = 0; // i番目以降の全てのRatioをゼロにする
+                for (var j = i+1 ; j < 10 ; j++) {
+                    this.Z[j-1] = this.Z[j]; // (i+1)番目以降を１つ前にズラす
+                    this.Ratio[j-1] = this.Ratio[j];
                 }
-                if (this.targetId >= i) this.targetId = 0; // ターゲットが削除された元素より後だったら、ターゲットを0番目に戻す
+                this.Z[9] = 0; this.Ratio[9] = 0; // 最後の元素を「なし」にする
+                if (this.targetId >= i) this.targetId = i-1; // ターゲットが削除された元素より後だったら、ターゲットを(i-1)番目に戻す
             }
         }
         this.calcResult();
