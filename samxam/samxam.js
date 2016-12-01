@@ -90,15 +90,15 @@ app.controller('myController', function($resource, $mdDialog, numberFilter){
         // 重量分率を再計算する
         this.updateWeightRatio();
         // Δμt=1となる厚さを求め、そこからμt_H,μt_Lを求める
-        t = this.calcCMByDeltaMuT(this.dMuT_1);
+        t = this.calcCMByDeltaMuT(1.0);
         r = this.calcAllMuTByCM(t);
         this.MuT_H_1 = r[0]; this.MuT_L_1 = r[1]; this.Res_1 = t*10000;
         // μt_H=4となる厚さを求め、そこからμt_H,μt_Lを求める
-        t = this.calcCMByMuTH(this.MuT_H_4);
+        t = this.calcCMByMuTH(4.0);
         r = this.calcAllMuTByCM(t);
         this.MuT_H_4 = r[0]; this.MuT_L_4 = r[1]; this.dMuT_4 = r[0]-r[1]; this.Res_4 = t*10000;
         // μt_H=2.5となる厚さを求め、そこからμt_H,μt_Lを求める
-        t = this.calcCMByMuTH(this.MuT_H_2);
+        t = this.calcCMByMuTH(2.5);
         r = this.calcAllMuTByCM(t);
         this.MuT_H_2 = r[0]; this.MuT_L_2 = r[1]; this.dMuT_2 = r[0]-r[1]; this.Res_2 = t*10000;
         // Res_oからμt_H,μt_Lを求める
@@ -114,15 +114,15 @@ app.controller('myController', function($resource, $mdDialog, numberFilter){
         this.updateWeightRatio();
         this.updatePelletMediumWeightRatio();
         // Δμt=1となるグラムを求め、そこからμt_H,μt_Lを求める
-        g = this.calcGramByDeltaMuT(this.dMuT_1);
+        g = this.calcGramByDeltaMuT(1.0);
         r = this.calcAllMuTByGram(g);
         this.MuT_H_1 = r[0]; this.MuT_L_1 = r[1]; this.Res_1 = g*1000;
         // μt_H=4となるグラムを求め、そこからμt_H,μt_Lを求める
-        g = this.calcGramByMuTH(this.MuT_H_4);
+        g = this.calcGramByMuTH(4.0);
         r = this.calcAllMuTByGram(g);
         this.MuT_H_4 = r[0]; this.MuT_L_4 = r[1]; this.dMuT_4 = r[0]-r[1]; this.Res_4 = g*1000;
         // μt_H=2.5となるグラムを求め、そこからμt_H,μt_Lを求める
-        g = this.calcGramByMuTH(this.MuT_H_2);
+        g = this.calcGramByMuTH(2.5);
         r = this.calcAllMuTByGram(g);
         this.MuT_H_2 = r[0]; this.MuT_L_2 = r[1]; this.dMuT_2 = r[0]-r[1]; this.Res_2 = g*1000;
         // Res_oからμt_H,μt_Lを求める
@@ -197,9 +197,8 @@ app.controller('myController', function($resource, $mdDialog, numberFilter){
     }
 
     this.calcCMByDeltaMuT = function(d) { // Δμtが指定値となるフォイル厚さ[cm]を求める
-        var Z = this.Z[this.targetId];
-        var BothMoR = getBothMoR(Z, this.edge); // ターゲット元素の指定吸収端前後の質量吸収係数を求める
-        return d / this.Foil_R / (BothMoR[0]-BothMoR[1]) / this.Weight[this.targetId];
+        var BothMoR = getBothMoR(this.Z[this.targetId], this.edge); // ターゲット元素の指定吸収端前後の質量吸収係数を求める
+        return d / (this.Foil_R * (BothMoR[0]-BothMoR[1]) * this.Weight[this.targetId]);
     }
 
     this.calcCMByMuTH = function(H) { // μt_Hが指定値となるフォイル厚さ[cm]を求める
@@ -219,8 +218,8 @@ app.controller('myController', function($resource, $mdDialog, numberFilter){
             if (i == this.targetId) continue;
             MoRw += getMoR(this.Z[i], this.Lambda) * this.Weight[i];
         }
-        var MuT_H = t * this.Foil_R * (MoRw + BothMoR[0]);
-        var MuT_L = t * this.Foil_R * (MoRw + BothMoR[1]);
+        var MuT_H = t * this.Foil_R * (MoRw + BothMoR[0]*this.Weight[this.targetId]);
+        var MuT_L = t * this.Foil_R * (MoRw + BothMoR[1]*this.Weight[this.targetId]);
         return [MuT_H, MuT_L];
     }
 
