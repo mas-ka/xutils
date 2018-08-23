@@ -58,7 +58,7 @@
                 <input type="number" step="0.1" ng-model="Cntl.Pellet_T" ng-change="Cntl.calcResult()">
             </md-input-container>
             <p ng-if="Cntl.Pellet_Medium_unit==0"> mm</p>
-            <p ng-if="Cntl.Pellet_Medium_unit==0"> ( {{Cntl.Pellet_T*173.5 | number:2}} mg )</p>
+            <p ng-if="Cntl.Pellet_Medium_unit==0"> ( {{3.1416*(Cntl.Pellet_D/2)*(Cntl.Pellet_D/2)*Cntl.Pellet_T*2.20907 | number:2}} mg )</p>
             <p ng-if="Cntl.Pellet_Medium_unit==1"> mg</p>
         </div>
         <div layout="row" layout-align="start end" layout-margin ng-if="Cntl.Pellet_Medium==2"> <!-- Other... -->
