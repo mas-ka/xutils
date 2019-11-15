@@ -31,7 +31,7 @@ app.controller('myController', function($resource, $mdDialog, numberFilter){
     this.Pellet_Medium_Weight = [0.435535858178888,0.564464141821112,0,0,0,0,0,0,0,0];
 
     // for Sample as Foil
-    this.Foil_R = 8.94; // [g/cm^-3] Rho of Cu (Meteal)
+    this.Foil_R = 8.94; // [g/cm^-3] Rho of Cu (Metal)
 
     // for Result of Pellet & Foil
     this.MuT_H_4 = 4.000; this.MuT_L_4 = 1.286; this.dMuT_4 = 2.714; this.Res_4 = 8.47;
@@ -43,6 +43,9 @@ app.controller('myController', function($resource, $mdDialog, numberFilter){
     this.changeComponentsElement = function(i) { // i番目の元素が変更された
         if (i == 0) {
             // 特にすることも現状ないが、なんとなく残しておくｗ
+            if (this.sample == 1) { // Foil
+                this.Foil_R = getRhoByZ(this.Z[0]);
+            }
         } else {
             if (this.Z[i] == 0) { // i番目の元素が「なし」に変更された
                 for (var j = i+1 ; j < 10 ; j++) {
