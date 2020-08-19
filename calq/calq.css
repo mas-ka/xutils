@@ -54,7 +54,7 @@ input[type=number].bs {
 }
 
 .table_result {
-    width: 600px;
+    width: 800px;
     border-collapse: collapse;
     border: 2px solid darkslategray;
 }
