@@ -30,20 +30,22 @@ app.controller('myController', function($resource, $mdDialog, numberFilter){
         if (element.M > 0) this.EdgeNames.push("M");
         else if (this.edge == "M") this.edge = "K";
         this.applyAbsEnergy();
-        this.createParamFileName();
+        this.createFileName();
     }
 
     this.AbsEnergy = 8981.00;
     this.applyAbsEnergy = function() {
         var element = getElementByName(this.element_name);
         this.AbsEnergy = element[this.edge];
-        this.createParamFileName();
+        this.createFileName();
         this.updateAllThetas();
     }
 
-    this.fname = "Cu-K.param";
-    this.createParamFileName = function() {
-        this.fname = this.element_name+"-"+this.edge+".param";
+    this.fname_param = "Cu-K.param";
+    this.fname_agenda = "Cu-K.agenda";
+    this.createFileName = function() {
+        this.fname_param = this.element_name+"-"+this.edge+".param";
+        this.fname_agenda = this.element_name+"-"+this.edge+".agenda";
     }
 
     this.blocks = [1,2,3,4,5,6,7,8,9,10]; this.block = this.blocks[9]; this.block_prev = this.block;
@@ -229,6 +231,29 @@ app.controller('myController', function($resource, $mdDialog, numberFilter){
         return l;
     }
 
+    this.createText4SagaAgenda = function() {
+        var l = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\" ?>\r\n";
+        l += "<parameter>\r\n";
+        l += "  <element>\r\n";
+        l += "    <symbol>"+this.element_name+"</symbol>\r\n";
+        l += "    <edge>"+this.edge+"</edge>\r\n";
+        l += "  </element>\r\n";
+        l += "  <scan type=\"step\">\r\n";
+        l += "    <edge_energy unit=\"eV\">"+String.formatF(this.AbsEnergy, 10, 2).trim()+"</edge_energy>\r\n";
+        l += "    <agenda final=\""+String.formatF(this.energies[this.block], 10, 2).trim()+"\" unit=\"eV\">\r\n";
+        for (var i = 1 ; i <= this.block ; i++) {
+            l += "      <block id=\""+i+"\">\r\n";
+            l += "        <ini>"+String.formatF(this.energies[i-1], 10, 2).trim()+"</ini>"
+                       + "<div>"+this.divs[i-1]+"</div>"
+                       + "<sec>"+this.exps[i-1]+"</sec>\r\n";
+            l += "      </block>\r\n";
+        }
+        l += "    </agenda>\r\n";
+        l += "  </scan>\r\n"
+        l += "</parameter>\r\n";
+        return l;
+    }
+
     this.downloadAsPFOld = function() {
         var txt = this.createText4PFOld();
         this.saveTextFile(txt, this.element_name+"-"+this.edge+".param", "download_old");
@@ -264,6 +289,11 @@ app.controller('myController', function($resource, $mdDialog, numberFilter){
                 }
             }
         });
+    }
+
+    this.downloadAsSagaAgenda = function() {
+        var txt = this.createText4SagaAgenda();
+        this.saveTextFile(txt, this.element_name+"-"+this.edge+".agenda", "download_agenda");
     }
 
     this.showLicenseDlg = function($event) {

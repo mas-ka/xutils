@@ -439,8 +439,9 @@
     </div>
     <h2>Download</h2>
     <div layout="row" layout-align="start end" layout-margin>
-        <a class="download" id="download_old" href="#" download={{Cntl.fname}} ng-click="Cntl.downloadAsPFOld()">PF Old Format</a>
+        <a class="download" id="download_old" href="#" download={{Cntl.fname_param}} ng-click="Cntl.downloadAsPFOld()">PF Old Format</a>
         <a class="download" ng-click="Cntl.openDialogForPFNew($event)">PF New Format</a>
+        <a class="download" id="download_agenda" href="#" download={{Cntl.fname_agenda}} ng-click="Cntl.downloadAsSagaAgenda()">SAGA-LS Agenda Format</a>
     </div>
     <md-divider ></md-divider>
     <footer>
