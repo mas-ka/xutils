@@ -51,8 +51,8 @@ app.controller('myController', function($resource, $mdDialog, numberFilter){
         var Qout = 4 * Math.PI * Math.sin(Tout) / this.Lambda * 10;
         var Din  = 2 * Math.PI / Qin;
         var Dout = 2 * Math.PI / Qout;
-        var Qin  = 2 * Math.sin(Tin) / this.Lambda * 10;
-        var Qout = 2 * Math.sin(Tout) / this.Lambda * 10;
+        var Sin  = 2 * Math.sin(Tin) / this.Lambda * 10;
+        var Sout = 2 * Math.sin(Tout) / this.Lambda * 10;
         switch (this.Mode.value) {
             case 0: // 2θ
                 return String.formatF(Math.toDegrees(2*Tin), 5, 2)+" - "+String.formatF(Math.toDegrees(2*Tout), 5, 2);
