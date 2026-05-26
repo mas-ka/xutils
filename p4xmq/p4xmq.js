@@ -41,11 +41,11 @@ app.controller('myController', function($resource, $mdDialog, numberFilter){
         this.updateAllThetas();
     }
 
-    this.fname_param = "Cu-K.param";
-    this.fname_agenda = "Cu-K.agenda";
+    this.fname_param = "Cu-K_Q.param";
+    this.fname_agenda = "Cu-K_Q.agenda";
     this.createFileName = function() {
-        this.fname_param = this.element_name+"-"+this.edge+".param";
-        this.fname_agenda = this.element_name+"-"+this.edge+".agenda";
+        this.fname_param = this.element_name+"-"+this.edge+"_Q.param";
+        this.fname_agenda = this.element_name+"-"+this.edge+"_Q.agenda";
     }
 
     this.blocks = [1,2,3,4,5,6,7,8,9,10]; this.block = this.blocks[9]; this.block_prev = this.block;
@@ -56,6 +56,9 @@ app.controller('myController', function($resource, $mdDialog, numberFilter){
     this.steps = [0.00901,0.00052,0.00268,0.00368,0.00460,0.00544,0.00618,0.00682,0.00736,0.00778];
     this.divs = [ 50, 250,  40,  40,  40,  40,  40,  40,  40,  41];
     this.exps = [  1,   1,   1,   1,   1,   1,   1,   1,   1,   1];
+
+    this.step_for_quick = 0.36384;
+    this.time_for_quick = 120;
 
     Math.toDegrees = function(radian){
         var toDegree = 180/Math.PI;
@@ -89,6 +92,15 @@ app.controller('myController', function($resource, $mdDialog, numberFilter){
     this.k2energy = function(k, e0) { return e0 + k*k / 0.262467191; }
     this.energy2k = function(e, e0) { return Math.sqrt(0.262467191 * (e - e0)); }
 
+    this.minStep = function() {return Math.min(...this.steps);}
+    this.calcTotalPoints = function() {
+        var dT = this.energy2theta(this.AbsEnergy) - this.energy2theta(this.AbsEnergy + this.step_for_quick);
+        return Math.trunc(1 + (this.thetas[0] - this.thetas[this.block]) / dT);
+    }
+    this.calcDegPSec = function() {
+        return (this.thetas[0] - this.thetas[this.block]) / this.time_for_quick;
+    }
+ 
     this.refresh;
     this.refreshDivs = function() {
         this.divs = [ 50, 250,  40,  40,  40,  40,  40,  40,  40,  40];
@@ -101,9 +113,11 @@ app.controller('myController', function($resource, $mdDialog, numberFilter){
         this.divs[this.block-1]++;
     }
 
-    this.changeBlock = function() {
-        this.divs[this.block_prev-1]--;
-        this.divs[this.block-1]++;
+    this.changeBlock = function() { // プルダウンでBlock数が変更されたら全てのパラメータを初期値に戻す
+        this.ks = [0, 0, 4, 6, 8, 10, 12, 14, 16, 18, 20];
+        this.divs = [ 50, 250,  40,  40,  40,  40,  40,  40,  40,  41];
+        this.exps = [  1,   1,   1,   1,   1,   1,   1,   1,   1,   1];
+        this.updateAllThetas();
         this.block_prev = this.block;
         for (i = 0 ; i < this.block ; i++) this.block_shows[i] = true;
         for (i = this.block ; i < 10 ; i++) this.block_shows[i] = false;
@@ -182,6 +196,34 @@ app.controller('myController', function($resource, $mdDialog, numberFilter){
         this.divs[this.block-1]++;
     }
 
+    this.checkStep4Q = function($event) {
+        if (this.calcTotalPoints() > 8190) {
+            $mdDialog.show(
+                $mdDialog.alert()
+                .title("   A L E R T   ")
+                .textContent("  Number of points must be < 8191 !  ")
+                .clickOutsideToClose(true)
+                .ok('OK')
+                .targetEvent($event)
+            );
+            this.step_for_quick = 0.36384;
+        }
+    }
+
+    this.checkDegPSec = function($event) {
+        if (this.calcDegPSec() > 0.13888) { // 36000 pulse/deg. & MAX 5000 pulse/sec.
+            $mdDialog.show(
+                $mdDialog.alert()
+                .title("   A L E R T   ")
+                .textContent("  Speed must be < 0.1388 [°/sec.] !  ")
+                .clickOutsideToClose(true)
+                .ok('OK')
+                .targetEvent($event)
+            );
+            this.time_for_quick = 120;
+        }
+    }
+
     this.saveTextFile = function(txt, fname, id) {
         var blob = new Blob([ txt ], { "type" : "text/plain" });
         if (window.navigator.msSaveBlob) {
@@ -238,9 +280,12 @@ app.controller('myController', function($resource, $mdDialog, numberFilter){
         l += "    <symbol>"+this.element_name+"</symbol>\r\n";
         l += "    <edge>"+this.edge+"</edge>\r\n";
         l += "  </element>\r\n";
-        l += "  <scan type=\"step\">\r\n";
+        l += "  <scan type=\"quick\">\r\n";
         l += "    <edge_energy unit=\"eV\">"+String.formatF(this.AbsEnergy, 10, 2).trim()+"</edge_energy>\r\n";
-        l += "    <agenda final=\""+String.formatF(this.energies[this.block], 10, 2).trim()+"\" unit=\"eV\">\r\n";
+        l += "    <agenda final=\""+String.formatF(this.energies[this.block], 10, 2).trim()
+                    +"\" step_for_quick=\""+String.formatF(this.step_for_quick, 10, 5).trim()
+                    +"\" time_for_quick=\""+String.formatI(this.time_for_quick, 10).trim()
+                    +"\" unit=\"eV\">\r\n";
         for (var i = 1 ; i <= this.block ; i++) {
             l += "      <block id=\""+i+"\">\r\n";
             l += "        <ini>"+String.formatF(this.energies[i-1], 10, 2).trim()+"</ini>"
@@ -293,7 +338,7 @@ app.controller('myController', function($resource, $mdDialog, numberFilter){
 
     this.downloadAsSagaAgenda = function() {
         var txt = this.createText4SagaAgenda();
-        this.saveTextFile(txt, this.element_name+"-"+this.edge+".agenda", "download_agenda");
+        this.saveTextFile(txt, this.element_name+"-"+this.edge+"_Q.agenda", "download_agenda");
     }
 
     this.showLicenseDlg = function($event) {

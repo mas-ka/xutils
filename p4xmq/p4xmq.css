@@ -7,7 +7,7 @@ h2 {
 }
 
 .table_01 {
-    width: 600px;
+    width: 200px;
     border-collapse: collapse;
     border: 2px solid darkslategray;
 }
@@ -16,7 +16,6 @@ h2 {
     font-family: 'Open Sans', sans-serif;
     font-size: 12px;
     color: white;
-    width: 16.7%;
     border-collapse: collapse;
     padding: 5px;
     background-color: cornflowerblue;

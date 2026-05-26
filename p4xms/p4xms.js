@@ -41,11 +41,11 @@ app.controller('myController', function($resource, $mdDialog, numberFilter){
         this.updateAllThetas();
     }
 
-    this.fname_param = "Cu-K.param";
-    this.fname_agenda = "Cu-K.agenda";
+    this.fname_param = "Cu-K_S.param";
+    this.fname_agenda = "Cu-K_S.agenda";
     this.createFileName = function() {
-        this.fname_param = this.element_name+"-"+this.edge+".param";
-        this.fname_agenda = this.element_name+"-"+this.edge+".agenda";
+        this.fname_param = this.element_name+"-"+this.edge+"_S.param";
+        this.fname_agenda = this.element_name+"-"+this.edge+"_S.agenda";
     }
 
     this.blocks = [1,2,3,4,5,6,7,8,9,10]; this.block = this.blocks[9]; this.block_prev = this.block;
@@ -256,7 +256,7 @@ app.controller('myController', function($resource, $mdDialog, numberFilter){
 
     this.downloadAsPFOld = function() {
         var txt = this.createText4PFOld();
-        this.saveTextFile(txt, this.element_name+"-"+this.edge+".param", "download_old");
+        this.saveTextFile(txt, this.element_name+"-"+this.edge+"_S.param", "download_old");
     }
 
     this.status = "null";
@@ -284,7 +284,7 @@ app.controller('myController', function($resource, $mdDialog, numberFilter){
                 }
                 this.downloadAsPFNew = function() {
                     var txt = globals.createText4PFNew(this.bl_name, this.angle_ini, this.loop, this.mode, this.axis);
-                    globals.saveTextFile(txt, this.element_name+"-"+this.edge+".param", "download_new");
+                    globals.saveTextFile(txt, this.element_name+"-"+this.edge+"_S.param", "download_new");
                     $mdDialog.hide();
                 }
             }
@@ -293,7 +293,7 @@ app.controller('myController', function($resource, $mdDialog, numberFilter){
 
     this.downloadAsSagaAgenda = function() {
         var txt = this.createText4SagaAgenda();
-        this.saveTextFile(txt, this.element_name+"-"+this.edge+".agenda", "download_agenda");
+        this.saveTextFile(txt, this.element_name+"-"+this.edge+"_S.agenda", "download_agenda");
     }
 
     this.showLicenseDlg = function($event) {
