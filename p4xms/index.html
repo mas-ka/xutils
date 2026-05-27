@@ -439,13 +439,14 @@
     </div>
     <h2>Export</h2>
     <div layout="row" layout-align="start end" layout-margin>
+        <a class="download" id="download_agenda" href="#" download={{Cntl.fname_agenda}} ng-click="Cntl.downloadAsSagaAgenda()">SAGA-LS Agenda Format</a>
         <a class="download" id="download_old" href="#" download={{Cntl.fname_param}} ng-click="Cntl.downloadAsPFOld()">PF Old Format</a>
         <a class="download" ng-click="Cntl.openDialogForPFNew($event)">PF New Format</a>
-        <a class="download" id="download_agenda" href="#" download={{Cntl.fname_agenda}} ng-click="Cntl.downloadAsSagaAgenda()">SAGA-LS Agenda Format</a>
     </div>
     <h2>Import</h2>
     <div layout="row" layout-align="start end" layout-margin>
-        <input type="file" id="fileInput">
+        <input type="file" id="upload_agenda" style="display: none" onchange="angular.element(this).scope().Cntl.importFromAgenda(event)">
+        <a class="download" ng-click="Cntl.openDialogForAgenda()">SAGA-LS Agenda Format</a>
     </div>
     <md-divider ></md-divider>
     <footer>

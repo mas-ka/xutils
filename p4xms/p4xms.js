@@ -1,5 +1,7 @@
 var app = angular.module('myApp', ['ngMaterial', 'ngResource', 'ngSanitize']);
 app.controller('myController', function($resource, $mdDialog, numberFilter){
+    var org = this;
+
     this.EL = 12398.4264684;
 
     this.xtals = [
@@ -311,8 +313,8 @@ app.controller('myController', function($resource, $mdDialog, numberFilter){
     this.fileData = null;
     this.xmlDoc = null;
 
-    const fileInput = document.getElementById('fileInput');
-    fileInput.addEventListener('change', (event) => {
+    this.openDialogForAgenda = function() { document.getElementById('upload_agenda').click(); }
+    this.importFromAgenda = function(event) {
         const files = event.target.files; // 選択されたファイルのリスト
         if (files.length > 0) {
             const file = files[0];
@@ -326,14 +328,68 @@ app.controller('myController', function($resource, $mdDialog, numberFilter){
                     var parser = new DOMParser();
                     this.xmlDoc = parser.parseFromString(this.fileData, "text/xml");
                     console.log('XMLドキュメント:', this.xmlDoc)
+                    // AgendaXMLのXPathによるパース
+                    var result = xmlDoc.evaluate('//scan/@type', xmlDoc, null, XPathResult.STRING_TYPE, null);
+                    if (result.stringValue.toUpperCase() == 'QUICK') { // QuickスキャンのAgendaだったのでアラート出して終了
+                        $mdDialog.show(
+                            $mdDialog.alert()
+                            .title("   A L E R T   ")
+                            .textContent("This agenda file is for QUICK !")
+                            .clickOutsideToClose(true)
+                            .ok('OK')
+                        );
+                        document.getElementById('upload_agenda').value = ''; // 読み込み履歴を空にする
+                        return;
+                    } // StepスキャンのAgendaだった
+                    // Monochrometerタグ
+                    var result = xmlDoc.evaluate('//monochrometer/name/text()', xmlDoc, null, XPathResult.STRING_TYPE, null);
+                    console.log('//monochrometer/name/text()', result.stringValue);
+                    if (result.stringValue.toUpperCase() === 'SI(111)')  org.xtal = org.xtals[0];
+                    else if (result.stringValue.toUpperCase() === 'SI(311)')  org.xtal = org.xtals[1];
+                    else if (result.stringValue.toUpperCase() === 'SI(220)')  org.xtal = org.xtals[2];
+                    else {
+                        org.xtal = org.xtals[3];
+                        org.xtal.d = xmlDoc.evaluate('//monochrometer/d_spacing/text()', xmlDoc, null, XPathResult.NUMBER_TYPE, null).numberValue
+                    }
+                    org.changeXtalPlane();
+                    // Elementタグ
+                    var result = xmlDoc.evaluate('//element/symbol/text()', xmlDoc, null, XPathResult.STRING_TYPE, null);
+                    org.element_name = (getElementByName(result.stringValue)).name;
+                    org.applyEdges(org.element_name);
+                    org.edge = xmlDoc.evaluate('//element/edge/text()', xmlDoc, null, XPathResult.STRING_TYPE, null).stringValue.toUpperCase();
+                    // Agendaタグ
+                    // xx_for_quickはStepスキャンのAgendaでは読み飛ばして構わない
+                    block_shows = [false,false,false,false,false,false,false,false,false,false];
+                    // block数を取得
+                    const block_num = xmlDoc.evaluate('//agenda/block', xmlDoc, null, XPathResult.UNORDERED_NODE_SNAPSHOT_TYPE, null).snapshotLength;
+                    console.log('block数:', block_num);
+                    // id=1のblockだけ特殊処理をおこなう
+                    org.energies[0] = xmlDoc.evaluate('//agenda/block[@id=\"1\"]/ini/text()', xmlDoc, null, XPathResult.NUMBER_TYPE, null).numberValue;
+                    org.thetas[0] = Math.formatFloat(org.energy2theta(org.energies[0]), 5);
+                    org.divs[0] = xmlDoc.evaluate('//agenda/block[@id=\"1\"]/div/text()', xmlDoc, null, XPathResult.NUMBER_TYPE, null).numberValue;
+                    org.exps[0] = xmlDoc.evaluate('//agenda/block[@id=\"1\"]/sec/text()', xmlDoc, null, XPathResult.NUMBER_TYPE, null).numberValue;
+                    // 残りの各blockを走査
+                    org.block_shows = [false,false,false,false,false,false,false,false,false,false]; // 一旦すべて非表示にする
+                    for (var i = 2 ; i <= block_num ; i++) {
+                        org.block_shows[i-2] = true;
+                        org.energies[i-1] = xmlDoc.evaluate('//agenda/block[@id=\"'+i+'\"]/ini/text()', xmlDoc, null, XPathResult.NUMBER_TYPE, null).numberValue;
+                        org.thetas[i-1] = Math.formatFloat(org.energy2theta(org.energies[i-1]), 5);
+                        if (i > 2) org.ks[i-1] = Math.round(Math.formatFloat(org.energy2k(org.energies[i-1], org.AbsEnergy), 5)*100)/100;
+                        org.divs[i-1] = xmlDoc.evaluate('//agenda/block[@id=\"'+i+'\"]/div/text()', xmlDoc, null, XPathResult.NUMBER_TYPE, null).numberValue;
+                        org.steps[i-2] = Math.formatFloat((0.00001 * Math.round(100000 * (org.thetas[i-2] - org.thetas[i-1]) / org.divs[i-2]))||0.00001, 5);
+                        org.exps[i-1] = xmlDoc.evaluate('//agenda/block[@id=\"'+i+'\"]/sec/text()', xmlDoc, null, XPathResult.NUMBER_TYPE, null).numberValue;
+                    }
+                    // 最終blockの処理
+                    org.block_shows[i-2] = true;
+                    org.energies[i-1] = xmlDoc.evaluate('//agenda/@final', xmlDoc, null, XPathResult.NUMBER_TYPE, null).numberValue;
+                    org.thetas[i-1] = Math.formatFloat(org.energy2theta(org.energies[i-2]), 5);
+                    org.ks[i-1] = Math.round(Math.formatFloat(org.energy2k(org.energies[i-1], org.AbsEnergy), 5)*100)/100;
+                    org.block = block_num;
                 });
             };
             reader.readAsText(file);
         }
-    });
-
-
-
+    }
 
     this.showLicenseDlg = function($event) {
         $resource('./license.html', {}, {
