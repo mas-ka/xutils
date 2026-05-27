@@ -14,6 +14,13 @@ app.controller('myController', function($resource, $mdDialog, numberFilter){
         this.isNotIntrinsicPlane = (this.xtal.name=="Other...");
         this.applyAbsEnergy();
     }
+    this.getXtalPlaneName = function() {
+        if (this.isNotIntrinsicPlane) {
+            return "UNKNOWN";
+        } else {
+            return (this.xtal.name).toUpperCase();
+        }
+    }
 
     this.ElementNames = getElementNames();
     this.element_name = "Cu";
@@ -276,6 +283,10 @@ app.controller('myController', function($resource, $mdDialog, numberFilter){
     this.createText4SagaAgenda = function() {
         var l = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\" ?>\r\n";
         l += "<parameter>\r\n";
+        l += "  <monochrometer>\r\n";
+        l += "    <d_spacing unit=\"angstrom\">"+String.formatF(this.xtal.d, 10, 6).trim()+"</d_spacing>\r\n";
+        l += "    <name>"+this.getXtalPlaneName().trim()+"</name>\r\n";
+        l += "  </monochrometer>\r\n";
         l += "  <element>\r\n";
         l += "    <symbol>"+this.element_name+"</symbol>\r\n";
         l += "    <edge>"+this.edge+"</edge>\r\n";
