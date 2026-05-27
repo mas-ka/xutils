@@ -240,7 +240,8 @@ app.controller('myController', function($resource, $mdDialog, numberFilter){
         l += "  </element>\r\n";
         l += "  <scan type=\"step\">\r\n";
         l += "    <edge_energy unit=\"eV\">"+String.formatF(this.AbsEnergy, 10, 2).trim()+"</edge_energy>\r\n";
-        l += "    <agenda final=\""+String.formatF(this.energies[this.block], 10, 2).trim()+"\" unit=\"eV\">\r\n";
+        l += "    <agenda final=\""+String.formatF(this.energies[this.block], 10, 2).trim()
+                    +"\" step_for_quick=\".36384\" time_for_quick=\"120\" unit=\"eV\">\r\n";
         for (var i = 1 ; i <= this.block ; i++) {
             l += "      <block id=\""+i+"\">\r\n";
             l += "        <ini>"+String.formatF(this.energies[i-1], 10, 2).trim()+"</ini>"
