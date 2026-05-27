@@ -451,14 +451,16 @@
                 <label>ΔE</label>
                 <input style="width: 100px;" ng-model="Cntl.step_for_quick" type="number" step="0.00001" ng-change="Cntl.checkStep4Q($event)">
             </md-input-container>
-            <p>eV &nbsp; &nbsp; &nbsp; (Total {{Cntl.calcTotalPoints() | number:0}} points)</p>
+            <p>eV &nbsp; &nbsp; &nbsp; (Total {{Cntl.total_points | number:0}} points)</p>
+            <p ng-show="Cntl.warning_points">*** WARNING ***</p>
         </div><br/>
         <div layout="row" layout-align="start end" layout-margin>
             <md-input-container>
                 <label>Exposure time</label>
                 <input style="width: 100px;" ng-model="Cntl.time_for_quick" type="number" step="1" ng-change="Cntl.checkDegPSec($event)">
             </md-input-container>
-            <p>sec. &nbsp; &nbsp; &nbsp; (Speed {{Cntl.calcDegPSec() | number:4}} °/sec.)</p>
+            <p>sec. &nbsp; &nbsp; &nbsp; (Speed {{Cntl.degpsec | number:4}} °/sec.)</p>
+            <p ng-show="Cntl.warning_dps">*** WARNING ***</p>
         </div>
     </div>
     <h2>Export</h2>
