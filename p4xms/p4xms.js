@@ -308,6 +308,33 @@ app.controller('myController', function($resource, $mdDialog, numberFilter){
         this.saveTextFile(txt, this.element_name+"-"+this.edge+"_S.agenda", "download_agenda");
     }
 
+    this.fileData = null;
+    this.xmlDoc = null;
+
+    const fileInput = document.getElementById('fileInput');
+    fileInput.addEventListener('change', (event) => {
+        const files = event.target.files; // 選択されたファイルのリスト
+        if (files.length > 0) {
+            const file = files[0];
+            var reader = new FileReader();
+            reader.onload = function(e) {
+                // DOM操作をAngularJSに通知するために $apply を使う
+                // ※$scopeの代わりに $rootScope.$apply() を使用
+                angular.element(document).injector().get('$rootScope').$apply(function() {
+                    this.fileData = e.target.result;
+                    // 読み込んだAgendaファイルをパースしてXMLドキュメントにする
+                    var parser = new DOMParser();
+                    this.xmlDoc = parser.parseFromString(this.fileData, "text/xml");
+                    console.log('XMLドキュメント:', this.xmlDoc)
+                });
+            };
+            reader.readAsText(file);
+        }
+    });
+
+
+
+
     this.showLicenseDlg = function($event) {
         $resource('./license.html', {}, {
             'get': {
