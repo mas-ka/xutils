@@ -106,9 +106,12 @@ app.controller('myController', function($resource, $mdDialog, numberFilter){
         var dT = this.energy2theta(this.AbsEnergy) - this.energy2theta(this.AbsEnergy + this.step_for_quick);
         return Math.trunc(1 + (this.thetas[0] - this.thetas[this.block]) / dT);
     }
+    this.total_points = this.calcTotalPoints();
+
     this.calcDegPSec = function() {
         return (this.thetas[0] - this.thetas[this.block]) / this.time_for_quick;
     }
+    this.degpsec = this.calcDegPSec();
  
     this.refresh;
     this.refreshDivs = function() {
@@ -205,32 +208,38 @@ app.controller('myController', function($resource, $mdDialog, numberFilter){
         this.divs[this.block-1]++;
     }
 
+    this.warning_points = false;
     this.checkStep4Q = function($event) {
-        if (this.calcTotalPoints() > 8190) {
-            $mdDialog.show(
-                $mdDialog.alert()
-                .title("   A L E R T   ")
-                .textContent("  Number of points must be < 8191 !  ")
-                .clickOutsideToClose(true)
-                .ok('OK')
-                .targetEvent($event)
-            );
-            this.step_for_quick = 0.36384;
-        }
+        this.total_points = this.calcTotalPoints();
+        this.warning_points = (this.total_points > 8190);
+        // if (this.calcTotalPoints() > 8190) {
+        //     $mdDialog.show(
+        //         $mdDialog.alert()
+        //         .title("   A L E R T   ")
+        //         .textContent("  Number of points must be < 8191 !  ")
+        //         .clickOutsideToClose(true)
+        //         .ok('OK')
+        //         .targetEvent($event)
+        //     );
+        //     this.step_for_quick = 0.36384;
+        // }
     }
 
+    this.warning_dps = false;
     this.checkDegPSec = function($event) {
-        if (this.calcDegPSec() > 0.13888) { // 36000 pulse/deg. & MAX 5000 pulse/sec.
-            $mdDialog.show(
-                $mdDialog.alert()
-                .title("   A L E R T   ")
-                .textContent("  Speed must be < 0.1388 [°/sec.] !  ")
-                .clickOutsideToClose(true)
-                .ok('OK')
-                .targetEvent($event)
-            );
-            this.time_for_quick = 120;
-        }
+        this.degpsec = this.calcDegPSec();
+        this.warning_dps = (this.degpsec > 0.13888);
+        // if (this.calcDegPSec() > 0.13888) { // 36000 pulse/deg. & MAX 5000 pulse/sec.
+        //     $mdDialog.show(
+        //         $mdDialog.alert()
+        //         .title("   A L E R T   ")
+        //         .textContent("  Speed must be < 0.1388 [°/sec.] !  ")
+        //         .clickOutsideToClose(true)
+        //         .ok('OK')
+        //         .targetEvent($event)
+        //     );
+        //     this.time_for_quick = 120;
+        // }
     }
 
     this.saveTextFile = function(txt, fname, id) {
@@ -428,7 +437,12 @@ app.controller('myController', function($resource, $mdDialog, numberFilter){
                     org.block = block_num;
                     // xx_for_quickの処理
                     org.step_for_quick = xmlDoc.evaluate('//agenda/@step_for_quick', xmlDoc, null, XPathResult.NUMBER_TYPE, null).numberValue;
+                    var dT = org.energy2theta(org.AbsEnergy) - org.energy2theta(org.AbsEnergy + org.step_for_quick);
+                    org.total_points =  Math.trunc(1 + (org.thetas[0] - org.energy2theta(org.energies[i-1])) / dT);
+                    org.warning_points = (org.total_points > 8190);
                     org.time_for_quick = xmlDoc.evaluate('//agenda/@time_for_quick', xmlDoc, null, XPathResult.NUMBER_TYPE, null).numberValue;
+                    org.degpsec = (org.thetas[0] - org.energy2theta(org.energies[i-1])) / org.time_for_quick;
+                    org.warning_dps = (org.degpsec > 0.13888);
                 });
             };
             reader.readAsText(file);
