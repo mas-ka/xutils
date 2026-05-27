@@ -371,7 +371,6 @@ app.controller('myController', function($resource, $mdDialog, numberFilter){
                     // 読み込んだAgendaファイルをパースしてXMLドキュメントにする
                     var parser = new DOMParser();
                     this.xmlDoc = parser.parseFromString(this.fileData, "text/xml");
-                    console.log('XMLドキュメント:', this.xmlDoc)
                     // AgendaXMLのXPathによるパース
                     var result = xmlDoc.evaluate('//scan/@type', xmlDoc, null, XPathResult.STRING_TYPE, null);
                     if (result.stringValue.toUpperCase() == 'STEP') { // StepスキャンのAgendaだったのでアラート出して終了
@@ -387,7 +386,6 @@ app.controller('myController', function($resource, $mdDialog, numberFilter){
                     } // StepスキャンのAgendaだった
                     // Monochrometerタグ
                     var result = xmlDoc.evaluate('//monochrometer/name/text()', xmlDoc, null, XPathResult.STRING_TYPE, null);
-                    console.log('//monochrometer/name/text()', result.stringValue);
                     if (result.stringValue.toUpperCase() === 'SI(111)')  org.xtal = org.xtals[0];
                     else if (result.stringValue.toUpperCase() === 'SI(311)')  org.xtal = org.xtals[1];
                     else if (result.stringValue.toUpperCase() === 'SI(220)')  org.xtal = org.xtals[2];
@@ -406,7 +404,6 @@ app.controller('myController', function($resource, $mdDialog, numberFilter){
                     block_shows = [false,false,false,false,false,false,false,false,false,false];
                     // block数を取得
                     const block_num = xmlDoc.evaluate('//agenda/block', xmlDoc, null, XPathResult.UNORDERED_NODE_SNAPSHOT_TYPE, null).snapshotLength;
-                    console.log('block数:', block_num);
                     // id=1のblockだけ特殊処理をおこなう
                     org.energies[0] = xmlDoc.evaluate('//agenda/block[@id=\"1\"]/ini/text()', xmlDoc, null, XPathResult.NUMBER_TYPE, null).numberValue;
                     org.thetas[0] = Math.formatFloat(org.energy2theta(org.energies[0]), 5);
