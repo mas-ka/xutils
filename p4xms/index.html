@@ -78,7 +78,7 @@
             </thead>
             <tbody>
                 <tr>
-                    <td rowspan="2"></td>
+                    <td rowspan="2" style="cursor: default;">-</td>
                     <td rowspan="2">
                         <md-input-container>
                             <input ng-model="Cntl.energies[0]" type="number" min="0.01" max="{{Cntl.energies[1]-0.01}}" step="0.01" ng-change="Cntl.updateEnergy(0)" required>
@@ -111,7 +111,7 @@
                     </td>
                 </tr>
                 <tr>
-                    <td rowspan="2"></td>
+                    <td rowspan="2" style="cursor: default;">-</td>
                     <td rowspan="2">
                         <md-input-container>
                             <input ng-model="Cntl.energies[1]" type="number" min="{{Cntl.energies[0]+0.01}}" max="{{Cntl.energies[2]-0.01}}" step="0.01" ng-change="Cntl.updateEnergy(1)" required>
