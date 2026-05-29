@@ -110,10 +110,11 @@ app.controller('myController', function($resource, $mdDialog, numberFilter){
         this.divs[this.block-1]++;
     }
 
-    this.changeBlock = function() {
-        this.divs[this.block_prev-1]--;
-        this.divs[this.block-1]++;
+    this.changeBlock = function() { // プルダウンでBlock数が変更されたら露光時間以外のパラメータを初期値に戻す
         this.block_prev = this.block;
+        this.ks = [0, 0, 4, 6, 8, 10, 12, 14, 16, 18, 20];
+        this.divs = [ 50, 250,  40,  40,  40,  40,  40,  40,  40,  41];
+        this.updateAllThetas();
         for (i = 0 ; i < this.block ; i++) this.block_shows[i] = true;
         for (i = this.block ; i < 10 ; i++) this.block_shows[i] = false;
     }
@@ -145,7 +146,7 @@ app.controller('myController', function($resource, $mdDialog, numberFilter){
             this.divs[idx-1] = parseInt(Math.round((this.thetas[idx-1]-this.thetas[idx])/this.steps[idx-1]));
             this.divs[idx] = parseInt(Math.round((this.thetas[idx]-this.thetas[idx+1])/this.steps[idx]));
         }
-        if (idx > 1) this.ks[idx] = Math.formatFloat(this.energy2k(this.energies[idx], this.AbsEnergy), 5);
+        if (idx > 1) this.ks[idx] = Math.round(Math.formatFloat(this.energy2k(this.energies[idx], this.AbsEnergy), 5)*100)/100;
         this.divs[this.block-1]++;
     }
 
@@ -158,7 +159,7 @@ app.controller('myController', function($resource, $mdDialog, numberFilter){
             this.divs[idx-1] = parseInt(Math.round((this.thetas[idx-1]-this.thetas[idx])/this.steps[idx-1]));
             this.divs[idx] = parseInt(Math.round((this.thetas[idx]-this.thetas[idx+1])/this.steps[idx]));
         }
-        if (idx > 1) this.ks[idx] = Math.formatFloat(this.energy2k(this.energies[idx], this.AbsEnergy), 5);
+        if (idx > 1) this.ks[idx] = Math.round(Math.formatFloat(this.energy2k(this.energies[idx], this.AbsEnergy), 5)*100)/100;
         this.divs[this.block-1]++;
     }
 
