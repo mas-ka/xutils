@@ -4,7 +4,8 @@
 <head>
     <meta charset="UTF-8">
     <link href="https://fonts.googleapis.com/css?family=Noto+Serif:700|Roboto+Mono|Open+Sans" rel="stylesheet">
-    <link href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <!-- <link href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.css" rel="stylesheet"> -->
     <link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/angular_material/1.0.0/angular-material.min.css">
     <link rel="stylesheet" type="text/css" href="p4xmq.css">
     <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.5/angular.min.js"></script>
@@ -75,6 +76,7 @@
         <table class="table_01">
             <thead>
                 <tr>
+                    <th style="border-left: 1px solid #b9b9b9; border-right: 1px solid #b9b9b9; text-align: center; width: 8%; cursor: default;">Block</th>
                     <th style="border-right: 1px solid #b9b9b9; width: 33%; cursor: default;">k [A<sup>-1</sup>]</th>
                     <th style="border-left: 1px solid #b9b9b9; border-right: 1px solid #b9b9b9; cursor: default;">E [eV]</th>
                     <!-- <th style="border-left: 1px solid #b9b9b9; border-right: 1px solid #b9b9b9;">θ [°]</th> -->
@@ -88,6 +90,7 @@
             </thead>
             <tbody>
                 <tr>
+                    <td rowspan="1" style="text-align: center; cursor: default;">-</td>
                     <td rowspan="1"></td>
                     <td rowspan="1">
                         <md-input-container>
@@ -121,6 +124,7 @@
                     </td>
                 </tr> -->
                 <tr>
+                    <td rowspan="1" style="text-align: center; cursor: default;">1</td>
                     <td rowspan="1"></td>
                     <td rowspan="1">
                         <md-input-container>
@@ -150,7 +154,8 @@
                         </md-input-container>
                     </td>
                 </tr> -->
-                <tr ng-show="Cntl.block_shows[1]">
+                <tr >
+                    <td rowspan="1" style="text-align: center; cursor: default;">2</td>
                     <td rowspan="1">
                         <md-input-container>
                             <input ng-model="Cntl.ks[2]" type="number" step="0.1" min="{{Cntl.ks[1]+0.1}}" max="{{Cntl.ks[3]-0.1}}" ng-change="Cntl.updateK(2)" ng-disabled=(Cntl.block!=2) required>
@@ -184,7 +189,8 @@
                         </md-input-container>
                     </td>
                 </tr> -->
-                <tr ng-show="Cntl.block_shows[2]">
+                <tr >
+                    <td rowspan="1" style="text-align: center; cursor: default;">3</td>
                     <td rowspan="1">
                         <md-input-container>
                             <input ng-model="Cntl.ks[3]" type="number" step="0.1" min="{{Cntl.ks[2]+0.1}}" max="{{Cntl.ks[4]-0.1}}" ng-change="Cntl.updateK(3)" ng-disabled=(Cntl.block!=3) required>
@@ -218,7 +224,8 @@
                         </md-input-container>
                     </td>
                 </tr> -->
-                <tr ng-show="Cntl.block_shows[3]">
+                <tr >
+                    <td rowspan="1" style="text-align: center; cursor: default;">4</td>
                     <td rowspan="1">
                         <md-input-container>
                             <input ng-model="Cntl.ks[4]" type="number" step="0.1" min="{{Cntl.ks[3]+0.1}}" max="{{Cntl.ks[5]-0.1}}" ng-change="Cntl.updateK(4)" ng-disabled=(Cntl.block!=4) required>
@@ -252,7 +259,8 @@
                         </md-input-container>
                     </td>
                 </tr> -->
-                <tr ng-show="Cntl.block_shows[4]">
+                <tr>
+                    <td rowspan="1" style="text-align: center; cursor: default;">5</td>
                     <td rowspan="1">
                         <md-input-container>
                             <input ng-model="Cntl.ks[5]" type="number" step="0.1" min="{{Cntl.ks[4]+0.1}}" max="{{Cntl.ks[6]-0.1}}" ng-change="Cntl.updateK(5)" ng-disabled=(Cntl.block!=5) required>
@@ -286,7 +294,8 @@
                         </md-input-container>
                     </td>
                 </tr> -->
-                <tr ng-show="Cntl.block_shows[5]">
+                <tr>
+                    <td rowspan="1" style="text-align: center; cursor: default;">6</td>
                     <td rowspan="1">
                         <md-input-container>
                             <input ng-model="Cntl.ks[6]" type="number" step="0.1" min="{{Cntl.ks[5]+0.1}}" max="{{Cntl.ks[7]-0.1}}" ng-change="Cntl.updateK(6)" ng-disabled=(Cntl.block!=6) required>
@@ -320,7 +329,8 @@
                         </md-input-container>
                     </td>
                 </tr> -->
-                <tr ng-show="Cntl.block_shows[6]">
+                <tr>
+                    <td rowspan="1" style="text-align: center; cursor: default;">7</td>
                     <td rowspan="1">
                         <md-input-container>
                             <input ng-model="Cntl.ks[7]" type="number" step="0.1" min="{{Cntl.ks[6]+0.1}}" max="{{Cntl.ks[8]-0.1}}" ng-change="Cntl.updateK(7)" ng-disabled=(Cntl.block!=7) required>
@@ -354,7 +364,8 @@
                         </md-input-container>
                     </td>
                 </tr> -->
-                <tr ng-show="Cntl.block_shows[7]">
+                <tr>
+                    <td rowspan="1" style="text-align: center; cursor: default;">8</td>
                     <td rowspan="1">
                         <md-input-container>
                             <input ng-model="Cntl.ks[8]" type="number" step="0.1" min="{{Cntl.ks[7]+0.1}}" max="{{Cntl.ks[9]-0.1}}" ng-change="Cntl.updateK(8)" ng-disabled=(Cntl.block!=8) required>
@@ -388,7 +399,8 @@
                         </md-input-container>
                     </td>
                 </tr> -->
-                <tr ng-show="Cntl.block_shows[8]">
+                <tr>
+                    <td rowspan="1" style="text-align: center; cursor: default;">9</td>
                     <td rowspan="1">
                         <md-input-container>
                             <input ng-model="Cntl.ks[9]" type="number" step="0.1" min="{{Cntl.ks[8]+0.1}}" max="{{Cntl.ks[10]-0.1}}" ng-change="Cntl.updateK(9)" ng-disabled=(Cntl.block!=9) required>
@@ -422,7 +434,8 @@
                         </md-input-container>
                     </td>
                 </tr> -->
-                <tr ng-show="Cntl.block_shows[9]">
+                <tr>
+                    <td rowspan="1" style="text-align: center; cursor: default;">10</td>
                     <td rowspan="1">
                         <md-input-container>
                             <input ng-model="Cntl.ks[10]" type="number" step="0.1" min="{{Cntl.ks[9]+0.1}}" ng-change="Cntl.updateK(10)" ng-disabled=(Cntl.block!=10) required>
