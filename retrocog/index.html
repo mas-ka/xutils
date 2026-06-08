@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <!-- import font -->
+    <link href="https://fonts.googleapis.com/css?family=Noto+Serif:700|Roboto+Mono" rel="stylesheet">
+    <!-- import Vue3 from CDN -->
+    <script type="importmap"> {
+        "imports": {
+            "vue": "https://unpkg.com/vue@3/dist/vue.esm-browser.js"
+        }
+    } </script>
+    <!-- import Plotly.js -->
+    <script src="https://cdn.plot.ly/plotly-3.6.0.min.js" charset="utf-8"></script>
+    <!-- import Beer CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/beercss@4.0.21/dist/cdn/beer.scoped.min.css" rel="stylesheet" />
+    <script type="module" src="https://cdn.jsdelivr.net/npm/beercss@4.0.21/dist/cdn/beer.min.js"></script>
+    <script type="module" src="https://cdn.jsdelivr.net/npm/material-dynamic-colors@1.1.4/dist/cdn/material-dynamic-colors.min.js"></script>
+    <!-- import Vue3 JS code -->
+    <script type="module" src="retrocog.js"></script>
+    <!-- load other JS files -->
+     <!-- load license data -->
+    <script>
+        fetch("license.html")
+            .then((response) => response.text())
+            .then((data) => document.querySelector("#license").innerHTML = data);
+    </script>
+    <!-- Page Title -->
+    <title>RetroCog</title>
+</head>
+
+<body class="light">
+    <div id="app" class="beer">
+        <div class="max primary small-padding">
+            <div class="center-align">
+                <h4 style="font-family: 'Noto Serif', serif; cursor: default;">RetroCog</h4>
+                <div style="font-family: 'Noto Serif', serif; font-style: italic; font-size: 14px; cursor: default;">- Viewer of XAS file in '9809' format -</div>
+            </div>
+        </div>
+        <article class="tiny top-margin"
+            :class="{ 'tertiary-container': isDragging}"
+            @dragover.prevent="isDragging = true"
+            @dragleave="isDragging = false"
+            @drop.prevent="onDrop"
+        >
+            <!-- <header class="fixed">
+                <div class="no-margin" style="font-size: 18px; cursor: default;">File</div>
+            </header> -->
+            <div class="row" style="margin-top: 0;">
+                <input id="fileInput" ref="fInput" type="file" style="display: none;" @change="onFileChange" />
+                <button @click="triggerFileInput">
+                    <i>file_open</i>
+                    <span>File</span>
+                </button>
+                <p>{{ fName }}</p>
+            </div>
+        </article>
+        <article class="auto-height top-margin">
+            <header class="fixed">
+                <div class="row">
+                    <i :class="headerColor" style="cursor: default;">header</i>
+                    <span :class="headerColor" style="font-size: 18px; cursor: default;">Header</span>
+                </div>
+            </header>
+            <pre  style="height:100px; overflow-x: auto; overflow-y: auto; margin-top: 0; font-family: 'Roboto Mono'; line-height: normal; white-space: pre;" v-if="headerContent">{{ headerContent }}</pre>
+        </article>
+        <article class="auto-height top-margin">
+            <header class="fixed">
+                <div class="row">
+                    <i :class="headerColor" style="cursor: default;">data_table</i>
+                    <span :class="headerColor" style="font-size: 18px; cursor: default;">Data</span>
+                </div>
+            </header>
+            <pre style="height:100px; overflow-x: auto; overflow-y: auto; margin-top: 0; font-family: 'Roboto Mono'; line-height: normal; white-space: pre;" v-if="dataContent">{{ dataContent }}</pre>
+        </article>
+        <article class="top-margin" style="overflow-x: auto;" :class="{
+            tiny: unloaded,
+            responsive: !unloaded
+        }">
+            <header class="fixed">
+                <div class="row">
+                    <i :class="headerColor" style="cursor: default;">show_chart</i>
+                    <span :class="headerColor" style="font-size: 18px; cursor: default;">Chart</span>
+                </div>
+            </header>
+            <div class="row" v-show="dataContent">
+                <div class="col">
+                    <div class="field label suffix small border">
+                        <select v-model="Numerator" style="cursor: default;">
+                            <option v-for="col in Columns" :key="col.id" :value="col.id">
+                                {{ col.ColItem }}
+                            </option>
+                        </select>
+                        <label>Numerator</label>
+                        <i>arrow_drop_down</i>
+                    </div>
+                </div>/
+                <div class="col">
+                    <div class="field label suffix small border">
+                        <select v-model="Denominator" style="cursor: default;">
+                            <option v-for="col in Columns" :key="col.id" :value="col.id">
+                                {{ col.ColItem }}
+                            </option>
+                        </select>
+                        <label>Denominator</label>
+                        <i>arrow_drop_down</i>
+                    </div>
+                </div>
+                <div class="col">
+                    <label class="checkbox">
+                        <input type="checkbox" id="check_ln" v-model="applyLn">
+                        <span>apply Log</span>
+                    </label>
+                </div>
+            </div>
+            <br />
+            <div id="myGraph" v-show="dataContent"></div>
+            <p style="display: none;">{{Graph}}</p>
+        </article>
+        <hr class="medium"/>
+        <dialog id="license-dialog">
+            <div id="license"></div>
+            <nav class="right-align no-space">
+                <button class="transparent link" data-ui="#license-dialog">OK</button>
+            </nav>
+        </dialog>
+        <button data-ui="#license-dialog">
+            <i>license</i>
+            <span>License</span>
+        </button>
+    </div>
+    <br />
+</body>
+</html>
