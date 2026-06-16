@@ -1,135 +1,189 @@
 <!DOCTYPE html>
 <html>
 
-<head>
-    <meta charset="UTF-8">
-    <!-- import font -->
-    <link href="https://fonts.googleapis.com/css?family=Noto+Serif:700|Roboto+Mono" rel="stylesheet">
-    <!-- import Vue3 from CDN -->
-    <script type="importmap"> {
-        "imports": {
-            "vue": "https://unpkg.com/vue@3/dist/vue.esm-browser.js"
-        }
-    } </script>
-    <!-- import Plotly.js -->
-    <script src="https://cdn.plot.ly/plotly-3.6.0.min.js" charset="utf-8"></script>
-    <!-- import Beer CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/beercss@4.0.21/dist/cdn/beer.scoped.min.css" rel="stylesheet" />
-    <script type="module" src="https://cdn.jsdelivr.net/npm/beercss@4.0.21/dist/cdn/beer.min.js"></script>
-    <script type="module" src="https://cdn.jsdelivr.net/npm/material-dynamic-colors@1.1.4/dist/cdn/material-dynamic-colors.min.js"></script>
-    <!-- import Vue3 JS code -->
-    <script type="module" src="retrocog.js"></script>
-    <!-- load other JS files -->
-     <!-- load license data -->
-    <script>
-        fetch("license.html")
-            .then((response) => response.text())
-            .then((data) => document.querySelector("#license").innerHTML = data);
-    </script>
-    <!-- Page Title -->
-    <title>RetroCog</title>
-</head>
+    <head>
+        <meta charset="UTF-8">
+        <!-- import font -->
+        <link href="https://fonts.googleapis.com/css?family=Noto+Serif:700|Roboto+Mono" rel="stylesheet">
+        <!-- import Vuetify -->
+        <link href="https://cdn.jsdelivr.net/npm/@mdi/font@5.x/css/materialdesignicons.min.css" rel="stylesheet">
+        <link href="https://cdn.jsdelivr.net/npm/vuetify@3.12.6/dist/vuetify.min.css" rel="stylesheet">
+        <!-- import Vue3 & Vuetify3 from CDN -->
+        <script type="importmap"> { "imports": {
+            "vue": "https://unpkg.com/vue@3/dist/vue.esm-browser.js", 
+            "vuetify": "https://cdn.jsdelivr.net/npm/vuetify@3.12.6/dist/vuetify.esm.js"
+        } } </script>
+        <!-- import Plotly.js -->
+        <script src="https://cdn.plot.ly/plotly-3.6.0.min.js" charset="utf-8"></script>
+        <!-- import Vue3 JS code -->
+        <script type="module" src="retrocog.js"></script>
+        <!-- load other JS files -->
+        <!-- Page Title -->
+        <title>RetroCog</title>
+    </head>
 
-<body class="light">
-    <div id="app" class="beer">
-        <div class="max primary small-padding">
-            <div class="center-align">
-                <h4 style="font-family: 'Noto Serif', serif; cursor: default;">RetroCog</h4>
-                <div style="font-family: 'Noto Serif', serif; font-style: italic; font-size: 14px; cursor: default;">- Viewer of XAS file in '9809' format -</div>
-            </div>
-        </div>
-        <article class="tiny top-margin"
-            :class="{ 'tertiary-container': isDragging}"
-            @dragover.prevent="isDragging = true"
-            @dragleave="isDragging = false"
-            @drop.prevent="onDrop"
-        >
-            <!-- <header class="fixed">
-                <div class="no-margin" style="font-size: 18px; cursor: default;">File</div>
-            </header> -->
-            <div class="row" style="margin-top: 0;">
-                <input id="fileInput" ref="fInput" type="file" style="display: none;" @change="onFileChange" />
-                <button @click="triggerFileInput">
-                    <i>file_open</i>
-                    <span>File</span>
-                </button>
-                <p>{{ fName }}</p>
-            </div>
-        </article>
-        <article class="auto-height top-margin">
-            <header class="fixed">
-                <div class="row">
-                    <i :class="headerColor" style="cursor: default;">header</i>
-                    <span :class="headerColor" style="font-size: 18px; cursor: default;">Header</span>
+    <body id="app">
+        <v-app>
+            <v-toolbar class="ml-3 mt-3 pt-5 pb-1" color="primary" style="cursor: default;">
+                <v-toolbar-title class="d-flex justify-center">
+                    <table>
+                        <tr><td style="padding: 4px; text-align:center; font-family: 'Noto Serif', serif; font-size: 36px; cursor: default;">RetroCog</td></tr>
+                        <tr><td style="padding: 4px; text-align:center; font-family: 'Noto Serif', serif; font-size: 14px; cursor: default;">- Viewer of XAS file in '9809' format -</td></tr>
+                    </table>
+                </v-toolbar-title>
+                <v-dialog v-model="license_dialog" max-width="800">
+                    <template v-slot:activator="{ props }">
+                        <v-btn v-bind="props" icon="mdi-license" class="mr-5"></v-btn>
+                    </template>
+                    <v-card>
+                        <v-toolbar density="compact" color="grey-darken-2" style="cursor: default;">
+                            <v-btn icon="mdi-license" :readonly="true"></v-btn>
+                            <v-toolbar-title text="License"></v-toolbar-title>
+                        </v-toolbar>
+                        <v-card-text v-html="licenseHTML"></v-card-text>
+                        <v-card-actions>
+                            <v-spacer></v-spacer>
+                            <v-btn
+                                color="surface-variant" 
+                                text="OK"
+                                variant="flat"
+                                @click="license_dialog=false"
+                            ></v-btn>
+                        </v-card-actions>
+                    </v-card>
+                </v-dialog>
+            </v-toolbar>
+            <v-card class="rounded-pill ma-3" 
+                    @dragover.prevent="isDragging = true"
+                    @dragleave.prevent="isDragging = false"
+                    @drop.prevent="onDropFiles">
+                <v-toolbar :color="isDragging ? 'pink-darken-2' : 'grey-darken-3'">
+                    <v-btn icon="mdi-file" @click="triggerFileInput"></v-btn>
+                    <input ref="fInput" type="file" accept="*.*" multiple style="display: none;" @change="onFileChange" />
+                    <p style="white-space: nowrap;">{{ currFileName }}</p>
+                    <v-spacer></v-spacer>
+                    <p :disabled="currFileIdx < 0" style="white-space: nowrap; cursor: default;">&nbsp;&nbsp;{{ currFileIdx+1 }} / {{ FileNums }}</p>
+                    <v-btn icon="mdi-arrow-collapse-left" :disabled="currFileIdx < 1" @click="firstFile"></v-btn>
+                    <v-btn icon="mdi-arrow-left" :disabled="currFileIdx < 1" @click="prevFile"></v-btn>
+                    <v-btn icon="mdi-arrow-right" :disabled="currFileIdx == FileNums-1" @click="nextFile"></v-btn>
+                    <v-btn icon="mdi-arrow-collapse-right" :disabled="currFileIdx == FileNums-1" @click="lastFile"></v-btn>
+                </v-toolbar>
+            </v-card>
+            <v-card height="40vh" class="rounded-lg ml-3 mr-3 mb-3 d-flex flex-column" 
+                    @dragover.prevent="isDragging = true"
+                    @dragleave.prevent="isDragging = false"
+                    @drop.prevent="onDropFiles">
+                <v-toolbar density="compact" color="grey-darken-1" style="cursor: default;">
+                    <v-btn icon="mdi-chart-bell-curve-cumulative" style="pointer-events: none; opacity: 1;"></v-btn>
+                    <v-toolbar-title text="Chart"></v-toolbar-title>
+                </v-toolbar>
+                <div id="myGraph" class="mt-3 flex-grow-1 overflow-y-auto" min-width="640px"></div>
+                <div class="d-flex justify-center align-center mx-auto overflow-x-auto">
+                    <table>
+                        <tr>
+                            <td><v-select style="width: 240px" variant="outlined" 
+                                v-model="Numerator" 
+                                :items="ColsNum" 
+                                :disabled="numLoaded<1" 
+                                label="Numerator" 
+                                @update:model-value="handleSelect"></v-select></td>
+                            <td class="d-flex justify-center" :class="numLoaded<1?'text-grey-lighten-1':'text-grey-darken-3'" style="width: 18px; cursor: default;">/</td>
+                            <td><v-select style="width: 240px" variant="outlined"
+                                v-model="Denominator" 
+                                :items="ColsDen" 
+                                :disabled="numLoaded<1" 
+                                label="Denominator" 
+                                @update:model-value="handleSelect"></v-select></td>
+                            <td><v-checkbox v-model="applyLn" label="apply Log" :disabled="numLoaded<1" @update:model-value="handleSelect"></v-checkbox></td>
+                            <td class="d-flex justify-center">
+                                <div class="d-flex align-center">
+                                    <!-- 左側のラベル -->
+                                    <span class="ml-5 mr-3 " 
+                                        :class="(numLoaded<1||isAxisInEnergy)?'text-grey-lighten-1':'text-grey-darken-3'"
+                                        :style="{cursor: numLoaded<1?'default':'pointer'}"
+                                        @click="onClickAngle">Angle(o)</span>
+                                    <!-- スイッチ (labelを省略) -->
+                                    <v-switch
+                                        v-model="isAxisInEnergy"
+                                        hide-details
+                                        :disabled="numLoaded<1"
+                                        @update:model-value="handleSelect"
+                                    ></v-switch>
+                                    <!-- 右側のラベル -->
+                                    <span class="ml-3 " 
+                                        :class="(numLoaded<1||!isAxisInEnergy)?'text-grey-lighten-1':'text-grey-darken-3'" 
+                                        :style="{cursor: numLoaded<1?'default':'pointer'}"
+                                        @click="onClickEnergy">Energy(o)</span>
+                                </div>
+                            </td>
+                        </tr>
+                    </table>
                 </div>
-            </header>
-            <pre  style="height:100px; overflow-x: auto; overflow-y: auto; margin-top: 0; font-family: 'Roboto Mono'; line-height: normal; white-space: pre;" v-if="headerContent">{{ headerContent }}</pre>
-        </article>
-        <article class="auto-height top-margin">
-            <header class="fixed">
-                <div class="row">
-                    <i :class="headerColor" style="cursor: default;">data_table</i>
-                    <span :class="headerColor" style="font-size: 18px; cursor: default;">Data</span>
-                </div>
-            </header>
-            <pre style="height:100px; overflow-x: auto; overflow-y: auto; margin-top: 0; font-family: 'Roboto Mono'; line-height: normal; white-space: pre;" v-if="dataContent">{{ dataContent }}</pre>
-        </article>
-        <article class="top-margin" style="overflow-x: auto;" :class="{
-            tiny: unloaded,
-            responsive: !unloaded
-        }">
-            <header class="fixed">
-                <div class="row">
-                    <i :class="headerColor" style="cursor: default;">show_chart</i>
-                    <span :class="headerColor" style="font-size: 18px; cursor: default;">Chart</span>
-                </div>
-            </header>
-            <div class="row" v-show="dataContent">
-                <div class="col">
-                    <div class="field label suffix small border">
-                        <select v-model="Numerator" style="cursor: default;">
-                            <option v-for="col in Columns" :key="col.id" :value="col.id">
-                                {{ col.ColItem }}
-                            </option>
-                        </select>
-                        <label>Numerator</label>
-                        <i>arrow_drop_down</i>
-                    </div>
-                </div>/
-                <div class="col">
-                    <div class="field label suffix small border">
-                        <select v-model="Denominator" style="cursor: default;">
-                            <option v-for="col in Columns" :key="col.id" :value="col.id">
-                                {{ col.ColItem }}
-                            </option>
-                        </select>
-                        <label>Denominator</label>
-                        <i>arrow_drop_down</i>
-                    </div>
-                </div>
-                <div class="col">
-                    <label class="checkbox">
-                        <input type="checkbox" id="check_ln" v-model="applyLn">
-                        <span>apply Log</span>
-                    </label>
-                </div>
-            </div>
-            <br />
-            <div id="myGraph" v-show="dataContent"></div>
-            <p style="display: none;">{{Graph}}</p>
-        </article>
-        <hr class="medium"/>
-        <dialog id="license-dialog">
-            <div id="license"></div>
-            <nav class="right-align no-space">
-                <button class="transparent link" data-ui="#license-dialog">OK</button>
-            </nav>
-        </dialog>
-        <button data-ui="#license-dialog">
-            <i>license</i>
-            <span>License</span>
-        </button>
-    </div>
-    <br />
-</body>
+            </v-card>
+            <v-card class="rounded-lg ml-3 mr-3 mb-3" 
+                    @dragover.prevent="isDragging = true"
+                    @dragleave.prevent="isDragging = false"
+                    @drop.prevent="onDropFiles">
+                <v-toolbar density="compact" color="grey-darken-1" style="cursor: default;">
+                    <v-btn icon="mdi-table-large" style="pointer-events: none; opacity: 1;"></v-btn>
+                    <v-toolbar-title text="Data"></v-toolbar-title>
+                </v-toolbar>
+                <v-table class="ma-2" height="160px" density="compact" fixed-header striped="even">
+                    <template #default>
+                    <thead>
+                        <tr>
+                            <th><pre class="ma-2" 
+                                        style="font-family: 'Roboto Mono'; 
+                                        font-size: 12px; 
+                                        line-height: normal; 
+                                        white-space: pre;">{{ fileDataHeader }}</pre></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <template  v-for="item in fileDataBody" :key="item.index">
+                            <tr>
+                                <td style="font-family: 'Roboto Mono'; 
+                                    font-size: 12px; 
+                                    white-space: pre;
+                                    height: 12px;
+                                    padding-top: 2px;
+                                    padding-bottom: 2px;">{{ ' '+item.data }}</td><!-- なぜか1文字ズレるので追加してやる -->
+                            </tr>
+                        </template>
+                    </tbody>
+                    </template>
+                </v-table>
+            </v-card>
+            <v-card class="rounded-lg ml-3 mr-3 mb-3" 
+                    @dragover.prevent="isDragging = true"
+                    @dragleave.prevent="isDragging = false"
+                    @drop.prevent="onDropFiles">
+                <v-toolbar density="compact" color="grey-darken-1" style="cursor: default;">
+                    <v-btn icon="mdi-page-layout-header" style="pointer-events: none; opacity: 1;"></v-btn>
+                    <v-toolbar-title text="Header"></v-toolbar-title>
+                </v-toolbar>
+                <pre class="ma-2" 
+                    style="font-family: 'Roboto Mono'; 
+                            font-size: 12px; 
+                            line-height: normal; 
+                            white-space: pre; 
+                            overflow-x: auto;">{{ fileHeader }}</pre>
+            </v-card>
+            <v-card class="rounded-lg ml-3 mr-3 mb-3" 
+                    @dragover.prevent="isDragging = true"
+                    @dragleave.prevent="isDragging = false"
+                    @drop.prevent="onDropFiles">
+                <v-toolbar density="compact" color="grey-darken-1" style="cursor: default;">
+                    <v-btn icon="mdi-view-agenda-outline" style="pointer-events: none; opacity: 1;"></v-btn>
+                    <v-toolbar-title text="Block"></v-toolbar-title>
+                </v-toolbar>
+                <pre class="ma-2" 
+                    style="font-family: 'Roboto Mono'; 
+                            font-size: 12px; 
+                            line-height: normal; 
+                            white-space: pre; 
+                            overflow-x: auto;">{{ fileBlock }}</pre>
+            </v-card>
+        </v-app>
+    </body>
 </html>

@@ -1,48 +1,77 @@
-import { createApp, ref, computed, onMounted, nextTick} from 'vue'
+import { createApp, ref, onMounted, nextTick} from 'vue'
+import { createVuetify } from 'vuetify'
+
+import { is9809File, File9809 } from './Format9809.js'
 
 createApp({
     setup() {
         // refの宣言
-        const fInput = ref('')
-        const fName = ref('')
-        const headerContent = ref('')
-        const dataContent = ref('')
-        const Numerator = ref(4)
-        const Denominator = ref(5)
-        const Columns = ref('')
+        const numLoaded = ref(0)
+        const currFileName = ref('not loaded')
+        const currFileIdx = ref(-1)
+        const FileNums = ref(0)
+        const files = ref()
+        const fileNames = ref()
+        const filesDrop = ref()
+        const fInput = ref('') // ファイルインプットのリファレンス
+        const isDragging = ref(false)
+        const fileHeader = ref('')
+        const fileBlock = ref('')
+        const fileDataHeader = ref('')
+        const fileDataBody = ref([])
+        const Numerator = ref('')
+        const Denominator = ref('')
+        const ColsNum = ref([])
+        const ColsDen = ref([])
         const applyLn = ref(true)
-        const trg = ref(0) // ファイル読込み時の強制描画用トリガー
-        const unloaded = ref(true)
-        const headerColor = ref('no-margin grey-text')
-        const isDragging = ref(false) // ファイルがドラッグされていればTrue
+        const isAxisInEnergy = ref(true)
+        // その他
+        const licenseHTML = ref('')
+        const license_dialog = ref(false)
 
-        // computedの宣言
-        const Graph = computed(() => { // グラフの描画
+        // ローカルの宣言
+        let curr9809File = new File9809()
+
+        // 関数
+        // チャートの描画
+        const drawChart = (data) => {
             // データの定義
             const gdata = [{
-                   x : data.map((a) => a[1]),
-                   y : data.map((a) => {
+                    //x : data.map((a) => a[1]), // カラムは「E(c) E(o) A(c) A(o) T D ...」
+                    x : data.map((a) => a[isAxisInEnergy.value ? 1 : 3]),
+                    y : data.map((a) => {
+                    const N = (Numerator.value == 0) ? 1.0 : a[Numerator.value+1]
+                    const D = (Denominator.value == 0) ? 1.0 : a[Denominator.value+1]
                     if (applyLn.value) {
-                        return Math.log((a[Numerator.value-1]/a[Denominator.value-1]))
+                        return Math.log( N / D )
                     } else {
-                        return (a[Numerator.value-1]/a[Denominator.value-1])
+                        return ( N / D )
                     }
-                   }),
+                }),
                 type : 'line'
             }]
             // レイアウトの定義
             let layout = {
-                height: 360,
+                title: {
+                    text: currFileName.value + (applyLn?'  Ln':'  ') + '(' + Numerator.value + '/' + Denominator.value + ')',
+                    font: {
+                        size: 14
+                    }
+                },
+                //height: 360,
                 xaxis: {
                     title: {
-                        text: 'Energy(o) [keV]'
+                        text: isAxisInEnergy.value ? 'Energy(c) [keV]' : 'Angle(o) [deg.]',
                     },
                     showline: true,
+                    mirror: true,
                     linewidth: 2,
                     tickformat: '.4f',
+                    autorange: isAxisInEnergy.value ? 'true' : 'reversed',
                 },
                 yaxis: {
                     showline: true,
+                    mirror: true,
                     linewidth: 2,
                 },
                 margin: {
@@ -51,128 +80,234 @@ createApp({
             }
             // グラフの描画(※DOMの更新を待ってから描画するためにnextTickでラップしないと初回描画の横幅がおかしくなる)
             nextTick(() => {
-                if (isMounted) Plotly.newPlot('myGraph', gdata, layout, {responsive : true})
-            });
-            // computedは値を返す必要があるため、trg.valueを参照して描画のトリガーとする
-            trg.value;
-            return Numerator.value * Denominator.value
-        })
-
-        // ローカルの宣言
-        let data = []
-        let isMounted = false
-
-        onMounted(() => { isMounted = true })
+                Plotly.newPlot('myGraph', gdata, layout, {responsive : true})
+            })
+        }
         
-        // ファイル選択の代理発火
+        // データ列選択セレクタの変更時
+        const handleSwitch = (newValue) => {
+            isAxisInEnergy = newValue
+            drawChart(curr9809File.dataArray)
+        }
+
+        // Ｘ軸スイッチ左の<span>Angle(o)</span>クリック
+        const onClickAngle = () => {
+            if (numLoaded.value < 1) return
+            if (isAxisInEnergy.value) {
+                isAxisInEnergy.value = false
+                handleSelect()
+            }
+        }
+
+        // Ｘ軸スイッチ右の<span>Energy(o)</span>クリック
+        const onClickEnergy = () => {
+            if (numLoaded.value < 1) return
+            if (!isAxisInEnergy.value) {
+                isAxisInEnergy.value = true
+                handleSelect()
+            }
+        }
+        
+        // Ｘ軸スイッチの変更時
+        const handleSelect = () => {
+            drawChart(curr9809File.dataArray)
+        }
+
+        // 現在のIdxのファイルを読み込む
+        const loadCurrFileFromIdx = async () => {
+            currFileName.value = fileNames.value[currFileIdx.value]
+            await curr9809File.loadFrom9809File(files.value[currFileIdx.value])
+            fileHeader.value = curr9809File.headerText
+            fileBlock.value = curr9809File.blockText
+            fileDataHeader.value = curr9809File.dataHeaderText
+            fileDataBody.value = curr9809File.dataBody
+            if (curr9809File.detType === 'TRANS') {
+                Numerator.value = 4
+                Denominator.value = 5
+                applyLn.value = true
+            } else {
+                Numerator.value = 4
+                Denominator.value = 1 + curr9809File.idx1stIC
+                applyLn.value = false
+            }
+            ColsNum.value = curr9809File.ColsNum
+            ColsDen.value = curr9809File.ColsDen
+            numLoaded.value++
+            drawChart(curr9809File.dataArray)
+        }
+
+        // 最初のファイルを読み込む
+        const firstFile = () => {
+            currFileIdx.value = 0
+            loadCurrFileFromIdx()
+        }
+
+        // １つ前のファイルを読み込む
+        const prevFile = () => {
+            if (currFileIdx.value > 0) {
+                currFileIdx.value--
+                loadCurrFileFromIdx()
+            }
+        }
+
+        // １つ次のファイルを読み込む
+        const nextFile = () => {
+            if (currFileIdx.value < FileNums.value-1) {
+                currFileIdx.value++
+                loadCurrFileFromIdx()
+            }
+        }
+
+        // 最後のファイルを読み込む
+        const lastFile = () => {
+            currFileIdx.value = FileNums.value-1
+            loadCurrFileFromIdx()
+        }
+            
+
+
+        // ファイルロードボタン押下によるファイルインプットの代理発火
         const triggerFileInput = (event) => {
             fInput.value.click()
         }
+        
+        // ファイルインプットでのファイル選択時のハンドラ
+        const onFileChange = async (event) => {
+            if (event.target.files.length < 1) return // キャンセルされた場合には早期リターン
+            // 選択されたファイルをソート
+            const files4File = []
+            for (let i = 0 ; i < event.target.files.length ; i++) {
+                files4File.push(event.target.files[i])
+            }
+            files4File.sort((a, b) => a.name.localeCompare(b.name))
+            // ソート済みのものに対して検証
+            files.value = {}
+            fileNames.value = []
+            for (let i = 0, j = 0 ; i < files4File.length ; i++) {
+                if (await is9809File(files4File[i])) {
+                    fileNames.value.push(files4File[i].name)
+                    files.value[j++] = files4File[i]
+                }
+            }
+            files.value.length = Object.keys(files.value).length
+            FileNums.value = files.value.length
+            currFileIdx.value = 0
+
+            loadCurrFileFromIdx()
+        }
 
         // ファイルドロップ時のハンドラ
-        const onDrop = (event) => {
+        const onDropFiles = async (event) => {
             isDragging.value = false
-            const file = event.dataTransfer.files[0]
-            if (!file) return
-            handleFileChange(file)
-        }
+            
+            const items = event.dataTransfer.items
+            const droppedFiles = []
 
-        // ファイルインプットでのファイル選択時のハンドラ
-        const onFileChange = (event) => {
-            const file = event.target.files[0]
-            if (!file) return
-            console.log(file.name)
-            handleFileChange(file)
-        }
-
-        // ファイル変更時のハンドラ
-        const handleFileChange = (file) => {
-            if (!file) return
-            fName.value = file.name
-
-            const reader = new FileReader()
-
-            reader.onload = (e) => {
-                // ヘッダーとデータの分割
-                const lines = (e.target.result).split(/\n/)
-                const headerLines = lines
-                                .map((line, index) => line.includes('Angle(c)') ? index : -1)
-                                .filter(lineNum => lineNum != -1)
-                                .at(-1)
-                if (headerLines === undefined) return // 9809形式ではなかった
-                headerContent.value = lines.slice(0, headerLines).join('\n')
-                dataContent.value = lines.slice(headerLines).join('\n')
-
-                // ヘッダーから分光結晶のDを取得し2dとして保持する
-                const MonoLine = (headerContent.value).split(/\n/)
-                                    .map((line, index) => (line.trim().startsWith('Mono')) > 0 ? line : '')
-                                    .filter(line => line != '')
-                                    .at(-1)
-                if (MonoLine === undefined) return
-                const twoD = ((MonoLine.match(/D=([^A].*)A/))[1].trim()) * 2.0
-
-                // データ部Mode行から測定種別を推定する
-                if (1 == (((dataContent.value).trim().split(/\n/))[1].trim().split(/\s+/))[3]) { // Mode行の最初の検出器が「1」
-                    applyLn.value = true
-                    Numerator.value = 4
-                    Denominator.value = 5
-                } else { // Mode行の最初の検出器が「1」以外
-                    applyLn.value = false
-                    Numerator.value = 4
-                    Denominator.value = 1 + (
-                        ((dataContent.value).trim().split(/\n/))[1].trim().split(/\s+/)
-                        .map((v, i) => (v=='1')?i:-1)
-                        .filter(v => v > 0)
-                        .at(0)
-                    ) // 最初に見つかった検出器「1」のインデックス
+            // ディレクトリトラバース関数
+            const traverseFileTree = async (item, path = '') => {
+                if (item.isFile) {
+                    const file = await new Promise((resolve) => item.file(resolve))
+                    if (await is9809File(file)) {
+                        fileNames.value.push(`${path}${file.name}`)
+                        droppedFiles.push(file)
+                    }
+                } else if (item.isDirectory) {
+                    const dirReader = item.createReader()
+                    let entries = await new Promise((resolve) => dirReader.readEntries(resolve))
+                    // ディレクトリ内のエントリをソートしてフォルダを後回しにする
+                    const entries4File = []
+                    const entries4Dir = []
+                    for (let i = 0; i < entries.length; i++) {
+                        const item = entries[i];
+                        if (item.isFile) entries4File.push(item)
+                        else if (item.isDirectory) entries4Dir.push(item)
+                    }
+                    entries4File.sort((a, b) => a.name.localeCompare(b.name))
+                    entries4Dir.sort((a, b) => a.name.localeCompare(b.name))
+                    entries = entries4File.concat(entries4Dir)
+                    // 順序入れ替えを行った後のディレクトリ内エントリを再帰呼び出しする
+                    for (let j = 0 ; j < entries.length ; j++) {
+                        await traverseFileTree(entries[j], `${path}${item.name}/`)
+                    }
+                }
+            }
+            // ドロップされたアイテムを展開
+            // event.dataTransfer.items（DataTransferItemList）は、
+            // ブラウザの仕様によりドロップイベントのハンドラ（同期処理）が終了するか、
+            // 次の非同期マクロタスクに移った時点でクリア（データが消去）される
+            // という厳格なライフサイクルを持っています。
+            if (items) { // 【重要】await を呼ぶ前に、同期処理で Entry オブジェクトをすべて配列にコピーする
+                let entriesToProcess = []
+                for (let i = 0; i < items.length; i++) {
+                    const entry = items[i].webkitGetAsEntry();
+                    if (entry) {
+                        entriesToProcess.push(entry)
+                    }
                 }
 
-                // Numerator/Denominator選択プルダウンの生成
-                const Channels = ((dataContent.value).trim().split(/\n/))[0].trim().split(/\s+/).slice(3)
-                const Modes    = ((dataContent.value).trim().split(/\n/))[1].trim().split(/\s+/).slice(3)
-                Columns.value = Channels.map((v, i) => ({
-                    id : i+4,
-                    ColItem : (i+4)+' (Ch:'+v+', Mode: '+Modes[i]+')'
-                }))
+                // ファイルをソートし、フォルダを後ろに回す
+                const entriesToProcess4File = []
+                const entriesToProcess4Dir = []
+                for (let i = 0; i < entriesToProcess.length; i++) {
+                    const item = entriesToProcess[i];
+                    if (item.isFile) {
+                        entriesToProcess4File.push(item)
+                    } else if (item.isDirectory) {
+                        entriesToProcess4Dir.push(item)
+                    }
+                }
+                entriesToProcess4File.sort((a, b) => a.name.localeCompare(b.name))
+                entriesToProcess4Dir.sort((a, b) => a.name.localeCompare(b.name))
+                entriesToProcess = entriesToProcess4File.concat(entriesToProcess4Dir)
 
-                // データ部から実際の測定データを抽出して配列にぶち込む
-                data = (dataContent.value).trim().split(/\n/).slice(3)
-                            .map((line, index) => {
-                                const arr = line.trim().split(/\s+/).map((v) => v*1.0)
-                                arr[0] = 12.398 / (twoD * Math.sin(arr[0]*Math.PI/180))
-                                arr[1] = 12.398 / (twoD * Math.sin(arr[1]*Math.PI/180))
-                                return arr
-                            })
-                
-                unloaded.value = false
-                headerColor.value = 'no-margin'
-
-                // 再読み込み可能とするためInputをクリアしておく
-                document.getElementById("fileInput").value = ''
-                
-                // 読込みが完了したのでグラフ描画をトリガーする
-                trg.value++
+                // コピーした配列を使って、安全に非同期（await）のループを回す
+                fileNames.value = []
+                for (let i = 0; i < entriesToProcess.length; i++) {
+                    const item = entriesToProcess[i];
+                    if (item.isFile) {
+                        const file = await new Promise((resolve) => item.file(resolve))
+                        if (await is9809File(file)) {
+                            fileNames.value.push(file.name)
+                            droppedFiles.push(file)
+                        }
+                    } else if (item.isDirectory) {
+                        await traverseFileTree(item);
+                    }
+                }
+                // FileListに変換
+                files.value = {}
+                for (let i = 0 ; i < droppedFiles.length ; i++) {
+                    files.value[i] = droppedFiles[i]
+                }
+                files.value.length = Object.keys(files.value).length
             }
-            reader.readAsText(file)
+            FileNums.value = files.value.length
+            currFileIdx.value = 0
+
+            loadCurrFileFromIdx()
         }
+
+        // マウント時の処理
+        onMounted(async () => {
+            numLoaded.value = 0
+            // ライセンス表示用HTMLの読み込み
+            try {
+                const res = await fetch('./license.html')
+                licenseHTML.value = await res.text()
+                console
+            } catch (error) {
+                licenseHTML.value = '<p></p>'
+            }
+        })
 
         return {
-            fInput,
-            fName,
-            triggerFileInput,
-            headerContent,
-            dataContent,
-            Numerator,
-            Denominator,
-            Columns,
-            applyLn,
-            trg,
-            unloaded,
-            headerColor,
-            Graph,
-            onDrop,
-            onFileChange,
-            isDragging,
+            numLoaded, currFileName, currFileIdx, FileNums, fInput, isDragging,
+            fileHeader, fileBlock, fileDataHeader, fileDataBody, 
+            triggerFileInput, onFileChange, onDropFiles,
+            firstFile, prevFile, nextFile, lastFile,
+            Numerator, Denominator, ColsNum, ColsDen, applyLn, 
+            handleSelect, isAxisInEnergy, handleSwitch, onClickAngle, onClickEnergy,
+            licenseHTML, license_dialog,
         }
     }
-}).mount('#app')
+}).use(createVuetify()).mount('#app')
