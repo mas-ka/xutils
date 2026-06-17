@@ -117,7 +117,6 @@ createApp({
         // 現在のIdxのファイルを読み込む
         const loadCurrFileFromIdx = async () => {
             currFileName.value = fileNames.value[currFileIdx.value]
-            console.log(await is9809File(files.value[currFileIdx.value]))
             if (await is9809File(files.value[currFileIdx.value]) === CORRECTNESS.CANONICAL) {
                 isCorrect9809.value = true
             } else {
@@ -197,6 +196,8 @@ createApp({
                 }
             }
             files.value.length = Object.keys(files.value).length
+            if (files.value.length < 1) return // チェックをくぐり抜けたファイルがゼロならリターン
+
             FileNums.value = files.value.length
             currFileIdx.value = 0
 
@@ -273,7 +274,7 @@ createApp({
                     const item = entriesToProcess[i];
                     if (item.isFile) {
                         const file = await new Promise((resolve) => item.file(resolve))
-                        if (await is9809File(file)) {
+                        if ((await is9809File(file)) != CORRECTNESS.NOT9809) {
                             fileNames.value.push(file.name)
                             droppedFiles.push(file)
                         }
@@ -288,6 +289,8 @@ createApp({
                 }
                 files.value.length = Object.keys(files.value).length
             }
+            if (files.value.length < 1) return // チェックをくぐり抜けたファイルがゼロならリターン
+
             FileNums.value = files.value.length
             currFileIdx.value = 0
 
