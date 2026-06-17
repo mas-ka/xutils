@@ -1,13 +1,22 @@
 // 9809形式を扱うためのexportライブラリ
+// ファイルが適正な9809かどうかを表す疑似Enum
+export const CORRECTNESS = Object.freeze({
+    CANONICAL: 'CANONICAL',
+    PARTIALLY: 'PARTIALLY',
+    NOT9809  : 'NOT9809'
+});
+
 
 // ファイルが9809形式かどうか判定
 export async function is9809File(file) {
     try {
-        const buffer = await (file.slice(0, 6)).arrayBuffer();
+        const buffer = await (file.slice(0, 11)).arrayBuffer();
         const text = new TextDecoder().decode(new Uint8Array(buffer));
-        return (text === '  9809')
+        if (text === '  9809     ') return CORRECTNESS.CANONICAL
+        else if (text.trim() === '9809') return CORRECTNESS.PARTIALLY
+        else return CORRECTNESS.NOT9809
     } catch (error) {
-        return false
+        return CORRECTNESS.NOT9809
     }
 }
 

@@ -1,7 +1,7 @@
 import { createApp, ref, onMounted, nextTick} from 'vue'
 import { createVuetify } from 'vuetify'
 
-import { is9809File, File9809 } from './Format9809.js'
+import { is9809File, File9809, CORRECTNESS } from './Format9809.js'
 
 createApp({
     setup() {
@@ -13,6 +13,7 @@ createApp({
         const files = ref()
         const fileNames = ref()
         const filesDrop = ref()
+        const isCorrect9809 = ref(true)
         const fInput = ref('') // ファイルインプットのリファレンス
         const isDragging = ref(false)
         const fileHeader = ref('')
@@ -116,6 +117,12 @@ createApp({
         // 現在のIdxのファイルを読み込む
         const loadCurrFileFromIdx = async () => {
             currFileName.value = fileNames.value[currFileIdx.value]
+            console.log(await is9809File(files.value[currFileIdx.value]))
+            if (await is9809File(files.value[currFileIdx.value]) === CORRECTNESS.CANONICAL) {
+                isCorrect9809.value = true
+            } else {
+                isCorrect9809.value = false
+            }
             await curr9809File.loadFrom9809File(files.value[currFileIdx.value])
             fileHeader.value = curr9809File.headerText
             fileBlock.value = curr9809File.blockText
@@ -184,7 +191,7 @@ createApp({
             files.value = {}
             fileNames.value = []
             for (let i = 0, j = 0 ; i < files4File.length ; i++) {
-                if (await is9809File(files4File[i])) {
+                if ((await is9809File(files4File[i])) != CORRECTNESS.NOT9809) {
                     fileNames.value.push(files4File[i].name)
                     files.value[j++] = files4File[i]
                 }
@@ -207,7 +214,7 @@ createApp({
             const traverseFileTree = async (item, path = '') => {
                 if (item.isFile) {
                     const file = await new Promise((resolve) => item.file(resolve))
-                    if (await is9809File(file)) {
+                    if ((await is9809File(file)) != CORRECTNESS.NOT9809) {
                         fileNames.value.push(`${path}${file.name}`)
                         droppedFiles.push(file)
                     }
@@ -301,7 +308,7 @@ createApp({
         })
 
         return {
-            numLoaded, currFileName, currFileIdx, FileNums, fInput, isDragging,
+            numLoaded, currFileName, currFileIdx, FileNums, fInput, isDragging, isCorrect9809,
             fileHeader, fileBlock, fileDataHeader, fileDataBody, 
             triggerFileInput, onFileChange, onDropFiles,
             firstFile, prevFile, nextFile, lastFile,
