@@ -83,14 +83,14 @@
                     <div class="d-flex justify-center align-center mx-auto overflow-x-auto">
                         <table>
                             <tr>
-                                <td><v-select style="width: 240px" variant="outlined" 
+                                <td><v-select style="width: 240px" variant="outlined" density="compact"
                                     v-model="Numerator" 
                                     :items="ColsNum" 
                                     :disabled="numLoaded<1" 
                                     label="Numerator" 
                                     @update:model-value="handleSelect"></v-select></td>
                                 <td class="d-flex justify-center" :class="numLoaded<1?'text-grey-lighten-1':'text-grey-darken-3'" style="width: 18px; cursor: default;">/</td>
-                                <td><v-select style="width: 240px" variant="outlined"
+                                <td><v-select style="width: 240px" variant="outlined" density="compact"
                                     v-model="Denominator" 
                                     :items="ColsDen" 
                                     :disabled="numLoaded<1" 
