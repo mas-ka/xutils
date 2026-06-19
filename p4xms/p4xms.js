@@ -450,7 +450,6 @@ app.controller('myController', function($resource, $mdDialog, numberFilter){
                     org.thetas[i-1] = Math.formatFloat(org.energy2theta(org.energies[i-2]), 5);
                     org.ks[i-1] = Math.round(Math.formatFloat(org.energy2k(org.energies[i-1], org.AbsEnergy), 5)*100)/100;
                     org.block = block_num;
-                    org.updateAllThetas()
                 });
             };
             reader.readAsText(file);
