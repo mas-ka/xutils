@@ -144,19 +144,19 @@ app.controller('myController', function($resource, $mdDialog, numberFilter){
         this.divs[this.block-1]--;
         this.thetas[idx] = Math.formatFloat(this.energy2theta(this.energies[idx]), 5);
         // thetaからstepを算出して、そこからdivを求めるロジック
-        // if (idx == 0) this.divs[0] = parseInt(Math.round((this.thetas[0]-this.thetas[1])/this.steps[0]));
-        // else if (idx == 12) this.divs[idx-1] = parseInt(Math.round((this.thetas[idx-1]-this.thetas[idx])/this.steps[idx-1]));
-        // else {
-        //     this.divs[idx-1] = parseInt(Math.round((this.thetas[idx-1]-this.thetas[idx])/this.steps[idx-1]));
-        //     this.divs[idx] = parseInt(Math.round((this.thetas[idx]-this.thetas[idx+1])/this.steps[idx]));
-        // }
-        // 新しく算出されたthetaと既存のdivからstepを求め直すロジック
-        if (idx == 0) this.steps[0] = this.round5((this.thetas[0]-this.thetas[1])/this.divs[0]);
-        else if (idx == 12) this.steps[idx-1] = this.round5((this.thetas[idx-1]-this.thetas[idx])/this.divs[idx-1]);
+        if (idx == 0) this.divs[0] = parseInt(Math.round((this.thetas[0]-this.thetas[1])/this.steps[0]));
+        else if (idx == 12) this.divs[idx-1] = parseInt(Math.round((this.thetas[idx-1]-this.thetas[idx])/this.steps[idx-1]));
         else {
-            this.steps[idx-1] = this.round5((this.thetas[idx-1]-this.thetas[idx])/this.divs[idx-1]);
-            this.steps[idx] = this.round5((this.thetas[idx]-this.thetas[idx+1])/this.divs[idx]);
+            this.divs[idx-1] = parseInt(Math.round((this.thetas[idx-1]-this.thetas[idx])/this.steps[idx-1]));
+            this.divs[idx] = parseInt(Math.round((this.thetas[idx]-this.thetas[idx+1])/this.steps[idx]));
         }
+        // 新しく算出されたthetaと既存のdivからstepを求め直すロジック
+        // if (idx == 0) this.steps[0] = this.round5((this.thetas[0]-this.thetas[1])/this.divs[0]);
+        // else if (idx == 12) this.steps[idx-1] = this.round5((this.thetas[idx-1]-this.thetas[idx])/this.divs[idx-1]);
+        // else {
+        //     this.steps[idx-1] = this.round5((this.thetas[idx-1]-this.thetas[idx])/this.divs[idx-1]);
+        //     this.steps[idx] = this.round5((this.thetas[idx]-this.thetas[idx+1])/this.divs[idx]);
+        // }
         if (idx > 1) this.ks[idx] = Math.round(Math.formatFloat(this.energy2k(this.energies[idx], this.AbsEnergy), 5)*100)/100;
         this.divs[this.block-1]++;
     }
@@ -165,19 +165,19 @@ app.controller('myController', function($resource, $mdDialog, numberFilter){
         this.divs[this.block-1]--;
         this.energies[idx] = Math.formatFloat(this.theta2energy(this.thetas[idx]), 2);
         // thetaからstepを算出して、そこからdivを求めるロジック
-        // if (idx == 0) this.divs[0] = parseInt(Math.round((this.thetas[0]-this.thetas[1])/this.steps[0]));
-        // else if (idx == 12) this.divs[idx-1] = parseInt(Math.round((this.thetas[idx-1]-this.thetas[idx])/this.steps[idx-1]));
-        // else {
-        //     this.divs[idx-1] = parseInt(Math.round((this.thetas[idx-1]-this.thetas[idx])/this.steps[idx-1]));
-        //     this.divs[idx] = parseInt(Math.round((this.thetas[idx]-this.thetas[idx+1])/this.steps[idx]));
-        // }
-        // 新しく算出されたthetaと既存のdivからstepを求め直すロジック
-        if (idx == 0) this.steps[0] = this.round5((this.thetas[0]-this.thetas[1])/this.divs[0]);
-        else if (idx == 12) this.steps[idx-1] = this.round5((this.thetas[idx-1]-this.thetas[idx])/this.divs[idx-1]);
+        if (idx == 0) this.divs[0] = parseInt(Math.round((this.thetas[0]-this.thetas[1])/this.steps[0]));
+        else if (idx == 12) this.divs[idx-1] = parseInt(Math.round((this.thetas[idx-1]-this.thetas[idx])/this.steps[idx-1]));
         else {
-            this.steps[idx-1] = this.round5((this.thetas[idx-1]-this.thetas[idx])/this.divs[idx-1]);
-            this.steps[idx] = this.round5((this.thetas[idx]-this.thetas[idx+1])/this.divs[idx]);
+            this.divs[idx-1] = parseInt(Math.round((this.thetas[idx-1]-this.thetas[idx])/this.steps[idx-1]));
+            this.divs[idx] = parseInt(Math.round((this.thetas[idx]-this.thetas[idx+1])/this.steps[idx]));
         }
+        // 新しく算出されたthetaと既存のdivからstepを求め直すロジック
+        // if (idx == 0) this.steps[0] = this.round5((this.thetas[0]-this.thetas[1])/this.divs[0]);
+        // else if (idx == 12) this.steps[idx-1] = this.round5((this.thetas[idx-1]-this.thetas[idx])/this.divs[idx-1]);
+        // else {
+        //     this.steps[idx-1] = this.round5((this.thetas[idx-1]-this.thetas[idx])/this.divs[idx-1]);
+        //     this.steps[idx] = this.round5((this.thetas[idx]-this.thetas[idx+1])/this.divs[idx]);
+        // }
         if (idx > 1) this.ks[idx] = Math.round(Math.formatFloat(this.energy2k(this.energies[idx], this.AbsEnergy), 5)*100)/100;
         this.divs[this.block-1]++;
     }
@@ -187,19 +187,19 @@ app.controller('myController', function($resource, $mdDialog, numberFilter){
         this.energies[idx] = Math.formatFloat(this.k2energy(this.ks[idx], this.AbsEnergy), 2);
         this.thetas[idx] = Math.formatFloat(this.energy2theta(this.energies[idx]), 5);
         // thetaからstepを算出して、そこからdivを求めるロジック
-        // if (idx == 0) this.divs[0] = parseInt(Math.round((this.thetas[0]-this.thetas[1])/this.steps[0]));
-        // else if (idx == 12) this.divs[idx-1] = parseInt(Math.round((this.thetas[idx-1]-this.thetas[idx])/this.steps[idx-1]));
-        // else {
-        //     this.divs[idx-1] = parseInt(Math.round((this.thetas[idx-1]-this.thetas[idx])/this.steps[idx-1]));
-        //     this.divs[idx] = parseInt(Math.round((this.thetas[idx]-this.thetas[idx+1])/this.steps[idx]));
-        // }
-        // 新しく算出されたthetaと既存のdivからstepを求め直すロジック
-        if (idx == 0) this.steps[0] = this.round5((this.thetas[0]-this.thetas[1])/this.divs[0]);
-        else if (idx == 12) this.steps[idx-1] = this.round5((this.thetas[idx-1]-this.thetas[idx])/this.divs[idx-1]);
+        if (idx == 0) this.divs[0] = parseInt(Math.round((this.thetas[0]-this.thetas[1])/this.steps[0]));
+        else if (idx == 12) this.divs[idx-1] = parseInt(Math.round((this.thetas[idx-1]-this.thetas[idx])/this.steps[idx-1]));
         else {
-            this.steps[idx-1] = this.round5((this.thetas[idx-1]-this.thetas[idx])/this.divs[idx-1]);
-            this.steps[idx] = this.round5((this.thetas[idx]-this.thetas[idx+1])/this.divs[idx]);
+            this.divs[idx-1] = parseInt(Math.round((this.thetas[idx-1]-this.thetas[idx])/this.steps[idx-1]));
+            this.divs[idx] = parseInt(Math.round((this.thetas[idx]-this.thetas[idx+1])/this.steps[idx]));
         }
+        // 新しく算出されたthetaと既存のdivからstepを求め直すロジック
+        // if (idx == 0) this.steps[0] = this.round5((this.thetas[0]-this.thetas[1])/this.divs[0]);
+        // else if (idx == 12) this.steps[idx-1] = this.round5((this.thetas[idx-1]-this.thetas[idx])/this.divs[idx-1]);
+        // else {
+        //     this.steps[idx-1] = this.round5((this.thetas[idx-1]-this.thetas[idx])/this.divs[idx-1]);
+        //     this.steps[idx] = this.round5((this.thetas[idx]-this.thetas[idx+1])/this.divs[idx]);
+        // }
         this.divs[this.block-1]++;
     }
 
@@ -398,7 +398,8 @@ app.controller('myController', function($resource, $mdDialog, numberFilter){
                     org.exps[0] = xmlDoc.evaluate('//agenda/block[@id=\"1\"]/sec/text()', xmlDoc, null, XPathResult.NUMBER_TYPE, null).numberValue;
                     // 残りの各blockを走査
                     org.block_shows = [false,false,false,false,false,false,false,false,false,false,false,false]; // 一旦すべて非表示にする
-                    for (var i = 2 ; i <= block_num ; i++) {
+                    var i;
+                    for (i = 2 ; i <= block_num ; i++) {
                         org.block_shows[i-2] = true;
                         org.energies[i-1] = xmlDoc.evaluate('//agenda/block[@id=\"'+i+'\"]/ini/text()', xmlDoc, null, XPathResult.NUMBER_TYPE, null).numberValue;
                         org.thetas[i-1] = Math.formatFloat(org.energy2theta(org.energies[i-1]), 5);
@@ -413,6 +414,7 @@ app.controller('myController', function($resource, $mdDialog, numberFilter){
                     org.thetas[i-1] = Math.formatFloat(org.energy2theta(org.energies[i-2]), 5);
                     org.ks[i-1] = Math.round(Math.formatFloat(org.energy2k(org.energies[i-1], org.AbsEnergy), 5)*100)/100;
                     org.block = block_num;
+                    org.updateAllThetas()
                 });
             };
             reader.readAsText(file);
