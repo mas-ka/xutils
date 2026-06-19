@@ -465,6 +465,7 @@ app.controller('myController', function($resource, $mdDialog, numberFilter){
                     // 表示
                     for (var i = 0 ; i < org.block ; i++) org.block_shows[i] = true;
                     for (var i = org.block ; i < 12 ; i++) org.block_shows[i] = false;
+                    document.getElementById('upload_agenda').value = ''
                 });
             };
             reader.readAsText(file);
