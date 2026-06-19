@@ -422,34 +422,49 @@ app.controller('myController', function($resource, $mdDialog, numberFilter){
                     org.element_name = (getElementByName(result.stringValue)).name;
                     org.applyEdges(org.element_name);
                     org.edge = xmlDoc.evaluate('//element/edge/text()', xmlDoc, null, XPathResult.STRING_TYPE, null).stringValue.toUpperCase();
+                    // E0の取得
+                    org.AbsEnergy = xmlDoc.evaluate('//scan/edge_energy/text()', xmlDoc, null, XPathResult.NUMBER_TYPE, null).numberValue;
+                    // 読んだE0から一旦すべてのパラメータを構築する
+                    block_shows = [false,false,false,false,false,false,false,false,false,false];
+                    org.ks = [0, 0, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24];
+                    org.divs = [ 50, 250,  40,  40,  40,  40,  40,  40,  40,  40,  40,  40];
+                    org.exps = [  1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1];
+                    org.thetas[0] = org.energy2theta(org.AbsEnergy - 330); // Measure Start
+                    org.thetas[1] = org.energy2theta(org.AbsEnergy -  30); // XANES Start
+                    for (i = 2, k = 4 ; i <= 12 ; i++, k+=2)
+                        org.thetas[i] = org.energy2theta(org.k2energy(k, org.AbsEnergy))
+                    for (i = 0 ; i < 12 ; i++) 
+                        org.steps[i] = (org.thetas[i] - org.thetas[i+1]) / org.divs[i];
+                    for (i = 0 ; i <= 12 ; i++)
+                        org.energies[i] = org.theta2energy(org.thetas[i]);
                     // Agendaタグ
                     // xx_for_quickはStepスキャンのAgendaでは読み飛ばして構わない
-                    block_shows = [false,false,false,false,false,false,false,false,false,false];
                     // block数を取得
                     const block_num = xmlDoc.evaluate('//agenda/block', xmlDoc, null, XPathResult.UNORDERED_NODE_SNAPSHOT_TYPE, null).snapshotLength;
                     // id=1のblockだけ特殊処理をおこなう
                     org.energies[0] = xmlDoc.evaluate('//agenda/block[@id=\"1\"]/ini/text()', xmlDoc, null, XPathResult.NUMBER_TYPE, null).numberValue;
-                    org.thetas[0] = Math.formatFloat(org.energy2theta(org.energies[0]), 5);
+                    org.thetas[0] = org.energy2theta(org.energies[0]);
                     org.divs[0] = xmlDoc.evaluate('//agenda/block[@id=\"1\"]/div/text()', xmlDoc, null, XPathResult.NUMBER_TYPE, null).numberValue;
                     org.exps[0] = xmlDoc.evaluate('//agenda/block[@id=\"1\"]/sec/text()', xmlDoc, null, XPathResult.NUMBER_TYPE, null).numberValue;
                     // 残りの各blockを走査
-                    org.block_shows = [false,false,false,false,false,false,false,false,false,false,false,false]; // 一旦すべて非表示にする
                     var i;
                     for (i = 2 ; i <= block_num ; i++) {
-                        org.block_shows[i-2] = true;
                         org.energies[i-1] = xmlDoc.evaluate('//agenda/block[@id=\"'+i+'\"]/ini/text()', xmlDoc, null, XPathResult.NUMBER_TYPE, null).numberValue;
-                        org.thetas[i-1] = Math.formatFloat(org.energy2theta(org.energies[i-1]), 5);
-                        if (i > 2) org.ks[i-1] = Math.round(Math.formatFloat(org.energy2k(org.energies[i-1], org.AbsEnergy), 5)*100)/100;
+                        org.thetas[i-1] = org.energy2theta(org.energies[i-1]);
+                        if (i > 2) org.ks[i-1] = org.energy2k(org.energies[i-1], org.AbsEnergy);
                         org.divs[i-1] = xmlDoc.evaluate('//agenda/block[@id=\"'+i+'\"]/div/text()', xmlDoc, null, XPathResult.NUMBER_TYPE, null).numberValue;
-                        org.steps[i-2] = Math.formatFloat((0.00001 * Math.round(100000 * (org.thetas[i-2] - org.thetas[i-1]) / org.divs[i-2]))||0.00001, 5);
+                        org.steps[i-2] = (0.00001 * Math.round(100000 * (org.thetas[i-2] - org.thetas[i-1]) / org.divs[i-2]))||0.00001;
                         org.exps[i-1] = xmlDoc.evaluate('//agenda/block[@id=\"'+i+'\"]/sec/text()', xmlDoc, null, XPathResult.NUMBER_TYPE, null).numberValue;
                     }
                     // 最終blockの処理
-                    org.block_shows[i-2] = true;
                     org.energies[i-1] = xmlDoc.evaluate('//agenda/@final', xmlDoc, null, XPathResult.NUMBER_TYPE, null).numberValue;
-                    org.thetas[i-1] = Math.formatFloat(org.energy2theta(org.energies[i-2]), 5);
-                    org.ks[i-1] = Math.round(Math.formatFloat(org.energy2k(org.energies[i-1], org.AbsEnergy), 5)*100)/100;
+                    org.thetas[i-1] = org.energy2theta(org.energies[i-1]);
+                    org.ks[i-1] = org.energy2k(org.energies[i-1], org.AbsEnergy);
+                    org.divs[i-1] = parseInt(Math.round((org.thetas[i-1]-org.thetas[i])/org.steps[i-1]));
                     org.block = block_num;
+                    // 表示
+                    for (var i = 0 ; i < org.block ; i++) org.block_shows[i] = true;
+                    for (var i = org.block ; i < 12 ; i++) org.block_shows[i] = false;
                 });
             };
             reader.readAsText(file);
