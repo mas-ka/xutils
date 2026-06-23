@@ -158,7 +158,6 @@ app.controller('myController', function($resource, $mdDialog, numberFilter){
         this.thetas[0] = this.energy2theta(E0-330); // Measure Start
         if (isNaN(this.thetas[0])) { // 多分最大ブラッグ角を超えてしまった
             this.thetas[0] = MaxBraggAngle;
-            console.log(parseInt(Math.round((E0-30-this.theta2energy(this.thetas[0]))/300*50)))
         }
         for (i = 2, k = 4 ; i <= 12 ; i++, k+=2)
             this.thetas[i] = this.energy2theta(this.k2energy(k, E0))
@@ -385,9 +384,14 @@ app.controller('myController', function($resource, $mdDialog, numberFilter){
                     if (result.stringValue.toUpperCase() === 'SI(111)')  org.xtal = org.xtals[0];
                     else if (result.stringValue.toUpperCase() === 'SI(311)')  org.xtal = org.xtals[1];
                     else if (result.stringValue.toUpperCase() === 'SI(220)')  org.xtal = org.xtals[2];
-                    else {
-                        org.xtal = org.xtals[3];
-                        org.xtal.d = xmlDoc.evaluate('//monochrometer/d_spacing/text()', xmlDoc, null, XPathResult.NUMBER_TYPE, null).numberValue
+                    else { // 読み込んだAgendaにMonochrometerタグがないのでWarningダイアログを出しておく
+                        $mdDialog.show(
+                            $mdDialog.confirm()
+                            .title("   W A R N I N G   ")
+                            .htmlContent("'monochrometer' tag is NOT included !<br/><br/>Crystal plane is NOT changed !")
+                            .clickOutsideToClose(true)
+                            .ok('OK')
+                        );
                     }
                     org.changeXtalPlane();
                     // Elementタグ
