@@ -94,7 +94,7 @@ app.controller('myController', function($resource, $mdDialog, numberFilter){
     this.energies = [8651,8951,9041.96,9118.16,9224.84,9362,9529.64,9727.76,9956.36,10215.44,10505,10825,11175.6];
     this.thetas = [13.21113,12.76074,12.63024,12.52296,12.37583,12.19171,11.97403,11.72666,11.45373,11.15946,10.84808,10.52364,10.18998];
     this.steps = [0.00901,0.00052,0.00268,0.00368,0.00460,0.00544,0.00618,0.00682,0.00736,0.00778,0.00811,0.00834];
-    this.divs = [ 50, 250,  40,  40,  40,  40,  40,  40,  40,  41,  40,  40];
+    this.divs = [ 50, 250,  40,  40,  40,  40,  40,  40,  40,  40,  40,  40];
     this.exps = [  1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1];
 
     Math.toDegrees = function(radian){
@@ -137,17 +137,13 @@ app.controller('myController', function($resource, $mdDialog, numberFilter){
             var be = this.thetas[i] - this.thetas[i+1];
             var n = this.divs[i];
             this.steps[i] = this.round5(be/n);
-            //this.divs[i] = parseInt(Math.round(be/this.steps[i]));
         }
-        this.divs[this.block-1]++;
     }
 
     this.changeBlock = function() { // プルダウンでBlock数が変更されたら露光時間以外のパラメータを初期値に戻す
-        this.divs[this.block_prev-1]--;
         this.block_prev = this.block;
         this.ks = [0, 0, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24];
         this.divs = [ 50, 250,  40,  40,  40,  40,  40,  40,  40,  40,  40,  40];
-        this.divs[this.block-1]++;
         this.updateAllThetas();
         for (i = 0 ; i < this.block ; i++) this.block_shows[i] = true;
         for (i = this.block ; i < 12 ; i++) this.block_shows[i] = false;
@@ -159,22 +155,16 @@ app.controller('myController', function($resource, $mdDialog, numberFilter){
         this.thetas[1] = this.energy2theta(E0- 30); // XANES Start
         for (i = 2, k = 4 ; i <= 12 ; i++, k+=2)
             this.thetas[i] = this.energy2theta(this.k2energy(k, E0))
-        this.divs[this.block-1]--;
         for (i = 0 ; i < 12 ; i++) {
             var be = this.thetas[i] - this.thetas[i+1];
             var n = this.divs[i];
             this.steps[i] = be/n;
-            // this.divs[i] = parseInt(Math.round(be/this.steps[i])); // stepからnumを逆算するのをヤメる
         }
-        this.divs[this.block-1]++;
         for (i = 0 ; i <= 12 ; i++)
             this.energies[i] = this.theta2energy(this.thetas[i]);
     }
 
     this.updateEnergy = function(idx) {
-        const newK = this.energy2k(this.energies[idx], this.AbsEnergy);
-        if (newK > idx*2) this.energies[idx] = this.k2energy(idx*2, this.AbsEnergy)
-        this.divs[this.block-1]--;
         this.thetas[idx] = this.energy2theta(this.energies[idx]);
         // thetaからstepを算出して、そこからdivを求めるロジック
         if (idx == 0) this.divs[0] = parseInt(Math.round((this.thetas[0]-this.thetas[1])/this.steps[0]));
@@ -183,21 +173,10 @@ app.controller('myController', function($resource, $mdDialog, numberFilter){
             this.divs[idx-1] = parseInt(Math.round((this.thetas[idx-1]-this.thetas[idx])/this.steps[idx-1]));
             this.divs[idx] = parseInt(Math.round((this.thetas[idx]-this.thetas[idx+1])/this.steps[idx]));
         }
-        // 新しく算出されたthetaと既存のdivからstepを求め直すロジック
-        // if (idx == 0) this.steps[0] = this.round5((this.thetas[0]-this.thetas[1])/this.divs[0]);
-        // else if (idx == 12) this.steps[idx-1] = this.round5((this.thetas[idx-1]-this.thetas[idx])/this.divs[idx-1]);
-        // else {
-        //     this.steps[idx-1] = this.round5((this.thetas[idx-1]-this.thetas[idx])/this.divs[idx-1]);
-        //     this.steps[idx] = this.round5((this.thetas[idx]-this.thetas[idx+1])/this.divs[idx]);
-        // }
         if (idx > 1) this.ks[idx] = this.energy2k(this.energies[idx], this.AbsEnergy);
-        this.divs[this.block-1]++;
     }
 
     this.updateTheta = function(idx) {
-        const newK = this.energy2k(this.theta2energy(this.thetas[idx]), this.AbsEnergy);
-        if (newK > idx*2) this.thetas[idx] = this.energy2theta(this.k2energy(idx*2, this.AbsEnergy))
-        this.divs[this.block-1]--;
         this.energies[idx] = this.theta2energy(this.thetas[idx]);
         // thetaからstepを算出して、そこからdivを求めるロジック
         if (idx == 0) this.divs[0] = parseInt(Math.round((this.thetas[0]-this.thetas[1])/this.steps[0]));
@@ -206,20 +185,10 @@ app.controller('myController', function($resource, $mdDialog, numberFilter){
             this.divs[idx-1] = parseInt(Math.round((this.thetas[idx-1]-this.thetas[idx])/this.steps[idx-1]));
             this.divs[idx] = parseInt(Math.round((this.thetas[idx]-this.thetas[idx+1])/this.steps[idx]));
         }
-        // 新しく算出されたthetaと既存のdivからstepを求め直すロジック
-        // if (idx == 0) this.steps[0] = this.round5((this.thetas[0]-this.thetas[1])/this.divs[0]);
-        // else if (idx == 12) this.steps[idx-1] = this.round5((this.thetas[idx-1]-this.thetas[idx])/this.divs[idx-1]);
-        // else {
-        //     this.steps[idx-1] = this.round5((this.thetas[idx-1]-this.thetas[idx])/this.divs[idx-1]);
-        //     this.steps[idx] = this.round5((this.thetas[idx]-this.thetas[idx+1])/this.divs[idx]);
-        // }
         if (idx > 1) this.ks[idx] = this.energy2k(this.energies[idx], this.AbsEnergy);
-        this.divs[this.block-1]++;
     }
 
     this.updateK = function(idx) {
-        if (this.ks[idx] > idx*2) this.ks[idx] = idx*2
-        this.divs[this.block-1]--;
         this.energies[idx] = this.k2energy(this.ks[idx], this.AbsEnergy);
         this.thetas[idx] = this.energy2theta(this.energies[idx]);
         // thetaからstepを算出して、そこからdivを求めるロジック
@@ -229,18 +198,12 @@ app.controller('myController', function($resource, $mdDialog, numberFilter){
             this.divs[idx-1] = parseInt(Math.round((this.thetas[idx-1]-this.thetas[idx])/this.steps[idx-1]));
             this.divs[idx] = parseInt(Math.round((this.thetas[idx]-this.thetas[idx+1])/this.steps[idx]));
         }
-        // 新しく算出されたthetaと既存のdivからstepを求め直すロジック
-        // if (idx == 0) this.steps[0] = this.round5((this.thetas[0]-this.thetas[1])/this.divs[0]);
-        // else if (idx == 12) this.steps[idx-1] = this.round5((this.thetas[idx-1]-this.thetas[idx])/this.divs[idx-1]);
-        // else {
-        //     this.steps[idx-1] = this.round5((this.thetas[idx-1]-this.thetas[idx])/this.divs[idx-1]);
-        //     this.steps[idx] = this.round5((this.thetas[idx]-this.thetas[idx+1])/this.divs[idx]);
-        // }
-        this.divs[this.block-1]++;
     }
 
     this.updateDiv = function(idx) {
-        this.divs[this.block-1]--; // これ不要やろ？
+        if (this.divs[idx] < 4) {
+            this.divs[idx] = 4
+        }
         var be = this.thetas[idx] - this.thetas[idx+1];
         var n = this.divs[idx]
         this.steps[idx] = Math.formatFloat((0.00001 * Math.round(100000 * be/n))||0.00001, 5);
@@ -248,14 +211,14 @@ app.controller('myController', function($resource, $mdDialog, numberFilter){
         // それではnumを思った数値にできないし、スピンボタンが効かない場合もあるので
         // 20260617にコメントアウトする
         // this.divs[idx] = parseInt(Math.round(be/this.steps[idx]));
-        this.divs[this.block-1]++;
+        // this.divs[this.block-1]++;
     }
 
     this.updateStep = function(idx) {
-        this.divs[this.block-1]--;
-        var be = this.thetas[idx] - this.thetas[idx+1];
-        this.divs[idx] = parseInt(Math.round(be/this.steps[idx]));
-        this.divs[this.block-1]++;
+        // this.divs[this.block-1]--;
+        // var be = this.thetas[idx] - this.thetas[idx+1];
+        // this.divs[idx] = parseInt(Math.round(be/this.steps[idx]));
+        // this.divs[this.block-1]++;
     }
 
     this.saveTextFile = function(txt, fname, id) {
