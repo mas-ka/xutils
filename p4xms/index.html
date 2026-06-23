@@ -44,7 +44,7 @@
         <md-input-container>
             <label>Element</label>
             <md-select ng-model="Cntl.element_name" ng-change="Cntl.applyEdges(Cntl.element_name)">
-                <md-option ng-value="e" ng-repeat="e in Cntl.ElementNames">{{e}}</md-option>
+                <md-option ng-value="e.name" ng-repeat="e in Cntl.elements" ng-disabled="e.A<15">{{e.name}}</md-option>
             </md-select>
         </md-input-container>
         <md-input-container>
@@ -84,12 +84,18 @@
                     <td rowspan="2" style="cursor: default;">-</td>
                     <td rowspan="2">
                         <md-input-container>
-                            <input ng-model="Cntl.energies[0]" type="number" keep-max-decimals="2" min="0.01" max="{{Cntl.energies[1]-0.01}}" step="0.01" ng-change="Cntl.updateEnergy(0)" title="" required>
+                            <input ng-model="Cntl.energies[0]" type="number" keep-max-decimals="2" 
+                                    ng-model-options="{ updateOn: 'blur default', debounce: { 'blur': 0, 'default': 500 } }" 
+                                    min="0.01" max="{{Cntl.energies[1]-0.01}}" step="0.01" 
+                                    ng-change="Cntl.updateEnergy(0)" title="" required>
                         </md-input-container>
                     </td>
                     <td rowspan="2">
                         <md-input-container>
-                            <input ng-model="Cntl.thetas[0]" type="number" keep-max-decimals="4" step="0.00001" min="{{Cntl.thetas[1]+0.00001}}" ng-change="Cntl.updateTheta(0)" title="" required>
+                            <input ng-model="Cntl.thetas[0]" type="number" keep-max-decimals="4" step="0.00001" 
+                                    ng-model-options="{ updateOn: 'blur default', debounce: { 'blur': 0, 'default': 500 } }" 
+                                    min="{{Cntl.thetas[1]+0.00001}}" 
+                                    ng-change="Cntl.updateTheta(0)" title="" required>
                         </md-input-container>
                     </td>
                     <td style="border: none; height: 15px"></td>
@@ -104,7 +110,10 @@
                     </td>
                     <td rowspan="2">
                         <md-input-container>
-                            <input ng-model="Cntl.divs[0]" type="number" min="1" ng-change="Cntl.updateDiv(0)" title="" required>
+                            <input ng-model="Cntl.divs[0]" type="number" 
+                                    ng-model-options="{ updateOn: 'blur default', debounce: { 'blur': 0, 'default': 500 } }" 
+                                    min="1" 
+                                    ng-change="Cntl.updateDiv(0)" title="" required>
                         </md-input-container>
                     </td>
                     <td rowspan="2">
@@ -118,29 +127,42 @@
                     <td rowspan="2" style="cursor: default;">-</td>
                     <td rowspan="2">
                         <md-input-container>
-                            <input ng-model="Cntl.energies[1]" type="number" keep-max-decimals="2" min="{{Cntl.energies[0]+0.01}}" max="{{Cntl.energies[2]-0.01}}" step="0.01" ng-change="Cntl.updateEnergy(1)" title="" required>
+                            <input ng-model="Cntl.energies[1]" type="number" keep-max-decimals="2" 
+                                    ng-model-options="{ updateOn: 'blur default', debounce: { 'blur': 0, 'default': 500 } }" 
+                                    min="{{Cntl.energies[0]+0.01}}" max="{{Cntl.energies[2]-0.01}}" step="0.01" 
+                                    ng-change="Cntl.updateEnergy(1)" title="" required>
                         </md-input-container>
                     </td>
                     <td rowspan="2">
                         <md-input-container>
-                            <input ng-model="Cntl.thetas[1]" type="number" keep-max-decimals="4" step="0.00001" min="{{Cntl.thetas[2]+0.00001}}" max="{{Cntl.thetas[0]-0.00001}}" ng-change="Cntl.updateTheta(1)" title="" required>
+                            <input ng-model="Cntl.thetas[1]" type="number" keep-max-decimals="4" 
+                                    ng-model-options="{ updateOn: 'blur default', debounce: { 'blur': 0, 'default': 500 } }" 
+                                    step="0.00001" min="{{Cntl.thetas[2]+0.00001}}" max="{{Cntl.thetas[0]-0.00001}}" 
+                                    ng-change="Cntl.updateTheta(1)" title="" required>
                         </md-input-container>
                     </td>
                 </tr>
                 <tr>
                     <td rowspan="2">
                         <md-input-container>
-                            <input ng-model="Cntl.steps[1]" type="number" keep-max-decimals="5" ng-readonly="true" style="cursor: default" ng-disabled="!Cntl.block_shows[1]" title="" required>
+                            <input ng-model="Cntl.steps[1]" type="number" keep-max-decimals="5" 
+                                    ng-readonly="true" style="cursor: default" ng-disabled="!Cntl.block_shows[1]" title="" required>
                         </md-input-container>
                     </td>
                     <td rowspan="2">
                         <md-input-container>
-                            <input ng-model="Cntl.divs[1]" type="number" min="3" ng-change="Cntl.updateDiv(1)" ng-disabled="!Cntl.block_shows[1]" title="" required>
+                            <input ng-model="Cntl.divs[1]" type="number" 
+                                    ng-model-options="{ updateOn: 'blur default', debounce: { 'blur': 0, 'default': 500 } }" 
+                                    min="3" 
+                                    ng-change="Cntl.updateDiv(1)" ng-disabled="!Cntl.block_shows[1]" title="" required>
                         </md-input-container>
                     </td>
                     <td rowspan="2">
                         <md-input-container>
-                            <input ng-model="Cntl.exps[1]" type="number" min="1" ng-disabled="!Cntl.block_shows[1]" title="" required>
+                            <input ng-model="Cntl.exps[1]" type="number" 
+                                    ng-model-options="{ updateOn: 'blur default', debounce: { 'blur': 0, 'default': 500 } }" 
+                                    min="1" 
+                                    ng-disabled="!Cntl.block_shows[1]" title="" required>
                         </md-input-container>
                     </td>
                 </tr>
@@ -149,6 +171,7 @@
                     <td rowspan="2">
                         <md-input-container>
                             <input ng-model="Cntl.ks[idx]" type="number" keep-max-decimals="2" step="0.1" 
+                                    ng-model-options="{ updateOn: 'blur default', debounce: { 'blur': 0, 'default': 500 } }" 
                                     min="{{Cntl.energy2k(Cntl.theta2energy(Cntl.thetas[idx-1]-3*Cntl.steps[idx-1]), Cntl.AbsEnergy)||0.1}}" 
                                     max="{{Cntl.energy2k(Cntl.theta2energy(Cntl.thetas[idx+1]+3*Cntl.steps[idx]), Cntl.AbsEnergy)}}"
                                     ng-change="Cntl.updateK(idx)" ng-disabled="!Cntl.block_shows[idx-1]" title="" required>
@@ -157,6 +180,7 @@
                     <td rowspan="2">
                         <md-input-container>
                             <input ng-model="Cntl.energies[idx]" type="number" keep-max-decimals="2" step="0.1" 
+                                    ng-model-options="{ updateOn: 'blur default', debounce: { 'blur': 0, 'default': 500 } }" 
                                     min="{{Cntl.theta2energy(Cntl.thetas[idx-1]-3*Cntl.steps[idx-1])}}" 
                                     max="{{Cntl.theta2energy(Cntl.thetas[idx+1]+3*Cntl.steps[idx])}}" 
                                     ng-change="Cntl.updateEnergy(idx)" ng-disabled="!Cntl.block_shows[idx-1]" title="" required>
@@ -165,6 +189,7 @@
                     <td rowspan="2">
                         <md-input-container>
                             <input ng-model="Cntl.thetas[idx]" type="number" keep-max-decimals="4" step="0.001" 
+                                    ng-model-options="{ updateOn: 'blur default', debounce: { 'blur': 0, 'default': 500 } }" 
                                     min="{{Cntl.thetas[idx+1]+3*Cntl.steps[idx]}}" 
                                     max="{{Cntl.thetas[idx-1]-3*Cntl.steps[idx-1]}}" 
                                     ng-change="Cntl.updateTheta(idx)" ng-disabled="!Cntl.block_shows[idx-1]" title="" required>
@@ -180,6 +205,7 @@
                     <td rowspan="2">
                         <md-input-container>
                             <input ng-model="Cntl.divs[idx]" type="number" 
+                                    ng-model-options="{ updateOn: 'blur default', debounce: { 'blur': 0, 'default': 500 } }" 
                                     ng-change="Cntl.updateDiv(idx)" ng-disabled="!Cntl.block_shows[idx]" title="" required>
                         </md-input-container>
                     </td>

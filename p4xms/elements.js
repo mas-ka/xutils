@@ -81,7 +81,8 @@ elements = [
     {A: 90 , name: "Th", K:109653.00, L1: 20463.00, L2: 19683.00, L3: 16299.00, M:  3491.00},
     {A: 91 , name: "Pa", K:112601.00, L1: 21105.00, L2: 20314.00, L3: 16733.00, M:  3611.00},
     {A: 92 , name: "U",  K:115606.00, L1: 21771.00, L2: 20947.00, L3: 17165.00, M:  3728.00},
-    {A: 94 , name: "Pu", K:     0.00, L1: 23114.00, L2: 22252.00, L3: 18055.00, M:     0.00}
+    {A: 93 , name: "Np", K:118678.00, L1: 22427.00, L2: 21601.00, L3: 17610.00, M:  3850.00},
+    {A: 94 , name: "Pu", K:121795.00, L1: 23114.00, L2: 22252.00, L3: 18055.00, M:  3970.00}
 ];
 
 function getDummyVal(){
@@ -97,8 +98,12 @@ function getElementNames(){
 }
 
 function getElementByName(name) {
-    var names = getElementNames();
-    var idx = names.indexOf(name);
-    if (idx < 0) return {};
-    return elements[idx];
+    // var names = getElementNames();
+    // var idx = names.indexOf(name);
+    // if (idx < 0) return {};
+    // return elements[idx];
+    // 見つからなかった場合は空オブジェクト {} を返す
+    return elements.find(function(element) {
+        return element.name === name;
+    }) || {};
 }

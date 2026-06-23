@@ -35,6 +35,8 @@ app.controller('myController', function($resource, $mdDialog, numberFilter){
 
     this.EL = 12398.4264684;
 
+    const MaxBraggAngle = 75.0;
+
     this.xtals = [
         {name:'Si(111)', d:3.13551},
         {name:'Si(311)', d:1.63747},
@@ -55,6 +57,7 @@ app.controller('myController', function($resource, $mdDialog, numberFilter){
         }
     }
 
+    this.elements = elements;
     this.ElementNames = getElementNames();
     this.element_name = "Cu";
 
@@ -151,14 +154,21 @@ app.controller('myController', function($resource, $mdDialog, numberFilter){
 
     this.updateAllThetas = function() {
         var E0 = this.AbsEnergy;
-        this.thetas[0] = this.energy2theta(E0-330); // Measure Start
         this.thetas[1] = this.energy2theta(E0- 30); // XANES Start
+        this.thetas[0] = this.energy2theta(E0-330); // Measure Start
+        if (isNaN(this.thetas[0])) { // 多分最大ブラッグ角を超えてしまった
+            this.thetas[0] = MaxBraggAngle;
+            console.log(parseInt(Math.round((E0-30-this.theta2energy(this.thetas[0]))/300*50)))
+        }
         for (i = 2, k = 4 ; i <= 12 ; i++, k+=2)
             this.thetas[i] = this.energy2theta(this.k2energy(k, E0))
         for (i = 0 ; i < 12 ; i++) {
-            var be = this.thetas[i] - this.thetas[i+1];
-            var n = this.divs[i];
-            this.steps[i] = be/n;
+            if (this.thetas[i] >= MaxBraggAngle) {
+                this.divs[i] = parseInt(Math.round((E0-30-this.theta2energy(this.thetas[0]))/300*50))
+                this.steps[i] = (this.thetas[i] - this.thetas[i+1])/this.divs[i]
+            } else {
+                this.steps[i] = (this.thetas[i] - this.thetas[i+1])/this.divs[i];
+            }
         }
         for (i = 0 ; i <= 12 ; i++)
             this.energies[i] = this.theta2energy(this.thetas[i]);
@@ -201,8 +211,8 @@ app.controller('myController', function($resource, $mdDialog, numberFilter){
     }
 
     this.updateDiv = function(idx) {
-        if (this.divs[idx] < 4) {
-            this.divs[idx] = 4
+        if (this.divs[idx] < 3) {
+            this.divs[idx] = 3
         }
         var be = this.thetas[idx] - this.thetas[idx+1];
         var n = this.divs[idx]
