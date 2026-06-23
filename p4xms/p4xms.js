@@ -144,9 +144,15 @@ app.controller('myController', function($resource, $mdDialog, numberFilter){
     }
 
     this.changeBlock = function() { // プルダウンでBlock数が変更されたら露光時間以外のパラメータを初期値に戻す
-        this.block_prev = this.block;
+        for (i = 0 ; i < this.block ; i++) this.block_shows[i] = true;
+        for (i = this.block ; i < 12 ; i++) this.block_shows[i] = false;
+    }
+
+    this.resetBlocks = function() {
+        this.block_prev = 10; this.block = 10;
         this.ks = [0, 0, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24];
         this.divs = [ 50, 250,  40,  40,  40,  40,  40,  40,  40,  40,  40,  40];
+        this.exps = [  1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1];
         this.updateAllThetas();
         for (i = 0 ; i < this.block ; i++) this.block_shows[i] = true;
         for (i = this.block ; i < 12 ; i++) this.block_shows[i] = false;

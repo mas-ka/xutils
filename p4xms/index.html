@@ -55,7 +55,14 @@
         </md-input-container>
         <p style="cursor: default;">edge = {{Cntl.AbsEnergy | number:2}} eV ({{Cntl.energy2theta(Cntl.AbsEnergy) | number:5}} &deg;)</p>
     </div>
-    <h2 style="cursor: default;">Parameters</h2>
+    <h2 style="cursor: default;">Parameters&nbsp;
+            <md-button class="md-icon-button" aria-label="Reset to default" 
+                        style="color: steelblue; background-color: white; margin: 0; padding: 0; width: 20px; height: 20px; min-width: 20px; min-height: 20px; line-height: 20px;" 
+                        ng-click="Cntl.resetBlocks()">
+                <md-icon md-font-icon="fa-solid fa-arrow-rotate-left" 
+                        style="color: steelblue; font-size: 12px; width: 12px; height: 12px; min-height: 12px; display: inline-block; vertical-align: middle;"></md-icon>
+            </md-button>
+    </h2>
     <div layout="column" layout-align="space-around start" layout-margin>
         <md-input-container>
             <label>Blocks</label>
