@@ -1,4 +1,35 @@
 var app = angular.module('myApp', ['ngMaterial', 'ngResource', 'ngSanitize']);
+
+app.directive('keepMaxDecimals', function() {
+    return {
+        restrict: 'A',
+        require: 'ngModel',
+        link: function(scope, element, attrs, ngModelCtrl) {
+            var maxDecimals = parseInt(attrs.keepMaxDecimals, 10) || 2;
+
+            // 【超重要】JS側のモデル（ng-model）の値が書き換わった時、
+            // 画面（DOM）に出力される直前で常にキャッチして丸める処理
+            ngModelCtrl.$formatters.push(function(value) {
+                if (value === undefined || value === null || isNaN(value)) {
+                    return value;
+                }
+
+                // 小数点以下の桁数を確認
+                var str = value.toString();
+                if (str.indexOf('.') !== -1) {
+                    var parts = str.split('.');
+                    if (parts[1].length > maxDecimals) {
+                        // 指定桁（2桁）を超えていたら、表示用だけに四捨五入（または切り捨て）した数値を返す
+                        var multiplier = Math.pow(10, maxDecimals);
+                        return Math.round(value * multiplier) / multiplier;
+                    }
+                }
+                return value;
+            });
+        }
+    };
+});
+
 app.controller('myController', function($resource, $mdDialog, numberFilter){
     var org = this;
 
@@ -46,8 +77,14 @@ app.controller('myController', function($resource, $mdDialog, numberFilter){
     this.applyAbsEnergy = function() {
         var element = getElementByName(this.element_name);
         this.AbsEnergy = element[this.edge];
+        const e0 = (getElementByName(this.element_name))[this.edge];
+        this.e_begin = e0 - 330;
+        this.k_end = 20.0;
+        this.e_end = this.k2energy(this.k_end, e0);
+        this.step_for_quick = this.calcDeltaE();
+        this.total_points = this.calcTotalPoints();
+        this.degpsec = this.calcDegPSec();
         this.createFileName();
-        this.updateAllThetas();
     }
 
     this.fname_param = "Cu-K_Q.param";
@@ -57,23 +94,15 @@ app.controller('myController', function($resource, $mdDialog, numberFilter){
         this.fname_agenda = this.element_name+"-"+this.edge+"_Q.agenda";
     }
 
-    this.blocks = [1,2,3,4,5,6,7,8,9,10]; this.block = this.blocks[9]; this.block_prev = this.block;
-    this.block_shows = [true,true,true,true,true,true,true,true,true,true];
-    this.ks = [0, 0, 4, 6, 8, 10, 12, 14, 16, 18, 20];
-    this.energies = [8651,8951,9041.96,9118.16,9224.84,9362,9529.64,9727.76,9956.36,10215.44,10505];
-    this.thetas = [13.21113,12.76074,12.63024,12.52296,12.37583,12.19171,11.97403,11.72666,11.45373,11.15946,10.84808];
-    this.steps = [0.00901,0.00052,0.00268,0.00368,0.00460,0.00544,0.00618,0.00682,0.00736,0.00778];
-    this.divs = [ 50, 250,  40,  40,  40,  40,  40,  40,  40,  41];
-    this.exps = [  1,   1,   1,   1,   1,   1,   1,   1,   1,   1];
-
-    this.step_for_quick = 0.36384;
-    this.time_for_quick = 120;
-
+    this.energy2theta = function(e) { return Math.toDegrees(Math.asin(this.EL/(2*this.xtal.d*e))); }
+    this.theta2energy = function(t) { return this.EL/(2*this.xtal.d*Math.sin(Math.toRadians(t))); }
+    this.k2energy = function(k, e0) { return e0 + k*k / 0.262467191; }
+    this.energy2k = function(e, e0) { return Math.sqrt(0.262467191 * (e - e0)); }
     Math.toDegrees = function(radian){
         var toDegree = 180/Math.PI;
         if(isNaN(radian)) return NaN;
         return radian * toDegree;
-    };
+    }
     Math.toRadians = function(degree){
         return isNaN(degree)?NaN:degree*Math.PI/180;
     }
@@ -96,151 +125,61 @@ app.controller('myController', function($resource, $mdDialog, numberFilter){
         return Array(w - (""+i).length + 1).join(" ")+i;
     }
 
-    this.energy2theta = function(e) { return Math.toDegrees(Math.asin(this.EL/(2*this.xtal.d*e))); }
-    this.theta2energy = function(t) { return this.EL/(2*this.xtal.d*Math.sin(Math.toRadians(t))); }
-    this.k2energy = function(k, e0) { return e0 + k*k / 0.262467191; }
-    this.energy2k = function(e, e0) { return Math.sqrt(0.262467191 * (e - e0)); }
+    this.updateE = function () {
+        this.k_end = this.energy2k(this.e_end, this.AbsEnergy);
+        this.checkStep4Q();
+        this.checkDegPSec();
+    }
 
-    this.minStep = function() {return Math.min(...this.steps);}
+    this.updateK = function() {
+        this.e_end = this.k2energy(this.k_end, this.AbsEnergy);
+        this.checkStep4Q();
+        this.checkDegPSec();
+    }
+
+    this.calcDeltaE = function() {
+        //const dT = (this.energy2theta(this.AbsEnergy-30) - this.energy2theta(this.k2energy(4, this.AbsEnergy))) / 250.0 ;
+        //return this.theta2energy(this.energy2theta(this.AbsEnergy) - dT) - (this.AbsEnergy);
+        return (this.k2energy(4, this.AbsEnergy) - (this.AbsEnergy - 30)) / 250.0 ; // これはXUIM3での定義(※角度換算はしていない)
+    }
+
     this.calcTotalPoints = function() {
-        var dT = this.energy2theta(this.AbsEnergy) - this.energy2theta(this.AbsEnergy + this.step_for_quick);
-        return Math.trunc(1 + (this.thetas[0] - this.thetas[this.block]) / dT);
-    }
-    this.total_points = this.calcTotalPoints();
-
-    this.calcDegPSec = function() {
-        return (this.thetas[0] - this.thetas[this.block]) / this.time_for_quick;
-    }
-    this.degpsec = this.calcDegPSec();
- 
-    this.refresh;
-    this.refreshDivs = function() {
-        this.divs = [ 50, 250,  40,  40,  40,  40,  40,  40,  40,  40];
-        for (i = 0 ; i < 10 ; i++) {
-            var be = this.thetas[i] - this.thetas[i+1];
-            var n = this.divs[i];
-            this.steps[i] = Math.formatFloat((0.00001 * Math.round(100000 * be/n))||0.00001, 5);
-            this.divs[i] = parseInt(Math.round(be/this.steps[i]));
-        }
-        this.divs[this.block-1]++;
+        return Math.trunc(
+            (this.energy2theta(this.e_begin) - this.energy2theta(this.e_end))
+            / (this.energy2theta(this.AbsEnergy) - this.energy2theta(this.AbsEnergy + this.step_for_quick))
+            + 1
+        );
     }
 
-    this.changeBlock = function() { // プルダウンでBlock数が変更されたら全てのパラメータを初期値に戻す
-        this.ks = [0, 0, 4, 6, 8, 10, 12, 14, 16, 18, 20];
-        this.divs = [ 50, 250,  40,  40,  40,  40,  40,  40,  40,  41];
-        this.exps = [  1,   1,   1,   1,   1,   1,   1,   1,   1,   1];
-        this.updateAllThetas();
-        this.block_prev = this.block;
-        for (i = 0 ; i < this.block ; i++) this.block_shows[i] = true;
-        for (i = this.block ; i < 10 ; i++) this.block_shows[i] = false;
-    }
-
-    this.updateAllThetas = function() {
-        var E0 = this.AbsEnergy;
-        this.thetas[0] = Math.formatFloat(this.energy2theta(E0-330), 5); // Measure Start
-        this.thetas[1] = Math.formatFloat(this.energy2theta(E0- 30), 5); // XANES Start
-        for (i = 2, k = 4 ; i <= 10 ; i++, k+=2)
-            this.thetas[i] = Math.formatFloat(this.energy2theta(this.k2energy(k, E0)), 5);
-        this.divs[this.block-1]--;
-        for (i = 0 ; i < 10 ; i++) {
-            var be = this.thetas[i] - this.thetas[i+1];
-            var n = this.divs[i];
-            this.steps[i] = Math.formatFloat((0.00001*Math.round(100000*be/n))||0.00001, 5);
-            this.divs[i] = parseInt(Math.round(be/this.steps[i]));
-        }
-        this.divs[this.block-1]++;
-        for (i = 0 ; i <= 10 ; i++)
-            this.energies[i] = Math.formatFloat(this.theta2energy(this.thetas[i]), 2);
-    }
-
-    this.updateEnergy = function(idx) {
-        this.divs[this.block-1]--;
-        this.thetas[idx] = Math.formatFloat(this.energy2theta(this.energies[idx]), 5);
-        if (idx == 0) this.divs[0] = parseInt(Math.round((this.thetas[0]-this.thetas[1])/this.steps[0]));
-        else if (idx == 10) this.divs[idx-1] = parseInt(Math.round((this.thetas[idx-1]-this.thetas[idx])/this.steps[idx-1]));
-        else {
-            this.divs[idx-1] = parseInt(Math.round((this.thetas[idx-1]-this.thetas[idx])/this.steps[idx-1]));
-            this.divs[idx] = parseInt(Math.round((this.thetas[idx]-this.thetas[idx+1])/this.steps[idx]));
-        }
-        if (idx > 1) this.ks[idx] = Math.round(Math.formatFloat(this.energy2k(this.energies[idx], this.AbsEnergy), 5)*100)/100;
-        this.divs[this.block-1]++;
-    }
-
-    this.updateTheta = function(idx) {
-        this.divs[this.block-1]--;
-        this.energies[idx] = Math.formatFloat(this.theta2energy(this.thetas[idx]), 2);
-        if (idx == 0) this.divs[0] = parseInt(Math.round((this.thetas[0]-this.thetas[1])/this.steps[0]));
-        else if (idx == 10) this.divs[idx-1] = parseInt(Math.round((this.thetas[idx-1]-this.thetas[idx])/this.steps[idx-1]));
-        else {
-            this.divs[idx-1] = parseInt(Math.round((this.thetas[idx-1]-this.thetas[idx])/this.steps[idx-1]));
-            this.divs[idx] = parseInt(Math.round((this.thetas[idx]-this.thetas[idx+1])/this.steps[idx]));
-        }
-        if (idx > 1) this.ks[idx] = Math.round(Math.formatFloat(this.energy2k(this.energies[idx], this.AbsEnergy), 5)*100)/100;
-        this.divs[this.block-1]++;
-    }
-
-    this.updateK = function(idx) {
-        this.divs[this.block-1]--;
-        this.energies[idx] = Math.formatFloat(this.k2energy(this.ks[idx], this.AbsEnergy), 2);
-        this.thetas[idx] = Math.formatFloat(this.energy2theta(this.energies[idx]), 5);
-        if (idx == 0) this.divs[0] = parseInt(Math.round((this.thetas[0]-this.thetas[1])/this.steps[0]));
-        else if (idx == 10) this.divs[idx-1] = parseInt(Math.round((this.thetas[idx-1]-this.thetas[idx])/this.steps[idx-1]));
-        else {
-            this.divs[idx-1] = parseInt(Math.round((this.thetas[idx-1]-this.thetas[idx])/this.steps[idx-1]));
-            this.divs[idx] = parseInt(Math.round((this.thetas[idx]-this.thetas[idx+1])/this.steps[idx]));
-        }
-        this.divs[this.block-1]++;
-    }
-
-    this.updateDiv = function(idx) {
-        this.divs[this.block-1]--;
-        var be = this.thetas[idx] - this.thetas[idx+1];
-        var n = this.divs[idx];
-        this.steps[idx] = Math.formatFloat((0.00001 * Math.round(100000 * be/n))||0.00001, 5);
-        this.divs[idx] = parseInt(Math.round(be/this.steps[idx]));
-        this.divs[this.block-1]++;
-    }
-
-    this.updateStep = function(idx) {
-        this.divs[this.block-1]--;
-        var be = this.thetas[idx] - this.thetas[idx+1];
-        this.divs[idx] = parseInt(Math.round(be/this.steps[idx]));
-        this.divs[this.block-1]++;
-    }
-
-    this.warning_points = false;
-    this.checkStep4Q = function($event) {
+    this.checkStep4Q = function() {
         this.total_points = this.calcTotalPoints();
         this.warning_points = (this.total_points > 8190);
-        // if (this.calcTotalPoints() > 8190) {
-        //     $mdDialog.show(
-        //         $mdDialog.alert()
-        //         .title("   A L E R T   ")
-        //         .textContent("  Number of points must be < 8191 !  ")
-        //         .clickOutsideToClose(true)
-        //         .ok('OK')
-        //         .targetEvent($event)
-        //     );
-        //     this.step_for_quick = 0.36384;
-        // }
     }
 
-    this.warning_dps = false;
-    this.checkDegPSec = function($event) {
+    this.calcDegPSec = function() {
+        return (this.energy2theta(this.e_begin) - this.energy2theta(this.e_end)) / this.time_for_quick;
+    }
+
+    this.checkDegPSec = function() {
         this.degpsec = this.calcDegPSec();
         this.warning_dps = (this.degpsec > 0.13888);
-        // if (this.calcDegPSec() > 0.13888) { // 36000 pulse/deg. & MAX 5000 pulse/sec.
-        //     $mdDialog.show(
-        //         $mdDialog.alert()
-        //         .title("   A L E R T   ")
-        //         .textContent("  Speed must be < 0.1388 [°/sec.] !  ")
-        //         .clickOutsideToClose(true)
-        //         .ok('OK')
-        //         .targetEvent($event)
-        //     );
-        //     this.time_for_quick = 120;
-        // }
     }
+
+    this.resetParams = function() {
+        this.applyAbsEnergy();
+    }
+
+    // 起動時のパラメータ
+    this.k_end = 20;
+    this.e_begin = 8651.0; this.e_end = 10505.0;
+    this.step_for_quick = this.calcDeltaE();
+    this.total_points = this.calcTotalPoints();
+    this.time_for_quick = 120;
+    this.warning_points = false;
+    this.degpsec = this.calcDegPSec();
+    this.warning_dps = false;
+ 
+    this.refresh;
 
     this.saveTextFile = function(txt, fname, id) {
         var blob = new Blob([ txt ], { "type" : "text/plain" });
@@ -249,46 +188,6 @@ app.controller('myController', function($resource, $mdDialog, numberFilter){
             // msSaveOrOpenBlobの場合はファイルを保存せずに開ける
             window.navigator.msSaveOrOpenBlob(blob, fname);
         } else document.getElementById(id).href = window.URL.createObjectURL(blob);
-    }
-
-    this.createText4PFOld = function() {
-        var l = String.formatF(this.xtal.d, 10, 5) + String.formatI(this.divs.length, 8);
-        for (i = 0 ; i < 10 ; i++) l += String.formatI(this.divs[i], 8); l+="\r\n";
-        for (i = 0 ; i < 11 ; i++) l += String.formatF(this.thetas[i], 10, 6); l+="\r\n";
-        for (i = 0 ; i < 10 ; i++) l += String.formatF(-1*this.steps[i], 10, 6); l+="\r\n";
-        for (i = 0 ; i < 10 ; i++) l += String.formatF(this.exps[i], 10, 6); l+="\r\n";
-        l += String.formatF(Math.formatFloat(this.energy2theta(this.AbsEnergy), 5), 10, 6); l+="\r\n";
-        return l;
-    }
-
-    this.createText4PFNew = function(bl_name, angle_ini, loop, mode, axis) {
-        var l = " Mono :"+String.formatI(this.xtal.name.toUpperCase(), 10);
-        l += "       D="+String.formatF(this.xtal.d, 9, 5)+" A";
-        l += "    Initial angle="+String.formatF(angle_ini, 9, 5)+" deg\r\n";
-        l += " "+(bl_name+"     ").substr(0, 5);
-        var mode_txt = ["", "", "Transmission", "Fluorescence", "E-yield"][mode];
-        l += "    "+("             "+mode_txt).split("").reverse().join("").substr(0, 13).split("").reverse().join("");
-        l += "("+String.formatI(mode, 2)+")   Repetition="+String.formatI(loop, 3);
-        l += "     Points="+String.formatI(this.divs.reduce(function(p,c,i,a){return p+c;}), 5)+"\r\n";
-        l += " Param file : "+(this.element_name+"-"+this.edge+".param                ").substr(0, 15);
-        if (axis == 1) l += " angle axis (1)";
-        else l += " energy axis(2)";
-        l += "     Block ="+String.formatI(this.block, 5)+"\r\n\r\n";
-        l += " Block      Init-ang  final-ang     Step/deg     Time/s       Num\r\n";
-        for (var i = 1 ; i <= this.block ; i++) {
-            l += " "+String.formatI(i, 5)+"     ";
-            if (axis == 1) {
-                l += String.formatF(this.thetas[i-1], 10, 5)+String.formatF(this.thetas[i], 10, 5);
-                l += " "+(new Number(-1*this.steps[i-1])).toExponential(6).toUpperCase();
-            } else {
-                l += String.formatF(this.energies[i-1], 10, 2)+String.formatF(this.energies[i], 10, 2);
-                l += String.formatF((this.energies[i]-this.energies[i-1])/(this.divs[i-1]-(i<this.block?0:1)), 13, 2);
-            }
-            l += " "+String.formatF(this.exps[i-1], 11, 2)+String.formatI(this.divs[i-1], 10)+"\r\n";
-        }
-        if (axis == 1) l += " Edge angle "+String.formatF(this.energy2theta(this.AbsEnergy), 10, 5)+" deg\r\n";
-        else l += " Edge energy "+String.formatF(this.AbsEnergy, 10, 2)+" eV\r\n";
-        return l;
     }
 
     this.createText4SagaAgenda = function() {
@@ -304,58 +203,20 @@ app.controller('myController', function($resource, $mdDialog, numberFilter){
         l += "  </element>\r\n";
         l += "  <scan type=\"quick\">\r\n";
         l += "    <edge_energy unit=\"eV\">"+String.formatF(this.AbsEnergy, 10, 2).trim()+"</edge_energy>\r\n";
-        l += "    <agenda final=\""+String.formatF(this.energies[this.block], 10, 2).trim()
+        l += "    <agenda final=\""+String.formatF(this.e_end, 10, 2).trim()
                     +"\" step_for_quick=\""+String.formatF(this.step_for_quick, 10, 5).trim()
                     +"\" time_for_quick=\""+String.formatI(this.time_for_quick, 10).trim()
                     +"\" unit=\"eV\">\r\n";
-        for (var i = 1 ; i <= this.block ; i++) {
-            l += "      <block id=\""+i+"\">\r\n";
-            l += "        <ini>"+String.formatF(this.energies[i-1], 10, 2).trim()+"</ini>"
-                       + "<div>"+this.divs[i-1]+"</div>"
-                       + "<sec>"+this.exps[i-1]+"</sec>\r\n";
-            l += "      </block>\r\n";
-        }
+        // block id="1"のみ出力
+        l += "      <block id=\"1\">\r\n";
+        l += "        <ini>"+String.formatF(this.e_begin, 10, 2).trim()+"</ini>"
+                    + "<div>50</div>"
+                    + "<sec>1</sec>\r\n";
+        l += "      </block>\r\n";
         l += "    </agenda>\r\n";
         l += "  </scan>\r\n"
         l += "</parameter>\r\n";
         return l;
-    }
-
-    this.downloadAsPFOld = function() {
-        var txt = this.createText4PFOld();
-        this.saveTextFile(txt, this.element_name+"-"+this.edge+".param", "download_old");
-    }
-
-    this.status = "null";
-    this.openDialogForPFNew = function($event) {
-        var globals = this;
-        var parentEl = angular.element(document.body);
-        $mdDialog.show({
-            locals: {
-                globals: this,
-                bl_name: "BL7C",
-                angle_ini: Math.formatFloat(this.energy2theta(this.AbsEnergy), 5),
-                loop: 1,
-                mode: 2,
-                axis: 1
-            },
-            parent: angular.element(document.body),
-            targetEvent: $event,
-            clickOutsideToClose:true,
-            templateUrl: 'dlg_pfnew.html',
-            bindToController: true,
-            controllerAs: 'dialogCtrl',
-            controller: function($mdDialog) {
-                this.closeDialog = function() {
-                    $mdDialog.hide();
-                }
-                this.downloadAsPFNew = function() {
-                    var txt = globals.createText4PFNew(this.bl_name, this.angle_ini, this.loop, this.mode, this.axis);
-                    globals.saveTextFile(txt, this.element_name+"-"+this.edge+".param", "download_new");
-                    $mdDialog.hide();
-                }
-            }
-        });
     }
 
     this.downloadAsSagaAgenda = function() {
@@ -409,40 +270,16 @@ app.controller('myController', function($resource, $mdDialog, numberFilter){
                     org.applyEdges(org.element_name);
                     org.edge = xmlDoc.evaluate('//element/edge/text()', xmlDoc, null, XPathResult.STRING_TYPE, null).stringValue.toUpperCase();
                     // Agendaタグ
-                    // xx_for_quickはStepスキャンのAgendaでは読み飛ばして構わない
-                    block_shows = [false,false,false,false,false,false,false,false,false,false];
-                    // block数を取得
-                    const block_num = xmlDoc.evaluate('//agenda/block', xmlDoc, null, XPathResult.UNORDERED_NODE_SNAPSHOT_TYPE, null).snapshotLength;
-                    // id=1のblockだけ特殊処理をおこなう
-                    org.energies[0] = xmlDoc.evaluate('//agenda/block[@id=\"1\"]/ini/text()', xmlDoc, null, XPathResult.NUMBER_TYPE, null).numberValue;
-                    org.thetas[0] = Math.formatFloat(org.energy2theta(org.energies[0]), 5);
-                    org.divs[0] = xmlDoc.evaluate('//agenda/block[@id=\"1\"]/div/text()', xmlDoc, null, XPathResult.NUMBER_TYPE, null).numberValue;
-                    org.exps[0] = xmlDoc.evaluate('//agenda/block[@id=\"1\"]/sec/text()', xmlDoc, null, XPathResult.NUMBER_TYPE, null).numberValue;
-                    // 残りの各blockを走査
-                    org.block_shows = [false,false,false,false,false,false,false,false,false,false]; // 一旦すべて非表示にする
-                    for (var i = 2 ; i <= block_num ; i++) {
-                        org.block_shows[i-2] = true;
-                        org.energies[i-1] = xmlDoc.evaluate('//agenda/block[@id=\"'+i+'\"]/ini/text()', xmlDoc, null, XPathResult.NUMBER_TYPE, null).numberValue;
-                        org.thetas[i-1] = Math.formatFloat(org.energy2theta(org.energies[i-1]), 5);
-                        if (i > 2) org.ks[i-1] = Math.round(Math.formatFloat(org.energy2k(org.energies[i-1], org.AbsEnergy), 5)*100)/100;
-                        org.divs[i-1] = xmlDoc.evaluate('//agenda/block[@id=\"'+i+'\"]/div/text()', xmlDoc, null, XPathResult.NUMBER_TYPE, null).numberValue;
-                        org.steps[i-2] = Math.formatFloat((0.00001 * Math.round(100000 * (org.thetas[i-2] - org.thetas[i-1]) / org.divs[i-2]))||0.00001, 5);
-                        org.exps[i-1] = xmlDoc.evaluate('//agenda/block[@id=\"'+i+'\"]/sec/text()', xmlDoc, null, XPathResult.NUMBER_TYPE, null).numberValue;
-                    }
-                    // 最終blockの処理
-                    org.block_shows[i-2] = true;
-                    org.energies[i-1] = xmlDoc.evaluate('//agenda/@final', xmlDoc, null, XPathResult.NUMBER_TYPE, null).numberValue;
-                    org.thetas[i-1] = Math.formatFloat(org.energy2theta(org.energies[i-2]), 5);
-                    org.ks[i-1] = Math.round(Math.formatFloat(org.energy2k(org.energies[i-1], org.AbsEnergy), 5)*100)/100;
-                    org.block = block_num;
-                    // xx_for_quickの処理
+                    // final属性, step_for_quick属性, time_for_quick属性
+                    org.e_end = xmlDoc.evaluate('//agenda/@final', xmlDoc, null, XPathResult.NUMBER_TYPE, null).numberValue;
                     org.step_for_quick = xmlDoc.evaluate('//agenda/@step_for_quick', xmlDoc, null, XPathResult.NUMBER_TYPE, null).numberValue;
-                    var dT = org.energy2theta(org.AbsEnergy) - org.energy2theta(org.AbsEnergy + org.step_for_quick);
-                    org.total_points =  Math.trunc(1 + (org.thetas[0] - org.energy2theta(org.energies[i-1])) / dT);
-                    org.warning_points = (org.total_points > 8190);
                     org.time_for_quick = xmlDoc.evaluate('//agenda/@time_for_quick', xmlDoc, null, XPathResult.NUMBER_TYPE, null).numberValue;
-                    org.degpsec = (org.thetas[0] - org.energy2theta(org.energies[i-1])) / org.time_for_quick;
-                    org.warning_dps = (org.degpsec > 0.13888);
+                    // id=1のblockからiniだけ読み込む
+                    org.e_begin = xmlDoc.evaluate('//agenda/block[@id=\"1\"]/ini/text()', xmlDoc, null, XPathResult.NUMBER_TYPE, null).numberValue;
+                    // 他パラメータの補完
+                    org.updateE();
+                    org.checkStep4Q();
+                    org.checkDegPSec();
                 });
             };
             reader.readAsText(file);

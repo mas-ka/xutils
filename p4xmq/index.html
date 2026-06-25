@@ -55,425 +55,70 @@
         </md-input-container>
         <p style="cursor: default;">edge = {{Cntl.AbsEnergy | number:2}} eV ({{Cntl.energy2theta(Cntl.AbsEnergy) | number:5}} &deg;)</p>
     </div>
-    <h2 style="cursor: default;">Parameters</h2>
+    <h2 style="cursor: default;">Parameters&nbsp;
+            <md-button class="md-icon-button" aria-label="Reset to default" 
+                        style="color: steelblue; background-color: white; margin: 0; padding: 0; width: 20px; height: 20px; min-width: 20px; min-height: 20px; line-height: 20px;" 
+                        ng-click="Cntl.resetParams()">
+                <md-icon md-font-icon="fa-solid fa-arrow-rotate-left" 
+                        style="color: steelblue; font-size: 12px; width: 12px; height: 12px; min-height: 12px; display: inline-block; vertical-align: middle;"></md-icon>
+            </md-button>
+    </h2>
     <div layout="column" layout-align="space-around start" layout-margin>
-        <md-input-container>
-            <label>Blocks</label>
-            <md-select ng-model="Cntl.block" ng-change="Cntl.changeBlock()">
-                <!-- <md-option ng-value="v" ng-repeat="v in Cntl.blocks">{{v}}</md-option> -->
-                <md-option ng-value="1" ng-disabled="true">1</md-option>
-                <md-option ng-value="2" ng-disabled="false">2</md-option>
-                <md-option ng-value="3" ng-disabled="false">3</md-option>
-                <md-option ng-value="4" ng-disabled="false">4</md-option>
-                <md-option ng-value="5" ng-disabled="false">5</md-option>
-                <md-option ng-value="6" ng-disabled="false">6</md-option>
-                <md-option ng-value="7" ng-disabled="false">7</md-option>
-                <md-option ng-value="8" ng-disabled="false">8</md-option>
-                <md-option ng-value="9" ng-disabled="false">9</md-option>
-                <md-option ng-value="10" ng-disabled="false">10</md-option>
-            </md-select>
-        </md-input-container>
-        <table class="table_01">
-            <thead>
-                <tr>
-                    <th style="border-left: 1px solid #b9b9b9; border-right: 1px solid #b9b9b9; text-align: center; width: 8%; cursor: default;">Block</th>
-                    <th style="border-right: 1px solid #b9b9b9; width: 33%; cursor: default;">k [A<sup>-1</sup>]</th>
-                    <th style="border-left: 1px solid #b9b9b9; border-right: 1px solid #b9b9b9; cursor: default;">E [eV]</th>
-                    <!-- <th style="border-left: 1px solid #b9b9b9; border-right: 1px solid #b9b9b9;">θ [°]</th> -->
-                    <!-- <th style="border-left: 1px solid #b9b9b9; border-right: 1px solid #b9b9b9;">Step [°]</th> -->
-                    <!-- <th style="border-left: 1px solid #b9b9b9; border-right: 1px solid #b9b9b9;">
-                        Num
-                        <input type="submit" value="&#xf021;" ng-model="Cntl.refresh" ng-click="Cntl.refreshDivs()">
-                    </th> -->
-                    <!-- <th style="border-left: 1px solid #b9b9b9;">Time [s]</th> -->
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td rowspan="1" style="text-align: center; cursor: default;">-</td>
-                    <td rowspan="1"></td>
-                    <td rowspan="1">
-                        <md-input-container>
-                            <input ng-model="Cntl.energies[0]" type="number" step="0.01" min="0.01" max="{{Cntl.energies[1]-0.01}}" ng-change="Cntl.updateEnergy(0)" required>
-                        </md-input-container>
-                    </td>
-                    <!-- <td rowspan="1">
-                        <md-input-container>
-                            <input ng-model="Cntl.thetas[0]" type="number" step="0.00001" ng-change="Cntl.updateTheta(0)">
-                        </md-input-container>
-                    </td> -->
-                    <!-- <td style="border: none; height: 15px"></td> -->
-                    <!-- <td style="border: none; height: 15px"></td> -->
-                    <!-- <td style="border: none; height: 15px"></td> -->
-                </tr>
- <!--                <tr>
-                    <td rowspan="2">
-                        <md-input-container>
-                            <input ng-model="Cntl.steps[0]" type="number" step="0.00001" ng-change="Cntl.updateStep(0)">
-                        </md-input-container>
-                    </td>
-                    <td rowspan="2">
-                        <md-input-container>
-                            <input ng-model="Cntl.divs[0]" type="number" ng-change="Cntl.updateDiv(0)">
-                        </md-input-container>
-                    </td>
-                    <td rowspan="2">
-                        <md-input-container>
-                            <input ng-model="Cntl.exps[0]" type="number">
-                        </md-input-container>
-                    </td>
-                </tr> -->
-                <tr>
-                    <td rowspan="1" style="text-align: center; cursor: default;">1</td>
-                    <td rowspan="1"></td>
-                    <td rowspan="1">
-                        <md-input-container>
-                            <input ng-model="Cntl.energies[1]" type="number" step="0.01" ng-disabled="true" required>
-                        </md-input-container>
-                    </td>
-                    <!-- <td rowspan="1">
-                        <md-input-container>
-                            <input ng-model="Cntl.thetas[1]" type="number" step="0.00001" ng-disabled="true">
-                        </md-input-container>
-                    </td> -->
-                </tr>
-                <!-- <tr ng-show="Cntl.block_shows[1]">
-                    <td rowspan="2">
-                        <md-input-container>
-                            <input ng-model="Cntl.steps[1]" type="number" step="0.00001" ng-change="Cntl.updateStep(1)">
-                        </md-input-container>
-                    </td>
-                    <td rowspan="2">
-                        <md-input-container>
-                            <input ng-model="Cntl.divs[1]" type="number" ng-change="Cntl.updateDiv(1)">
-                        </md-input-container>
-                    </td>
-                    <td rowspan="2">
-                        <md-input-container>
-                            <input ng-model="Cntl.exps[1]" type="number">
-                        </md-input-container>
-                    </td>
-                </tr> -->
-                <tr >
-                    <td rowspan="1" style="text-align: center; cursor: default;">2</td>
-                    <td rowspan="1">
-                        <md-input-container>
-                            <input ng-model="Cntl.ks[2]" type="number" step="0.1" min="{{Cntl.ks[1]+0.1}}" max="{{Cntl.ks[3]-0.1}}" ng-change="Cntl.updateK(2)" ng-disabled=(Cntl.block!=2) required>
-                        </md-input-container>
-                    </td>
-                    <td rowspan="1">
-                        <md-input-container>
-                            <input ng-model="Cntl.energies[2]" type="number" step="0.01" min="{{Cntl.energies[1]+0.01}}" max="{{Cntl.energies[3]-0.01}}" ng-change="Cntl.updateEnergy(2)" ng-disabled=(Cntl.block!=2) required>
-                        </md-input-container>
-                    </td>
-                    <!-- <td rowspan="1">
-                        <md-input-container>
-                            <input ng-model="Cntl.thetas[2]" type="number" step="0.00001" ng-change="Cntl.updateTheta(2)" ng-disabled=(Cntl.block!=2)>
-                        </md-input-container>
-                    </td> -->
-                </tr>
-                <!-- <tr ng-show="Cntl.block_shows[2]">
-                    <td rowspan="2">
-                        <md-input-container>
-                            <input ng-model="Cntl.steps[2]" type="number" step="0.00001" ng-change="Cntl.updateStep(2)">
-                        </md-input-container>
-                    </td>
-                    <td rowspan="2">
-                        <md-input-container>
-                            <input ng-model="Cntl.divs[2]" type="number" ng-change="Cntl.updateDiv(2)">
-                        </md-input-container>
-                    </td>
-                    <td rowspan="2">
-                        <md-input-container>
-                            <input ng-model="Cntl.exps[2]" type="number">
-                        </md-input-container>
-                    </td>
-                </tr> -->
-                <tr >
-                    <td rowspan="1" style="text-align: center; cursor: default;">3</td>
-                    <td rowspan="1">
-                        <md-input-container>
-                            <input ng-model="Cntl.ks[3]" type="number" step="0.1" min="{{Cntl.ks[2]+0.1}}" max="{{Cntl.ks[4]-0.1}}" ng-change="Cntl.updateK(3)" ng-disabled=(Cntl.block!=3) required>
-                        </md-input-container>
-                    </td>
-                    <td rowspan="1">
-                        <md-input-container>
-                            <input ng-model="Cntl.energies[3]" type="number" step="0.01" min="{{Cntl.energies[2]+0.01}}" max="{{Cntl.energies[4]-0.01}}" ng-change="Cntl.updateEnergy(3)" ng-disabled=(Cntl.block!=3) required>
-                        </md-input-container>
-                    </td>
-                    <!-- <td rowspan="1">
-                        <md-input-container>
-                            <input ng-model="Cntl.thetas[3]" type="number" step="0.00001" ng-change="Cntl.updateTheta(3)" ng-disabled=(Cntl.block!=3)>
-                        </md-input-container>
-                    </td> -->
-                </tr>
-                <!-- <tr ng-show="Cntl.block_shows[3]">
-                    <td rowspan="2">
-                        <md-input-container>
-                            <input ng-model="Cntl.steps[3]" type="number" step="0.00001" ng-change="Cntl.updateStep(3)">
-                        </md-input-container>
-                    </td>
-                    <td rowspan="2">
-                        <md-input-container>
-                            <input ng-model="Cntl.divs[3]" type="number" ng-change="Cntl.updateDiv(3)">
-                        </md-input-container>
-                    </td>
-                    <td rowspan="2">
-                        <md-input-container>
-                            <input ng-model="Cntl.exps[3]" type="number">
-                        </md-input-container>
-                    </td>
-                </tr> -->
-                <tr >
-                    <td rowspan="1" style="text-align: center; cursor: default;">4</td>
-                    <td rowspan="1">
-                        <md-input-container>
-                            <input ng-model="Cntl.ks[4]" type="number" step="0.1" min="{{Cntl.ks[3]+0.1}}" max="{{Cntl.ks[5]-0.1}}" ng-change="Cntl.updateK(4)" ng-disabled=(Cntl.block!=4) required>
-                        </md-input-container>
-                    </td>
-                    <td rowspan="1">
-                        <md-input-container>
-                            <input ng-model="Cntl.energies[4]" type="number" step="0.01" min="{{Cntl.energies[3]+0.01}}" max="{{Cntl.energies[5]-0.01}}" ng-change="Cntl.updateEnergy(4)" ng-disabled=(Cntl.block!=4) required>
-                        </md-input-container>
-                    </td>
-                    <!-- <td rowspan="1">
-                        <md-input-container>
-                            <input ng-model="Cntl.thetas[4]" type="number" step="0.00001" ng-change="Cntl.updateTheta(4)" ng-disabled=(Cntl.block!=4)>
-                        </md-input-container>
-                    </td> -->
-                </tr>
-                <!-- <tr ng-show="Cntl.block_shows[4]">
-                    <td rowspan="2">
-                        <md-input-container>
-                            <input ng-model="Cntl.steps[4]" type="number" step="0.00001" ng-change="Cntl.updateStep(4)">
-                        </md-input-container>
-                    </td>
-                    <td rowspan="2">
-                        <md-input-container>
-                            <input ng-model="Cntl.divs[4]" type="number" ng-change="Cntl.updateDiv(4)">
-                        </md-input-container>
-                    </td>
-                    <td rowspan="2">
-                        <md-input-container>
-                            <input ng-model="Cntl.exps[4]" type="number">
-                        </md-input-container>
-                    </td>
-                </tr> -->
-                <tr>
-                    <td rowspan="1" style="text-align: center; cursor: default;">5</td>
-                    <td rowspan="1">
-                        <md-input-container>
-                            <input ng-model="Cntl.ks[5]" type="number" step="0.1" min="{{Cntl.ks[4]+0.1}}" max="{{Cntl.ks[6]-0.1}}" ng-change="Cntl.updateK(5)" ng-disabled=(Cntl.block!=5) required>
-                        </md-input-container>
-                    </td>
-                    <td rowspan="1">
-                        <md-input-container>
-                            <input ng-model="Cntl.energies[5]" type="number" step="0.01" min="{{Cntl.energies[4]+0.01}}" max="{{Cntl.energies[6]-0.01}}" ng-change="Cntl.updateEnergy(5)" ng-disabled=(Cntl.block!=5) required>
-                        </md-input-container>
-                    </td>
-                    <!-- <td rowspan="1">
-                        <md-input-container>
-                            <input ng-model="Cntl.thetas[5]" type="number" step="0.00001" ng-change="Cntl.updateTheta(5)" ng-disabled=(Cntl.block!=5)>
-                        </md-input-container>
-                    </td> -->
-                </tr>
-                <!-- <tr ng-show="Cntl.block_shows[5]">
-                    <td rowspan="2">
-                        <md-input-container>
-                            <input ng-model="Cntl.steps[5]" type="number" step="0.00001" ng-change="Cntl.updateStep(5)">
-                        </md-input-container>
-                    </td>
-                    <td rowspan="2">
-                        <md-input-container>
-                            <input ng-model="Cntl.divs[5]" type="number" ng-change="Cntl.updateDiv(5)">
-                        </md-input-container>
-                    </td>
-                    <td rowspan="2">
-                        <md-input-container>
-                            <input ng-model="Cntl.exps[5]" type="number">
-                        </md-input-container>
-                    </td>
-                </tr> -->
-                <tr>
-                    <td rowspan="1" style="text-align: center; cursor: default;">6</td>
-                    <td rowspan="1">
-                        <md-input-container>
-                            <input ng-model="Cntl.ks[6]" type="number" step="0.1" min="{{Cntl.ks[5]+0.1}}" max="{{Cntl.ks[7]-0.1}}" ng-change="Cntl.updateK(6)" ng-disabled=(Cntl.block!=6) required>
-                        </md-input-container>
-                    </td>
-                    <td rowspan="1">
-                        <md-input-container>
-                            <input ng-model="Cntl.energies[6]" type="number" step="0.01" min="{{Cntl.energies[5]+0.01}}" max="{{Cntl.energies[7]-0.01}}" ng-change="Cntl.updateEnergy(6)" ng-disabled=(Cntl.block!=6) required>
-                        </md-input-container>
-                    </td>
-                    <!-- <td rowspan="1">
-                        <md-input-container>
-                            <input ng-model="Cntl.thetas[6]" type="number" step="0.00001" ng-change="Cntl.updateTheta(6)" ng-disabled=(Cntl.block!=6)>
-                        </md-input-container>
-                    </td> -->
-                </tr>
-                <!-- <tr ng-show="Cntl.block_shows[6]">
-                    <td rowspan="2">
-                        <md-input-container>
-                            <input ng-model="Cntl.steps[6]" type="number" step="0.00001" ng-change="Cntl.updateStep(6)">
-                        </md-input-container>
-                    </td>
-                    <td rowspan="2">
-                        <md-input-container>
-                            <input ng-model="Cntl.divs[6]" type="number" ng-change="Cntl.updateDiv(6)">
-                        </md-input-container>
-                    </td>
-                    <td rowspan="2">
-                        <md-input-container>
-                            <input ng-model="Cntl.exps[6]" type="number">
-                        </md-input-container>
-                    </td>
-                </tr> -->
-                <tr>
-                    <td rowspan="1" style="text-align: center; cursor: default;">7</td>
-                    <td rowspan="1">
-                        <md-input-container>
-                            <input ng-model="Cntl.ks[7]" type="number" step="0.1" min="{{Cntl.ks[6]+0.1}}" max="{{Cntl.ks[8]-0.1}}" ng-change="Cntl.updateK(7)" ng-disabled=(Cntl.block!=7) required>
-                        </md-input-container>
-                    </td>
-                    <td rowspan="1">
-                        <md-input-container>
-                            <input ng-model="Cntl.energies[7]" type="number" step="0.01" min="{{Cntl.energies[6]+0.01}}" max="{{Cntl.energies[8]-0.01}}" ng-change="Cntl.updateEnergy(7)" ng-disabled=(Cntl.block!=7) required>
-                        </md-input-container>
-                    </td>
-                    <!-- <td rowspan="1">
-                        <md-input-container>
-                            <input ng-model="Cntl.thetas[7]" type="number" step="0.00001" ng-change="Cntl.updateTheta(7)" ng-disabled=(Cntl.block!=7)>
-                        </md-input-container>
-                    </td> -->
-                </tr>
-                <!-- <tr ng-show="Cntl.block_shows[7]">
-                    <td rowspan="2">
-                        <md-input-container>
-                            <input ng-model="Cntl.steps[7]" type="number" step="0.00001" ng-change="Cntl.updateStep(7)">
-                        </md-input-container>
-                    </td>
-                    <td rowspan="2">
-                        <md-input-container>
-                            <input ng-model="Cntl.divs[7]" type="number" ng-change="Cntl.updateDiv(7)">
-                        </md-input-container>
-                    </td>
-                    <td rowspan="2">
-                        <md-input-container>
-                            <input ng-model="Cntl.exps[7]" type="number">
-                        </md-input-container>
-                    </td>
-                </tr> -->
-                <tr>
-                    <td rowspan="1" style="text-align: center; cursor: default;">8</td>
-                    <td rowspan="1">
-                        <md-input-container>
-                            <input ng-model="Cntl.ks[8]" type="number" step="0.1" min="{{Cntl.ks[7]+0.1}}" max="{{Cntl.ks[9]-0.1}}" ng-change="Cntl.updateK(8)" ng-disabled=(Cntl.block!=8) required>
-                        </md-input-container>
-                    </td>
-                    <td rowspan="1">
-                        <md-input-container>
-                            <input ng-model="Cntl.energies[8]" type="number" step="0.01" min="{{Cntl.energies[7]+0.01}}" max="{{Cntl.energies[9]-0.01}}" ng-change="Cntl.updateEnergy(8)" ng-disabled=(Cntl.block!=8) required>
-                        </md-input-container>
-                    </td>
-                    <!-- <td rowspan="1">
-                        <md-input-container>
-                            <input ng-model="Cntl.thetas[8]" type="number" step="0.00001" ng-change="Cntl.updateTheta(8)" ng-disabled=(Cntl.block!=8)>
-                        </md-input-container>
-                    </td> -->
-                </tr>
-                <!-- <tr ng-show="Cntl.block_shows[8]">
-                    <td rowspan="2">
-                        <md-input-container>
-                            <input ng-model="Cntl.steps[8]" type="number" step="0.00001" ng-change="Cntl.updateStep(8)">
-                        </md-input-container>
-                    </td>
-                    <td rowspan="2">
-                        <md-input-container>
-                            <input ng-model="Cntl.divs[8]" type="number" ng-change="Cntl.updateDiv(8)">
-                        </md-input-container>
-                    </td>
-                    <td rowspan="2">
-                        <md-input-container>
-                            <input ng-model="Cntl.exps[8]" type="number">
-                        </md-input-container>
-                    </td>
-                </tr> -->
-                <tr>
-                    <td rowspan="1" style="text-align: center; cursor: default;">9</td>
-                    <td rowspan="1">
-                        <md-input-container>
-                            <input ng-model="Cntl.ks[9]" type="number" step="0.1" min="{{Cntl.ks[8]+0.1}}" max="{{Cntl.ks[10]-0.1}}" ng-change="Cntl.updateK(9)" ng-disabled=(Cntl.block!=9) required>
-                        </md-input-container>
-                    </td>
-                    <td rowspan="1">
-                        <md-input-container>
-                            <input ng-model="Cntl.energies[9]" type="number" step="0.01" min="{{Cntl.energies[8]+0.01}}" max="{{Cntl.energies[10]-0.01}}" ng-change="Cntl.updateEnergy(9)" ng-disabled=(Cntl.block!=9) required>
-                        </md-input-container>
-                    </td>
-                    <!-- <td rowspan="1">
-                        <md-input-container>
-                            <input ng-model="Cntl.thetas[9]" type="number" step="0.00001" ng-change="Cntl.updateTheta(9)" ng-disabled=(Cntl.block!=9)>
-                        </md-input-container>
-                    </td> -->
-                </tr>
-                <!-- <tr ng-show="Cntl.block_shows[9]">
-                    <td rowspan="2">
-                        <md-input-container>
-                            <input ng-model="Cntl.steps[9]" type="number" step="0.00001" ng-change="Cntl.updateStep(9)">
-                        </md-input-container>
-                    </td>
-                    <td rowspan="2">
-                        <md-input-container>
-                            <input ng-model="Cntl.divs[9]" type="number" ng-change="Cntl.updateDiv(9)">
-                        </md-input-container>
-                    </td>
-                    <td rowspan="2">
-                        <md-input-container>
-                            <input ng-model="Cntl.exps[9]" type="number">
-                        </md-input-container>
-                    </td>
-                </tr> -->
-                <tr>
-                    <td rowspan="1" style="text-align: center; cursor: default;">10</td>
-                    <td rowspan="1">
-                        <md-input-container>
-                            <input ng-model="Cntl.ks[10]" type="number" step="0.1" min="{{Cntl.ks[9]+0.1}}" ng-change="Cntl.updateK(10)" ng-disabled=(Cntl.block!=10) required>
-                        </md-input-container>
-                    </td>
-                    <td rowspan="1">
-                        <md-input-container>
-                            <input ng-model="Cntl.energies[10]" type="number" step="0.01" min="{{Cntl.energies[9]+0.01}}" ng-change="Cntl.updateEnergy(10)" ng-disabled=(Cntl.block!=10) required>
-                        </md-input-container>
-                    </td>
-                    <!-- <td rowspan="1">
-                        <md-input-container>
-                            <input ng-model="Cntl.thetas[10]" type="number" step="0.00001" ng-change="Cntl.updateTheta(10)" ng-disabled=(Cntl.block!=10)>
-                        </md-input-container>
-                    </td> -->
-                </tr>
-                <!-- <tr>
-                    <td style="border: none; height: 15px"></td>
-                    <td style="border: none; height: 15px"></td>
-                    <td style="border: none; height: 15px"></td>
-                </tr> -->
-            </tbody>
-        </table><br/>
-        <div layout="row" layout-align="start end" layout-margin>
+        <!-- E_begin -->
+        <div class="padded" md-whiteframe="1" 
+            style="width: 540px; padding-top: 18px; padding-bottom: 9px; padding-left: 18px; padding-right: 18px;" 
+            layout="row" layout-align="start end" layout-margin>
+            <md-input-container>
+                <label>E<sub>begin</sub></label>
+                <input style="width: 100px;" keep-max-decimals="2" 
+                        ng-model="Cntl.e_begin" ng-model-options="{ updateOn: 'blur default', debounce: { 'blur': 0, 'default': 500 } }" 
+                        type="number" step="0.01" min="1000.00" ng-change="Cntl.updateE()" required>
+            </md-input-container>
+            <p style="cursor: default;">eV</p>
+        </div><br/>
+        <!-- E_end -->
+        <div class="padded" md-whiteframe="1" 
+            style="width: 540px; padding-top: 18px; padding-bottom: 9px; padding-left: 18px; padding-right: 18px;" 
+            layout="row" layout-align="start end" layout-margin>
+            <md-input-container>
+                <label>E<sub>end</sub></label>
+                <input style="width: 100px;" keep-max-decimals="2" 
+                        ng-model="Cntl.e_end" ng-model-options="{ updateOn: 'blur default', debounce: { 'blur': 0, 'default': 500 } }" 
+                        type="number" step="0.01" min="{{Cntl.e_begin+0.01}}" ng-change="Cntl.updateE()" required>
+            </md-input-container>
+            <p style="cursor: default;">eV &nbsp; </p>
+            <md-input-container>
+                <label>K<sub>end</sub></label>
+                <input style="width: 100px;" keep-max-decimals="2" 
+                        ng-model="Cntl.k_end" ng-model-options="{ updateOn: 'blur default', debounce: { 'blur': 0, 'default': 500 } }" 
+                        type="number" step="0.1" min="0.1" ng-change="Cntl.updateK()" required>
+            </md-input-container>
+        </div><br/>
+        <!-- dE -->
+        <div class="padded" md-whiteframe="1" 
+            style="width: 540px; padding-top: 18px; padding-bottom: 9px; padding-left: 18px; padding-right: 18px;" 
+            layout="row" layout-align="start end" layout-margin>
             <md-input-container>
                 <label>ΔE</label>
-                <input style="width: 100px;" ng-model="Cntl.step_for_quick" type="number" step="0.00001" required min="0.00003" ng-change="Cntl.checkStep4Q($event)">
+                <input style="width: 100px;" keep-max-decimals="5" 
+                        ng-model="Cntl.step_for_quick" ng-model-options="{ updateOn: 'blur default', debounce: { 'blur': 0, 'default': 500 } }" 
+                        type="number" step="0.00001" min="0.00003" ng-change="Cntl.checkStep4Q()" required>
             </md-input-container>
             <p style="cursor: default;">eV &nbsp; &nbsp; &nbsp; (Total {{Cntl.total_points | number:0}} points)</p>
-            <p style="cursor: default;" ng-show="Cntl.warning_points">*** WARNING ***</p>
+            <p style="cursor: default; color:orangered;" ng-show="Cntl.warning_points">*** WARNING ***</p>
         </div><br/>
-        <div layout="row" layout-align="start end" layout-margin>
+        <!-- Time -->
+        <div class="padded" md-whiteframe="1" 
+            style="width: 540px; padding-top: 18px; padding-bottom: 9px; padding-left: 18px; padding-right: 18px;" 
+            layout="row" layout-align="start end" layout-margin>
             <md-input-container>
                 <label>Exposure time</label>
-                <input style="width: 100px;" ng-model="Cntl.time_for_quick" type="number" step="1" required min="1" ng-change="Cntl.checkDegPSec($event)">
+                <input style="width: 100px;" 
+                        ng-model="Cntl.time_for_quick" ng-model-options="{ updateOn: 'blur default', debounce: { 'blur': 0, 'default': 500 } }" 
+                        type="number" step="1" min="1" ng-change="Cntl.checkDegPSec()" required>
             </md-input-container>
             <p style="cursor: default;">sec. &nbsp; &nbsp; &nbsp; (Speed {{Cntl.degpsec | number:4}} °/sec.)</p>
-            <p style="cursor: default;" ng-show="Cntl.warning_dps">*** WARNING ***</p>
+            <p style="cursor: default; color:orangered;" ng-show="Cntl.warning_dps">*** WARNING ***</p>
         </div>
     </div>
     <h2 style="cursor: default;">Export</h2>
