@@ -62,7 +62,7 @@ createApp({
                 //height: 360,
                 xaxis: {
                     title: {
-                        text: isAxisInEnergy.value ? 'Energy(c) [keV]' : 'Angle(o) [deg.]',
+                        text: isAxisInEnergy.value ? 'Energy(o) [keV]' : 'Angle(o) [deg.]',
                     },
                     showline: true,
                     mirror: true,
