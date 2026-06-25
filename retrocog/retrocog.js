@@ -89,7 +89,6 @@ createApp({
         const handleSwitch = (newValue) => {
             isAxisInEnergy = newValue
             drawChart(curr9809File.dataArray)
-            drawChart
         }
 
         // Ｘ軸スイッチ左の<span>Angle(o)</span>クリック
