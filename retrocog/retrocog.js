@@ -54,7 +54,7 @@ createApp({
             // レイアウトの定義
             let layout = {
                 title: {
-                    text: currFileName.value + (applyLn?'  Ln':'  ') + '(' + Numerator.value + '/' + Denominator.value + ')',
+                    text: currFileName.value + (applyLn.value?'  Ln':'  ') + '(' + Numerator.value + '/' + Denominator.value + ')',
                     font: {
                         size: 14
                     }
@@ -89,6 +89,7 @@ createApp({
         const handleSwitch = (newValue) => {
             isAxisInEnergy = newValue
             drawChart(curr9809File.dataArray)
+            drawChart
         }
 
         // Ｘ軸スイッチ左の<span>Angle(o)</span>クリック
