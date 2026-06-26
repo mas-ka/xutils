@@ -1,7 +1,8 @@
-import { createApp, ref, onMounted, nextTick} from 'vue'
+import { createApp, ref, onMounted, nextTick } from 'vue'
 import { createVuetify } from 'vuetify'
 
 import { is9809File, File9809, CORRECTNESS } from './Format9809.js'
+import { elements, getElementByName } from './elements.js'
 
 createApp({
     setup() {
@@ -29,32 +30,60 @@ createApp({
         // その他
         const licenseHTML = ref('')
         const license_dialog = ref(false)
+        const exportAgenda_dialog = ref(false)
+        const elementList = ref(elements)
+        const selectedElement = ref(null)
+        const selectedEdge = ref('K')
 
         // ローカルの宣言
         let curr9809File = new File9809()
 
-        // 関数
+        // ユーティリティ関数
+        const energy2theta = function (e, d) { return Math.toDegrees(Math.asin(12398.4264684 / (2 * d * e))); }
+        const theta2energy = function (t, d) { return 12398.4264684 / (2 * d * Math.sin(Math.toRadians(t))); }
+        Math.toDegrees = function (radian) {
+            var toDegree = 180 / Math.PI;
+            if (isNaN(radian)) return NaN;
+            return radian * toDegree;
+        }
+        Math.toRadians = function (degree) {
+            return isNaN(degree) ? NaN : degree * Math.PI / 180;
+        }
+        String.formatF = function (f, w, d) {
+            var z = Array(d + 1).join("0");
+            var y = "" + f + ((("" + f).indexOf('.') < 0) ? "." + z : z);
+            var t = "." + (y.split('\.'))[1].substr(0, d);
+            if (Math.abs(f) < 1) {
+                return Array(w - (y.split('\.'))[0].length - t.length + 2).join(" ") + (f < 0 ? "-" : "") + t;
+            } else {
+                return Array(w - (y.split('\.'))[0].length - t.length + 1).join(" ") + (y.split('\.'))[0] + t;
+            }
+        }
+        String.formatI = function (i, w) {
+            return Array(w - ("" + i).length + 1).join(" ") + i;
+        }
+
         // チャートの描画
         const drawChart = (data) => {
             // データの定義
             const gdata = [{
-                    //x : data.map((a) => a[1]), // カラムは「E(c) E(o) A(c) A(o) T D ...」
-                    x : data.map((a) => a[isAxisInEnergy.value ? 1 : 3]),
-                    y : data.map((a) => {
-                    const N = (Numerator.value == 0) ? 1.0 : a[Numerator.value+1]
-                    const D = (Denominator.value == 0) ? 1.0 : a[Denominator.value+1]
+                //x : data.map((a) => a[1]), // カラムは「E(c) E(o) A(c) A(o) T D ...」
+                x: data.map((a) => a[isAxisInEnergy.value ? 1 : 3]),
+                y: data.map((a) => {
+                    const N = (Numerator.value == 0) ? 1.0 : a[Numerator.value + 1]
+                    const D = (Denominator.value == 0) ? 1.0 : a[Denominator.value + 1]
                     if (applyLn.value) {
-                        return Math.log( N / D )
+                        return Math.log(N / D)
                     } else {
-                        return ( N / D )
+                        return (N / D)
                     }
                 }),
-                type : 'line'
+                type: 'line'
             }]
             // レイアウトの定義
             let layout = {
                 title: {
-                    text: currFileName.value + (applyLn.value?'  Ln':'  ') + '(' + Numerator.value + '/' + Denominator.value + ')',
+                    text: currFileName.value + (applyLn.value ? '  Ln' : '  ') + '(' + Numerator.value + '/' + Denominator.value + ')',
                     font: {
                         size: 14
                     }
@@ -81,10 +110,10 @@ createApp({
             }
             // グラフの描画(※DOMの更新を待ってから描画するためにnextTickでラップしないと初回描画の横幅がおかしくなる)
             nextTick(() => {
-                Plotly.newPlot('myGraph', gdata, layout, {responsive : true})
+                Plotly.newPlot('myGraph', gdata, layout, { responsive: true })
             })
         }
-        
+
         // データ列選択セレクタの変更時
         const handleSwitch = (newValue) => {
             isAxisInEnergy = newValue
@@ -108,7 +137,7 @@ createApp({
                 handleSelect()
             }
         }
-        
+
         // Ｘ軸スイッチの変更時
         const handleSelect = () => {
             drawChart(curr9809File.dataArray)
@@ -158,7 +187,7 @@ createApp({
 
         // １つ次のファイルを読み込む
         const nextFile = () => {
-            if (currFileIdx.value < FileNums.value-1) {
+            if (currFileIdx.value < FileNums.value - 1) {
                 currFileIdx.value++
                 loadCurrFileFromIdx()
             }
@@ -166,30 +195,30 @@ createApp({
 
         // 最後のファイルを読み込む
         const lastFile = () => {
-            currFileIdx.value = FileNums.value-1
+            currFileIdx.value = FileNums.value - 1
             loadCurrFileFromIdx()
         }
-            
+
 
 
         // ファイルロードボタン押下によるファイルインプットの代理発火
         const triggerFileInput = (event) => {
             fInput.value.click()
         }
-        
+
         // ファイルインプットでのファイル選択時のハンドラ
         const onFileChange = async (event) => {
             if (event.target.files.length < 1) return // キャンセルされた場合には早期リターン
             // 選択されたファイルをソート
             const files4File = []
-            for (let i = 0 ; i < event.target.files.length ; i++) {
+            for (let i = 0; i < event.target.files.length; i++) {
                 files4File.push(event.target.files[i])
             }
             files4File.sort((a, b) => a.name.localeCompare(b.name))
             // ソート済みのものに対して検証
             files.value = {}
             fileNames.value = []
-            for (let i = 0, j = 0 ; i < files4File.length ; i++) {
+            for (let i = 0, j = 0; i < files4File.length; i++) {
                 if ((await is9809File(files4File[i])) != CORRECTNESS.NOT9809) {
                     fileNames.value.push(files4File[i].name)
                     files.value[j++] = files4File[i]
@@ -207,7 +236,7 @@ createApp({
         // ファイルドロップ時のハンドラ
         const onDropFiles = async (event) => {
             isDragging.value = false
-            
+
             const items = event.dataTransfer.items
             const droppedFiles = []
 
@@ -234,7 +263,7 @@ createApp({
                     entries4Dir.sort((a, b) => a.name.localeCompare(b.name))
                     entries = entries4File.concat(entries4Dir)
                     // 順序入れ替えを行った後のディレクトリ内エントリを再帰呼び出しする
-                    for (let j = 0 ; j < entries.length ; j++) {
+                    for (let j = 0; j < entries.length; j++) {
                         await traverseFileTree(entries[j], `${path}${item.name}/`)
                     }
                 }
@@ -284,7 +313,7 @@ createApp({
                 }
                 // FileListに変換
                 files.value = {}
-                for (let i = 0 ; i < droppedFiles.length ; i++) {
+                for (let i = 0; i < droppedFiles.length; i++) {
                     files.value[i] = droppedFiles[i]
                 }
                 files.value.length = Object.keys(files.value).length
@@ -310,14 +339,98 @@ createApp({
             }
         })
 
+        // 与えられたエレメントとエッジから出力するAgenda文字列を生成する
+        const generateAgenda = (element, edge) => {
+            // 選択されたエレメントとエッジから、エッジエネルギーを求める。
+            const edgeEnergy = (getElementByName(element))[edge]
+            // 出力するAgendaファイルのうち、共通する部分を作っておく
+            var l = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\" ?>\r\n";
+            l += "<parameter>\r\n";
+            l += "  <monochrometer>\r\n";
+            l += "    <d_spacing unit=\"angstrom\">" + String.formatF(curr9809File.d, 10, 6).trim() + "</d_spacing>\r\n";
+            l += "    <name>" + curr9809File.mono.trim().toUpperCase() + "</name>\r\n";
+            l += "  </monochrometer>\r\n";
+            l += "  <element>\r\n";
+            l += "    <symbol>" + selectedElement.value + "</symbol>\r\n";
+            l += "    <edge>" + selectedEdge.value + "</edge>\r\n";
+            l += "  </element>\r\n";
+            // ここから export Agenda の処理を実装
+            // Blockヘッダから記述単位がEngかAngか判定する
+            const blockArray = fileBlock.value.trim().split(/\r?\n/)
+            const isBlockAsEng = ('INIT-ENG' === (blockArray[0].trim().split(/\s+/))[1].toUpperCase())
+            // fileBlock.valueの行数から測定手法を推定する
+            if (2 == blockArray.length) { // Quick測定であると推定
+                l += "  <scan type=\"quick\">\r\n";
+                l += "    <edge_energy unit=\"eV\">" + String.formatF(edgeEnergy, 10, 2).trim() + "</edge_energy>\r\n";
+                // １つしかないBlockデータ行を連続する空白文字で分割した配列を作る
+                const dataArray = blockArray[1].trim().split(/\s+/)
+                const iniEnergy = isBlockAsEng ? dataArray[1] : theta2energy(dataArray[1], curr9809File.d)
+                const finalEnergy = isBlockAsEng ? dataArray[2] : theta2energy(dataArray[2], curr9809File.d)
+                const time = dataArray[4]
+                const num = dataArray[5]
+                const s4q = theta2energy((energy2theta(edgeEnergy, curr9809File.d)
+                    - (energy2theta(iniEnergy, curr9809File.d) - energy2theta(finalEnergy, curr9809File.d)) / (num - 1)), curr9809File.d) - edgeEnergy
+                const t4q = Math.trunc((time < 1.0) ? time * (num - 1) : time)
+                l += "    <agenda final=\"" + String.formatF(finalEnergy, 10, 2).trim()
+                    + "\" step_for_quick=\"" + String.formatF(s4q, 10, 5).trim()
+                    + "\" time_for_quick=\"" + t4q + "\" unit=\"eV\">\r\n";
+                l += "      <block id=\"1\">\r\n";
+                l += "        <ini>" + String.formatF(iniEnergy, 10, 2).trim() + "</ini><div>50</div><sec>1</sec>\r\n";
+                l += "      </block>\r\n";
+            } else { // Step測定であると推定
+                l += "  <scan type=\"step\">\r\n";
+                l += "    <edge_energy unit=\"eV\">" + String.formatF(edgeEnergy, 10, 2).trim() + "</edge_energy>\r\n";
+                // 最終行から各パラメータを求める
+                const dataArray = blockArray[blockArray.length - 1].trim().split(/\s+/)
+                const finalEnergy = isBlockAsEng ? dataArray[2] : theta2energy(dataArray[2], curr9809File.d)
+                l += "    <agenda final=\"" + String.formatF(finalEnergy, 10, 2).trim() + "\" step_for_quick=\".36384\" time_for_quick=\"120\" unit=\"eV\">\r\n";
+                // 残りブロックを出力
+                for (let i = 1; i < blockArray.length; i++) {
+                    const dataArray = blockArray[i].trim().split(/\s+/)
+                    const iniEnergy = isBlockAsEng ? dataArray[1] : theta2energy(dataArray[1], curr9809File.d)
+                    l += "      <block id=\"" + i + "\">\r\n";
+                    l += "        <ini>" + String.formatF(iniEnergy, 10, 2).trim() + "</ini><div>" + dataArray[5] + "</div><sec>" + dataArray[4] + "</sec>\r\n";
+                    l += "      </block>\r\n";
+                }
+            }
+            l += "    </agenda>\r\n";
+            l += "  </scan>\r\n";
+            l += "</parameter>\r\n";
+            return l
+        }
+
+        // Export AgendaダイアログのOKボタン押下時の処理
+        const onClickExportAgendaOK = () => {
+            // 選択されたエレメント・エッジを引数として、Agenda文字列を生成する
+            const agendaStr = generateAgenda(selectedElement.value, selectedEdge.value)
+            // ダイアログを閉じる
+            exportAgenda_dialog.value = false
+            // ファイルとして保存する
+            // 拡張子の付け替え
+            let fileName = currFileName.value
+            const match = fileName.match(/(.+)\.([^.]+)$/)
+            if (match) {
+                fileName = match[1] + '.agenda'
+            } else {
+                fileName = fileName + '.agenda'
+            }
+            // 保存ダイアログの呼び出しとダウンロード
+            const blob = new Blob([agendaStr], { type: 'text/plain;charset=utf-8' })
+            const link = document.createElement('a')
+            link.href = URL.createObjectURL(blob)
+            link.download = fileName
+            link.click()
+            URL.revokeObjectURL(link.href)
+        }
+
         return {
             numLoaded, currFileName, currFileIdx, FileNums, fInput, isDragging, isCorrect9809,
-            fileHeader, fileBlock, fileDataHeader, fileDataBody, 
+            fileHeader, fileBlock, fileDataHeader, fileDataBody,
             triggerFileInput, onFileChange, onDropFiles,
             firstFile, prevFile, nextFile, lastFile,
-            Numerator, Denominator, ColsNum, ColsDen, applyLn, 
+            Numerator, Denominator, ColsNum, ColsDen, applyLn,
             handleSelect, isAxisInEnergy, handleSwitch, onClickAngle, onClickEnergy,
-            licenseHTML, license_dialog,
+            licenseHTML, license_dialog, exportAgenda_dialog, onClickExportAgendaOK, elementList, selectedElement, selectedEdge,
         }
     }
 }).use(createVuetify()).mount('#app')
