@@ -339,10 +339,10 @@ createApp({
             }
         })
 
-        // Export AgendaダイアログのOKボタン押下時の処理
-        const onClickExportAgendaOK = () => {
+        // 与えられたエレメントとエッジから出力するAgenda文字列を生成する
+        const generateAgenda = (element, edge) => {
             // 選択されたエレメントとエッジから、エッジエネルギーを求める。
-            const edgeEnergy = (getElementByName(selectedElement.value))[selectedEdge.value]
+            const edgeEnergy = (getElementByName(element))[edge]
             // 出力するAgendaファイルのうち、共通する部分を作っておく
             var l = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\" ?>\r\n";
             l += "<parameter>\r\n";
@@ -383,7 +383,7 @@ createApp({
                 // 最終行から各パラメータを求める
                 const dataArray = blockArray[blockArray.length - 1].trim().split(/\s+/)
                 const finalEnergy = isBlockAsEng ? dataArray[2] : theta2energy(dataArray[2], curr9809File.d)
-                l += "    <agenda final=\"" + String.formatF(finalEnergy, 10, 2).trim() + "\" step_for_quick=\".36384\" time_for_quick=\"120\" unit=\"eV\">";
+                l += "    <agenda final=\"" + String.formatF(finalEnergy, 10, 2).trim() + "\" step_for_quick=\".36384\" time_for_quick=\"120\" unit=\"eV\">\r\n";
                 // 残りブロックを出力
                 for (let i = 1; i < blockArray.length; i++) {
                     const dataArray = blockArray[i].trim().split(/\s+/)
@@ -396,10 +396,31 @@ createApp({
             l += "    </agenda>\r\n";
             l += "  </scan>\r\n";
             l += "</parameter>\r\n";
+            return l
+        }
 
-            console.log(l)
-            // ダイアログを閉じて終了する
+        // Export AgendaダイアログのOKボタン押下時の処理
+        const onClickExportAgendaOK = () => {
+            // 選択されたエレメント・エッジを引数として、Agenda文字列を生成する
+            const agendaStr = generateAgenda(selectedElement.value, selectedEdge.value)
+            // ダイアログを閉じる
             exportAgenda_dialog.value = false
+            // ファイルとして保存する
+            // 拡張子の付け替え
+            let fileName = currFileName.value
+            const match = fileName.match(/(.+)\.([^.]+)$/)
+            if (match) {
+                fileName = match[1] + '.agenda'
+            } else {
+                fileName = fileName + '.agenda'
+            }
+            // 保存ダイアログの呼び出しとダウンロード
+            const blob = new Blob([agendaStr], { type: 'text/plain;charset=utf-8' })
+            const link = document.createElement('a')
+            link.href = URL.createObjectURL(blob)
+            link.download = fileName
+            link.click()
+            URL.revokeObjectURL(link.href)
         }
 
         return {
