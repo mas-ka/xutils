@@ -1,7 +1,8 @@
-import { createApp, ref, onMounted, nextTick} from 'vue'
+import { createApp, ref, onMounted, nextTick } from 'vue'
 import { createVuetify } from 'vuetify'
 
 import { is9809File, File9809, CORRECTNESS } from './Format9809.js'
+import { elements } from './elements.js'
 
 createApp({
     setup() {
@@ -29,6 +30,10 @@ createApp({
         // その他
         const licenseHTML = ref('')
         const license_dialog = ref(false)
+        const exportAgenda_dialog = ref(false)
+        const elementList = ref(elements)
+        const selectedElement = ref(null)
+        const selectedEdge = ref('K')
 
         // ローカルの宣言
         let curr9809File = new File9809()
@@ -38,23 +43,23 @@ createApp({
         const drawChart = (data) => {
             // データの定義
             const gdata = [{
-                    //x : data.map((a) => a[1]), // カラムは「E(c) E(o) A(c) A(o) T D ...」
-                    x : data.map((a) => a[isAxisInEnergy.value ? 1 : 3]),
-                    y : data.map((a) => {
-                    const N = (Numerator.value == 0) ? 1.0 : a[Numerator.value+1]
-                    const D = (Denominator.value == 0) ? 1.0 : a[Denominator.value+1]
+                //x : data.map((a) => a[1]), // カラムは「E(c) E(o) A(c) A(o) T D ...」
+                x: data.map((a) => a[isAxisInEnergy.value ? 1 : 3]),
+                y: data.map((a) => {
+                    const N = (Numerator.value == 0) ? 1.0 : a[Numerator.value + 1]
+                    const D = (Denominator.value == 0) ? 1.0 : a[Denominator.value + 1]
                     if (applyLn.value) {
-                        return Math.log( N / D )
+                        return Math.log(N / D)
                     } else {
-                        return ( N / D )
+                        return (N / D)
                     }
                 }),
-                type : 'line'
+                type: 'line'
             }]
             // レイアウトの定義
             let layout = {
                 title: {
-                    text: currFileName.value + (applyLn.value?'  Ln':'  ') + '(' + Numerator.value + '/' + Denominator.value + ')',
+                    text: currFileName.value + (applyLn.value ? '  Ln' : '  ') + '(' + Numerator.value + '/' + Denominator.value + ')',
                     font: {
                         size: 14
                     }
@@ -81,10 +86,10 @@ createApp({
             }
             // グラフの描画(※DOMの更新を待ってから描画するためにnextTickでラップしないと初回描画の横幅がおかしくなる)
             nextTick(() => {
-                Plotly.newPlot('myGraph', gdata, layout, {responsive : true})
+                Plotly.newPlot('myGraph', gdata, layout, { responsive: true })
             })
         }
-        
+
         // データ列選択セレクタの変更時
         const handleSwitch = (newValue) => {
             isAxisInEnergy = newValue
@@ -108,7 +113,7 @@ createApp({
                 handleSelect()
             }
         }
-        
+
         // Ｘ軸スイッチの変更時
         const handleSelect = () => {
             drawChart(curr9809File.dataArray)
@@ -158,7 +163,7 @@ createApp({
 
         // １つ次のファイルを読み込む
         const nextFile = () => {
-            if (currFileIdx.value < FileNums.value-1) {
+            if (currFileIdx.value < FileNums.value - 1) {
                 currFileIdx.value++
                 loadCurrFileFromIdx()
             }
@@ -166,30 +171,30 @@ createApp({
 
         // 最後のファイルを読み込む
         const lastFile = () => {
-            currFileIdx.value = FileNums.value-1
+            currFileIdx.value = FileNums.value - 1
             loadCurrFileFromIdx()
         }
-            
+
 
 
         // ファイルロードボタン押下によるファイルインプットの代理発火
         const triggerFileInput = (event) => {
             fInput.value.click()
         }
-        
+
         // ファイルインプットでのファイル選択時のハンドラ
         const onFileChange = async (event) => {
             if (event.target.files.length < 1) return // キャンセルされた場合には早期リターン
             // 選択されたファイルをソート
             const files4File = []
-            for (let i = 0 ; i < event.target.files.length ; i++) {
+            for (let i = 0; i < event.target.files.length; i++) {
                 files4File.push(event.target.files[i])
             }
             files4File.sort((a, b) => a.name.localeCompare(b.name))
             // ソート済みのものに対して検証
             files.value = {}
             fileNames.value = []
-            for (let i = 0, j = 0 ; i < files4File.length ; i++) {
+            for (let i = 0, j = 0; i < files4File.length; i++) {
                 if ((await is9809File(files4File[i])) != CORRECTNESS.NOT9809) {
                     fileNames.value.push(files4File[i].name)
                     files.value[j++] = files4File[i]
@@ -207,7 +212,7 @@ createApp({
         // ファイルドロップ時のハンドラ
         const onDropFiles = async (event) => {
             isDragging.value = false
-            
+
             const items = event.dataTransfer.items
             const droppedFiles = []
 
@@ -234,7 +239,7 @@ createApp({
                     entries4Dir.sort((a, b) => a.name.localeCompare(b.name))
                     entries = entries4File.concat(entries4Dir)
                     // 順序入れ替えを行った後のディレクトリ内エントリを再帰呼び出しする
-                    for (let j = 0 ; j < entries.length ; j++) {
+                    for (let j = 0; j < entries.length; j++) {
                         await traverseFileTree(entries[j], `${path}${item.name}/`)
                     }
                 }
@@ -284,7 +289,7 @@ createApp({
                 }
                 // FileListに変換
                 files.value = {}
-                for (let i = 0 ; i < droppedFiles.length ; i++) {
+                for (let i = 0; i < droppedFiles.length; i++) {
                     files.value[i] = droppedFiles[i]
                 }
                 files.value.length = Object.keys(files.value).length
@@ -310,14 +315,34 @@ createApp({
             }
         })
 
+        // Export AgendaダイアログのOKボタン押下時の処理
+        const onClickExportAgendaOK = () => {
+            console.log('Export Agenda OK clicked. Selected Element:', selectedElement.value, 'Edge:', selectedEdge.value)
+            // ここから export Agenda の処理を実装
+            // Blockヘッダから記述単位がEngかAngか判定する
+            const isBlockAsEng = ('INIT-ENG' === ((fileBlock.value.trim().split(/\r?\n/)[0]).split(/\s+/))[1].toUpperCase())
+            console.log(isBlockAsEng);
+            // fileBlock.valueの行数から測定手法を推定する
+            if (2 == fileBlock.value.trim().split(/\r?\n/).length) {
+                // Quick測定であると推定
+                console.log('Quick')
+            } else {
+                // Step測定であると推定
+                console.log('Step')
+            }
+
+            // ダイアログを閉じて終了する
+            exportAgenda_dialog.value = false
+        }
+
         return {
             numLoaded, currFileName, currFileIdx, FileNums, fInput, isDragging, isCorrect9809,
-            fileHeader, fileBlock, fileDataHeader, fileDataBody, 
+            fileHeader, fileBlock, fileDataHeader, fileDataBody,
             triggerFileInput, onFileChange, onDropFiles,
             firstFile, prevFile, nextFile, lastFile,
-            Numerator, Denominator, ColsNum, ColsDen, applyLn, 
+            Numerator, Denominator, ColsNum, ColsDen, applyLn,
             handleSelect, isAxisInEnergy, handleSwitch, onClickAngle, onClickEnergy,
-            licenseHTML, license_dialog,
+            licenseHTML, license_dialog, exportAgenda_dialog, onClickExportAgendaOK, elementList, selectedElement, selectedEdge,
         }
     }
 }).use(createVuetify()).mount('#app')
