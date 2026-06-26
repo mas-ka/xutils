@@ -2,7 +2,7 @@ import { createApp, ref, onMounted, nextTick } from 'vue'
 import { createVuetify } from 'vuetify'
 
 import { is9809File, File9809, CORRECTNESS } from './Format9809.js'
-import { elements } from './elements.js'
+import { elements, getElementByName } from './elements.js'
 
 createApp({
     setup() {
@@ -38,7 +38,31 @@ createApp({
         // ローカルの宣言
         let curr9809File = new File9809()
 
-        // 関数
+        // ユーティリティ関数
+        const energy2theta = function (e, d) { return Math.toDegrees(Math.asin(12398.4264684 / (2 * d * e))); }
+        const theta2energy = function (t, d) { return 12398.4264684 / (2 * d * Math.sin(Math.toRadians(t))); }
+        Math.toDegrees = function (radian) {
+            var toDegree = 180 / Math.PI;
+            if (isNaN(radian)) return NaN;
+            return radian * toDegree;
+        }
+        Math.toRadians = function (degree) {
+            return isNaN(degree) ? NaN : degree * Math.PI / 180;
+        }
+        String.formatF = function (f, w, d) {
+            var z = Array(d + 1).join("0");
+            var y = "" + f + ((("" + f).indexOf('.') < 0) ? "." + z : z);
+            var t = "." + (y.split('\.'))[1].substr(0, d);
+            if (Math.abs(f) < 1) {
+                return Array(w - (y.split('\.'))[0].length - t.length + 2).join(" ") + (f < 0 ? "-" : "") + t;
+            } else {
+                return Array(w - (y.split('\.'))[0].length - t.length + 1).join(" ") + (y.split('\.'))[0] + t;
+            }
+        }
+        String.formatI = function (i, w) {
+            return Array(w - ("" + i).length + 1).join(" ") + i;
+        }
+
         // チャートの描画
         const drawChart = (data) => {
             // データの定義
@@ -317,20 +341,63 @@ createApp({
 
         // Export AgendaダイアログのOKボタン押下時の処理
         const onClickExportAgendaOK = () => {
-            console.log('Export Agenda OK clicked. Selected Element:', selectedElement.value, 'Edge:', selectedEdge.value)
+            // 選択されたエレメントとエッジから、エッジエネルギーを求める。
+            const edgeEnergy = (getElementByName(selectedElement.value))[selectedEdge.value]
+            // 出力するAgendaファイルのうち、共通する部分を作っておく
+            var l = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\" ?>\r\n";
+            l += "<parameter>\r\n";
+            l += "  <monochrometer>\r\n";
+            l += "    <d_spacing unit=\"angstrom\">" + String.formatF(curr9809File.d, 10, 6).trim() + "</d_spacing>\r\n";
+            l += "    <name>" + curr9809File.mono.trim().toUpperCase() + "</name>\r\n";
+            l += "  </monochrometer>\r\n";
+            l += "  <element>\r\n";
+            l += "    <symbol>" + selectedElement.value + "</symbol>\r\n";
+            l += "    <edge>" + selectedEdge.value + "</edge>\r\n";
+            l += "  </element>\r\n";
             // ここから export Agenda の処理を実装
             // Blockヘッダから記述単位がEngかAngか判定する
-            const isBlockAsEng = ('INIT-ENG' === ((fileBlock.value.trim().split(/\r?\n/)[0]).split(/\s+/))[1].toUpperCase())
-            console.log(isBlockAsEng);
+            const blockArray = fileBlock.value.trim().split(/\r?\n/)
+            const isBlockAsEng = ('INIT-ENG' === (blockArray[0].trim().split(/\s+/))[1].toUpperCase())
             // fileBlock.valueの行数から測定手法を推定する
-            if (2 == fileBlock.value.trim().split(/\r?\n/).length) {
-                // Quick測定であると推定
-                console.log('Quick')
-            } else {
-                // Step測定であると推定
-                console.log('Step')
+            if (2 == blockArray.length) { // Quick測定であると推定
+                l += "  <scan type=\"quick\">\r\n";
+                l += "    <edge_energy unit=\"eV\">" + String.formatF(edgeEnergy, 10, 2).trim() + "</edge_energy>\r\n";
+                // １つしかないBlockデータ行を連続する空白文字で分割した配列を作る
+                const dataArray = blockArray[1].trim().split(/\s+/)
+                const iniEnergy = isBlockAsEng ? dataArray[1] : theta2energy(dataArray[1], curr9809File.d)
+                const finalEnergy = isBlockAsEng ? dataArray[2] : theta2energy(dataArray[2], curr9809File.d)
+                const time = dataArray[4]
+                const num = dataArray[5]
+                const s4q = theta2energy((energy2theta(edgeEnergy, curr9809File.d)
+                    - (energy2theta(iniEnergy, curr9809File.d) - energy2theta(finalEnergy, curr9809File.d)) / (num - 1)), curr9809File.d) - edgeEnergy
+                const t4q = Math.trunc((time < 1.0) ? time * (num - 1) : time)
+                l += "    <agenda final=\"" + String.formatF(finalEnergy, 10, 2).trim()
+                    + "\" step_for_quick=\"" + String.formatF(s4q, 10, 5).trim()
+                    + "\" time_for_quick=\"" + t4q + "\" unit=\"eV\">\r\n";
+                l += "      <block id=\"1\">\r\n";
+                l += "        <ini>" + String.formatF(iniEnergy, 10, 2).trim() + "</ini><div>50</div><sec>1</sec>\r\n";
+                l += "      </block>\r\n";
+            } else { // Step測定であると推定
+                l += "  <scan type=\"step\">\r\n";
+                l += "    <edge_energy unit=\"eV\">" + String.formatF(edgeEnergy, 10, 2).trim() + "</edge_energy>\r\n";
+                // 最終行から各パラメータを求める
+                const dataArray = blockArray[blockArray.length - 1].trim().split(/\s+/)
+                const finalEnergy = isBlockAsEng ? dataArray[2] : theta2energy(dataArray[2], curr9809File.d)
+                l += "    <agenda final=\"" + String.formatF(finalEnergy, 10, 2).trim() + "\" step_for_quick=\".36384\" time_for_quick=\"120\" unit=\"eV\">";
+                // 残りブロックを出力
+                for (let i = 1; i < blockArray.length; i++) {
+                    const dataArray = blockArray[i].trim().split(/\s+/)
+                    const iniEnergy = isBlockAsEng ? dataArray[1] : theta2energy(dataArray[1], curr9809File.d)
+                    l += "      <block id=\"" + i + "\">\r\n";
+                    l += "        <ini>" + String.formatF(iniEnergy, 10, 2).trim() + "</ini><div>" + dataArray[5] + "</div><sec>" + dataArray[4] + "</sec>\r\n";
+                    l += "      </block>\r\n";
+                }
             }
+            l += "    </agenda>\r\n";
+            l += "  </scan>\r\n";
+            l += "</parameter>\r\n";
 
+            console.log(l)
             // ダイアログを閉じて終了する
             exportAgenda_dialog.value = false
         }
