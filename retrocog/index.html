@@ -94,6 +94,8 @@
                                     @update:model-value="handleSelect"></v-select></td>
                             <td><v-checkbox v-model="applyLn" label="apply Log" :disabled="numLoaded<1"
                                     @update:model-value="handleSelect"></v-checkbox></td>
+                            <td><v-checkbox v-model="showDevider" label="show blocks" :disabled="numLoaded<1"
+                                    @update:model-value="handleSelect"></v-checkbox></td>
                             <td class="d-flex justify-center">
                                 <div class="d-flex align-center">
                                     <!-- 左側のラベル -->
