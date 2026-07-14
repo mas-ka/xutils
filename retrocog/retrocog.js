@@ -26,6 +26,7 @@ createApp({
         const ColsNum = ref([])
         const ColsDen = ref([])
         const applyLn = ref(true)
+        const showDevider = ref(false)
         const isAxisInEnergy = ref(true)
         // その他
         const licenseHTML = ref('')
@@ -65,6 +66,23 @@ createApp({
 
         // チャートの描画
         const drawChart = (data) => {
+            // Block構造を描画するためのshapesを生成する。
+            const BlockLines = curr9809File.blockArray.map((val) => {
+                return {
+                    type: 'line',
+                    xref: 'x',
+                    yref: 'paper',
+                    x0: isAxisInEnergy.value ? val : energy2theta(val * 1000, curr9809File.d),
+                    x1: isAxisInEnergy.value ? val : energy2theta(val * 1000, curr9809File.d),
+                    y0: 0,
+                    y1: 1,
+                    line: {
+                        color: 'grey',
+                        width: 1,
+                        dash: 'dash'
+                    }
+                }
+            })
             // データの定義
             const gdata = [{
                 //x : data.map((a) => a[1]), // カラムは「E(c) E(o) A(c) A(o) T D ...」
@@ -88,7 +106,7 @@ createApp({
                         size: 14
                     }
                 },
-                //height: 360,
+                shapes: showDevider.value ? BlockLines : [],
                 xaxis: {
                     title: {
                         text: isAxisInEnergy.value ? 'Energy(o) [keV]' : 'Angle(o) [deg.]',
@@ -428,7 +446,7 @@ createApp({
             fileHeader, fileBlock, fileDataHeader, fileDataBody,
             triggerFileInput, onFileChange, onDropFiles,
             firstFile, prevFile, nextFile, lastFile,
-            Numerator, Denominator, ColsNum, ColsDen, applyLn,
+            Numerator, Denominator, ColsNum, ColsDen, applyLn, showDevider,
             handleSelect, isAxisInEnergy, handleSwitch, onClickAngle, onClickEnergy,
             licenseHTML, license_dialog, exportAgenda_dialog, onClickExportAgendaOK, elementList, selectedElement, selectedEdge,
         }
