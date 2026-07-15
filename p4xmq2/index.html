@@ -39,12 +39,12 @@
                                     style="right: 16px; top: 50%; transform: translateY(-50%);"
                                     @click="licenseDialog = true"></v-btn>
                             </v-toolbar>
+                            <!-- Monochrometer settings -->
                             <v-toolbar id="MONOCHROMETER" color="blue-lighten-2" density="compact">
                                 <v-toolbar-title class="text-subtitle-1 font-weight-bold text-white">
                                     Monochrometer
                                 </v-toolbar-title>
                             </v-toolbar>
-                            <!-- Monochrometer settings -->
                             <v-card-text class="pa-4">
                                 <v-row align="center" class="mb-2">
                                     <v-col cols="5">
@@ -63,7 +63,6 @@
                                     Elements
                                 </v-toolbar-title>
                             </v-toolbar>
-
                             <v-card-text class="pa-4">
                                 <v-row align="center" class="mb-2">
                                     <v-col cols="3">
@@ -72,10 +71,16 @@
                                     </v-col>
                                     <v-col cols="3">
                                         <v-select label="Edge" :items="availableEdges" v-model="selectedEdge"
-                                            variant="outlined" density="compact" hide-details></v-select>
+                                            variant="outlined" density="compact" hide-details>
+                                            <!-- ▼ このスロットを追加して、各選択肢を直接制御します -->
+                                            <template #item="{ props, item }">
+                                                <v-list-item v-bind="props" :disabled="item.raw.disabled"></v-list-item>
+                                            </template>
+                                        </v-select>
                                     </v-col>
                                     <v-col cols="5" class="text-subtitle-1 text-grey-darken-3">
                                         edge = {{ selectedEdgeValue }} eV
+                                        <pre>{{ availableEdges }}</pre>
                                     </v-col>
                                 </v-row>
                             </v-card-text>

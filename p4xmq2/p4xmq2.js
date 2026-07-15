@@ -82,6 +82,7 @@ createApp({
                 value: edge,
                 disabled: (el[edge] ?? 0) === 0
             }))
+            console.log(list)
             availableEdges.value = list
             // 現在選択中の Edge が disabled になった場合、最初の有効な Edge に切り替える
             const current = list.find(item => item.value === selectedEdge.value)
@@ -94,7 +95,8 @@ createApp({
         // selectedElement が変化したら Edge リストを再構築する
         watch(selectedElement, (newVal) => {
             buildAvailableEdges(newVal)
-        }, { immediate: true })
+            console.log("SelectedElement")
+        }, { immediate: true, deep: true })
 
 
 
