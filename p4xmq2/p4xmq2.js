@@ -18,6 +18,7 @@ createApp({
         const Kend = ref()
         const Estep = ref()
         const expTime = ref()
+        const exportAgenda_dialog = ref(false)
 
         onMounted(async () => {
             try {
@@ -151,6 +152,63 @@ createApp({
         const onChange_expTime = () => {
         }
 
+        // 与えられたエレメントとエッジから出力するAgenda文字列を生成する
+        const generateAgenda = (element, edge) => {
+            // 選択されたエレメントとエッジから、エッジエネルギーを求める。
+            const edgeEnergy = selectedEdgeValue.value
+            // 出力するAgendaファイルのうち、共通する部分を作っておく
+            var l = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\" ?>\r\n";
+            l += "<parameter>\r\n";
+            l += "  <monochrometer>\r\n";
+            l += "    <d_spacing unit=\"angstrom\">" + formatF(selectedXtal.value.d, 10, 6).trim() + "</d_spacing>\r\n";
+            l += "    <name>" + selectedXtal.value.name.trim().toUpperCase() + "</name>\r\n";
+            l += "  </monochrometer>\r\n";
+            l += "  <element>\r\n";
+            l += "    <symbol>" + selectedElement.value + "</symbol>\r\n";
+            l += "    <edge>" + selectedEdge.value + "</edge>\r\n";
+            l += "  </element>\r\n";
+            // ここから export Agenda の処理を実装
+            l += "  <scan type=\"quick\">\r\n";
+            l += "    <edge_energy unit=\"eV\">" + formatF(selectedEdgeValue.value, 10, 2).trim() + "</edge_energy>\r\n";
+            l += "    <agenda final=\"" + formatF(Eend.value, 10, 2).trim()
+                + "\" step_for_quick=\"" + formatF(Estep.value, 10, 5).trim()
+                + "\" time_for_quick=\"" + formatI(expTime.value, 10).trim()
+                + "\" unit=\"eV\">\r\n";
+            // block id="1"のみ出力
+            l += "      <block id=\"1\">\r\n";
+            l += "        <ini>" + formatF(Ebegin.value, 10, 2).trim() + "</ini><div>50</div><sec>1</sec>\r\n";
+            l += "      </block>\r\n";
+            l += "    </agenda>\r\n";
+            l += "  </scan>\r\n"
+            l += "</parameter>\r\n";
+            return l
+        }
+
+        const onSaveAsAgenda = () => {
+            // 選択されたエレメント・エッジを引数として、Agenda文字列を生成する
+            const agendaStr = generateAgenda(selectedElement.value, selectedEdge.value)
+
+            // 1. データをBlobオブジェクトに変換
+            const blob = new Blob([agendaStr], { type: 'text/plain;charset=utf-8' })
+            const url = URL.createObjectURL(blob)
+
+            // 2. 画面に見えない <a> タグを作ってクリックを擬似再現
+            const a = document.createElement('a')
+            a.href = url
+            a.download = selectedElement.value + '-' + selectedEdge.value + '_Q.agenda' // 保存時のデフォルトファイル名
+
+            document.body.appendChild(a)
+            a.click() // ダイアログ（または即時ダウンロード）がトリガーされる
+
+            // 3. 後片付け
+            document.body.removeChild(a)
+            URL.revokeObjectURL(url)
+        }
+
+        const onLoadFromAgenda = () => {
+
+        }
+
         return {
             formatF, eV2deg, eV2k,
             licenseDialog,
@@ -169,6 +227,7 @@ createApp({
             onChange_Ebegin, onChange_beginDelta,
             onChange_Eend, onChange_Kend,
             onChange_expTime,
+            onSaveAsAgenda, onLoadFromAgenda,
         }
     }
 }).use(createVuetify()).mount('#app')

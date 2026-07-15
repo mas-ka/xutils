@@ -30,9 +30,10 @@
                             <!-- Title -->
                             <v-toolbar id="TITLE" color="primary" height="80" class="position-relative">
                                 <v-toolbar-title class="text-center font-weight-bold">
-                                    <div class="text-h5" style="cursor: default;">P4XMQ</div>
-                                    <div class=" text-caption font-weight-regular text-grey-lighten-3"
-                                        style="cursor: default;">
+                                    <div class="text-h5" style="cursor: default; font-family: 'Noto Serif';">P 4 X M Q
+                                    </div>
+                                    <div class="text-caption font-weight-regular text-grey-lighten-3"
+                                        style="cursor: default; font-family: 'Noto Serif';">
                                         - Parameters for XAS Measurement in Quick scan -
                                     </div>
                                 </v-toolbar-title>
@@ -49,13 +50,24 @@
                             </v-toolbar>
                             <v-card-text class="pa-4">
                                 <v-row align="center" class="mb-2">
-                                    <v-col cols="5">
+                                    <v-col cols="4">
                                         <v-select label="Plane" :items="xtals" item-title="name" v-model="selectedXtal"
                                             return-object variant="outlined" density="compact" hide-details
                                             @update:model-value="changeXtalPlane"></v-select>
                                     </v-col>
-                                    <v-col cols="7" class="text-subtitle-2 text-grey-darken-3" style="cursor: default;">
-                                        d = {{ selectedXtal?.d }} Å
+                                    <v-col cols="4">
+                                        <!-- 1. 「Other...」が選択された場合：数値入力インプットを表示 -->
+                                        <template v-if="selectedXtal?.name === 'Other...'">
+                                            <v-text-field label="d" v-model.number="selectedXtal.d" type="number"
+                                                suffix="Å" variant="outlined" density="compact" hide-details
+                                                step="0.001"></v-text-field>
+                                        </template>
+                                        <!-- 2. それ以外（通常の結晶面）の場合：固定テキストを表示 -->
+                                        <template v-else>
+                                            <div class="text-subtitle-2 text-grey-darken-3" style="cursor: default;">
+                                                d = {{ selectedXtal?.d ?? '-' }} Å
+                                            </div>
+                                        </template>
                                     </v-col>
                                 </v-row>
                             </v-card-text>
@@ -82,8 +94,8 @@
                                         </v-select>
                                     </v-col>
                                     <v-col cols="8" class="text-subtitle-2 text-grey-darken-3" style="cursor: default;">
-                                        edge = {{ selectedEdgeValue.toFixed(2) }} eV ({{
-                                        formatF(eV2deg(selectedEdgeValue,
+                                        edge = {{ selectedEdgeValue.toFixed(2) }} eV
+                                        ({{formatF(eV2deg(selectedEdgeValue,
                                         selectedXtal?.d), 8, 5) }} °)
                                     </v-col>
                                 </v-row>
@@ -98,13 +110,13 @@
                             <v-card-text class="pa-4">
                                 <v-row align="center" dense="compact" class="mb-2">
                                     <v-col cols="4">
-                                        <v-number-input label="Begin (eV)" v-model="Ebegin"
+                                        <v-number-input label="Begin" v-model="Ebegin" suffix="eV"
                                             @update:model-value="onChange_Ebegin" density="compact"
                                             control-variant="hidden" variant="outlined" :precision="2"
                                             :step="0.01"></v-number-input>
                                     </v-col>
                                     <v-col cols="4">
-                                        <v-number-input label="ΔE0 (eV)" v-model="beginDelta"
+                                        <v-number-input label="ΔE0" v-model="beginDelta" suffix="eV"
                                             @update:model-value="onChange_beginDelta" density="compact"
                                             control-variant="hidden" variant="outlined" :precision="2"
                                             :step="0.01"></v-number-input>
@@ -112,7 +124,7 @@
                                 </v-row>
                                 <v-row align="center" dense="compact" class="mb-2">
                                     <v-col cols="4">
-                                        <v-number-input label="End (eV)" v-model="Eend"
+                                        <v-number-input label="End" v-model="Eend" suffix="eV"
                                             @update:model-value="onChange_Eend" density="compact"
                                             control-variant="hidden" variant="outlined" :precision="2"
                                             :step="0.01"></v-number-input>
@@ -125,7 +137,7 @@
                                 </v-row>
                                 <v-row align="center" class="mb-2">
                                     <v-col cols="4">
-                                        <v-number-input label="Step (eV)" v-model="Estep"
+                                        <v-number-input label="Step" v-model="Estep" suffix="eV"
                                             @update:model-value="onChange_Eend" density="compact"
                                             control-variant="hidden" variant="outlined" :precision="5"
                                             :step="0.00001"></v-number-input>
@@ -141,7 +153,7 @@
                                 </v-row>
                                 <v-row align="center" class="mb-2">
                                     <v-col cols="4">
-                                        <v-number-input label="Exposure (sec.)" v-model="expTime"
+                                        <v-number-input label="Exposure" v-model="expTime" suffix="sec."
                                             @update:model-value="onChange_expTime" density="compact"
                                             control-variant="hidden" variant="outlined"></v-number-input>
                                     </v-col>
@@ -161,7 +173,34 @@
                                 </v-toolbar-title>
                             </v-toolbar>
                             <v-card-text class="pa-4">
-
+                                <v-row align="center" class="mb-2">
+                                    <v-col cols="4">
+                                        <v-menu>
+                                            <template v-slot:activator="{ props }">
+                                                <v-btn color="primary" v-bind="props" prepend-icon="mdi-export" block>
+                                                    Save as
+                                                </v-btn>
+                                            </template>
+                                            <v-list>
+                                                <v-list-item title="Agenda (SAGA-LS)"
+                                                    @click="onSaveAsAgenda"></v-list-item>
+                                            </v-list>
+                                        </v-menu>
+                                    </v-col>
+                                    <v-col cols="4">
+                                        <v-menu>
+                                            <template v-slot:activator="{ props }">
+                                                <v-btn color="primary" v-bind="props" prepend-icon="mdi-import" block>
+                                                    Load from
+                                                </v-btn>
+                                            </template>
+                                            <v-list>
+                                                <v-list-item title="Agenda (SAGA-LS)"
+                                                    @click="onLoadFromAgenda"></v-list-item>
+                                            </v-list>
+                                        </v-menu>
+                                    </v-col>
+                                </v-row>
                             </v-card-text>
                         </v-card>
                     </v-col>
