@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <!-- import font -->
+    <link href="https://fonts.googleapis.com/css?family=Noto+Serif:700|Roboto+Mono" rel="stylesheet">
+    <!-- import Vuetify -->
+    <link href="https://cdn.jsdelivr.net/npm/@mdi/font@5.x/css/materialdesignicons.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/vuetify@3.12.6/dist/vuetify.min.css" rel="stylesheet">
+    <!-- import Vue3 & Vuetify3 from CDN -->
+    <script type="importmap"> { "imports": {
+            "vue": "https://unpkg.com/vue@3/dist/vue.esm-browser.js", 
+            "vuetify": "https://cdn.jsdelivr.net/npm/vuetify@3.12.6/dist/vuetify.esm.js"
+        } } </script>
+    <!-- import Vue3 JS code -->
+    <script type="module" src="p4xmq2.js"></script>
+    <!-- load other JS files -->
+    <!-- Page Title -->
+    <title>P4XMQ</title>
+</head>
+
+<body id="app">
+    <v-app>
+        <v-main class="bg-grey-lighten-4">
+            <v-container>
+                <v-row justify="center">
+                    <v-col cols="12" sm="8" md="6">
+                        <v-card class="elevation-4">
+                            <!-- Title -->
+                            <v-toolbar id="TITLE" color="primary" height="80" class="position-relative">
+                                <v-toolbar-title class="text-center font-weight-bold">
+                                    <div class="text-h5">P4XMQ</div>
+                                    <div class="text-caption font-weight-regular text-grey-lighten-3">
+                                        - Parameters for XAS Measurement in Quick scan -
+                                    </div>
+                                </v-toolbar-title>
+                                <v-btn icon="mdi-license" class="position-absolute"
+                                    style="right: 16px; top: 50%; transform: translateY(-50%);"
+                                    @click="licenseDialog = true"></v-btn>
+                            </v-toolbar>
+                            <v-toolbar id="MONOCHROMETER" color="blue-lighten-2" density="compact">
+                                <v-toolbar-title class="text-subtitle-1 font-weight-bold text-white">
+                                    Monochrometer
+                                </v-toolbar-title>
+                            </v-toolbar>
+                            <!-- Monochrometer settings -->
+                            <v-card-text class="pa-4">
+                                <v-row align="center" class="mb-2">
+                                    <v-col cols="5">
+                                        <v-select label="Plane" :items="xtals" item-title="name" v-model="selectedXtal"
+                                            return-object variant="outlined" density="compact" hide-details
+                                            @update:model-value="changeXtalPlane"></v-select>
+                                    </v-col>
+                                    <v-col cols="7" class="text-subtitle-1 text-grey-darken-3">
+                                        d = {{ selectedXtal?.d }} Å
+                                    </v-col>
+                                </v-row>
+                            </v-card-text>
+                            <!-- Elements & Edges -->
+                            <v-toolbar id="ELEMENTS" color="blue-lighten-2" density="compact">
+                                <v-toolbar-title class="text-subtitle-1 font-weight-bold text-white">
+                                    Elements
+                                </v-toolbar-title>
+                            </v-toolbar>
+
+                            <v-card-text class="pa-4">
+                                <v-row align="center" class="mb-2">
+                                    <v-col cols="3">
+                                        <v-select label="Element" :items="elementNames" v-model="selectedElement"
+                                            variant="outlined" density="compact" hide-details></v-select>
+                                    </v-col>
+                                    <v-col cols="3">
+                                        <v-select label="Edge" :items="availableEdges" v-model="selectedEdge"
+                                            variant="outlined" density="compact" hide-details></v-select>
+                                    </v-col>
+                                    <v-col cols="5" class="text-subtitle-1 text-grey-darken-3">
+                                        edge = {{ selectedEdgeValue }} eV
+                                    </v-col>
+                                </v-row>
+                            </v-card-text>
+                        </v-card>
+                    </v-col>
+                </v-row>
+            </v-container>
+        </v-main>
+
+        <!-- License Dialog -->
+        <v-dialog v-model="licenseDialog" max-width="650px">
+            <v-card>
+                <v-card-title class="text-h5 font-weight-bold bg-primary text-white pa-4">
+                    Software Licenses
+                </v-card-title>
+                <v-card-text class="pa-4 bg-grey-lighten-5 text-body-2" style="max-height: 500px; overflow-y: auto;">
+                    <div v-html="licenseContent"></div>
+                </v-card-text>
+                <v-card-actions class="pa-4 bg-grey-lighten-5">
+                    <v-spacer></v-spacer>
+                    <v-btn color="primary" variant="elevated" @click="licenseDialog = false">Close</v-btn>
+                </v-card-actions>
+            </v-card>
+        </v-dialog>
+    </v-app>
+</body>
+
+</html>
