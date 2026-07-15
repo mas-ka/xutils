@@ -41,8 +41,8 @@ createApp({
         const elementNames = getElementNames()
 
         // ユーティリティ関数
-        const eV2deg = function (e, d) { return Math.toDegrees(Math.asin(12398.4264684 / (2 * d * e))); }
-        const deg2eV = function (t, d) { return 12398.4264684 / (2 * d * Math.sin(Math.toRadians(t))); }
+        const eV2deg = function (e, d) { return Math.toDegrees(Math.asin(EL / (2 * d * e))); }
+        const deg2eV = function (t, d) { return EL / (2 * d * Math.sin(Math.toRadians(t))); }
         const k2eV = function (k, e0) { return e0 + k * k / 0.262467191; }
         const eV2k = function (e, e0) { return Math.sqrt(0.262467191 * (e - e0)); }
         Math.toDegrees = function (radian) {
@@ -205,8 +205,93 @@ createApp({
             URL.revokeObjectURL(url)
         }
 
-        const onLoadFromAgenda = () => {
+        const onLoadFromAgenda = async () => {
+            try {
+                // 1. ファイル選択ダイアログを開く
+                const [fileHandle] = await window.showOpenFilePicker({
+                    types: [
+                        {
+                            description: 'SAGA-LS Agenda Files (*.agenda)',
+                            accept: {
+                                // ブラウザにテキストファイルとして認識させるため text/plain を指定し、
+                                // 拡張子として .agenda のみを受け付けるよう制限します
+                                'text/plain': ['.agenda']
+                            }
+                        }
+                    ],
+                    excludeAcceptAllOption: true, // 「すべてのファイル(*.*)」を選択肢から排除
+                    multiple: false              // 複数ファイルの選択を禁止
+                })
 
+                // 2. ファイルオブジェクトを取得
+                const file = await fileHandle.getFile()
+
+                // 3. テキストファイルとして中身を読み込む
+                const xmlText = await file.text() // XMLテキストを読み込み
+
+                // 4. DOMParserを使ってXML文字列を解析
+                const parser = new DOMParser()
+                const xmlDoc = parser.parseFromString(xmlText, 'text/xml')
+
+                // 5. XMLの解析エラーをチェック
+                const parserError = xmlDoc.querySelector('parsererror')
+                if (parserError) {
+                    throw new Error('XMLのパースに失敗しました。正しいフォーマットか確認してください。')
+                }
+
+                // 6. 各タグのデータを安全に抽出（存在しない場合は空文字やnullを代入）
+                // まっさきにScanタイプの確認をおこなう
+                const scanTypeText = (xmlDoc.querySelector('scan')).getAttribute('type').toLowerCase() || 'unknown'
+                if (scanTypeText !== 'quick') {
+                    throw new Error('対応していないスキャンタイプです。Quickスキャンのみ対応しています。')
+                }
+                // monochrometerパラメータの抽出
+                const dValueText = xmlDoc.querySelector('monochrometer > d_spacing')?.textContent || '3.135510'
+                const xtalName = (xmlDoc.querySelector('monochrometer > name')?.textContent || 'SI(111)').toUpperCase()
+                let xtal = xtals.find(x => x.name.toUpperCase() === xtalName)
+                if (!xtal) {
+                    xtal = { name: 'Other...', d: parseFloat(dValueText) }
+                }
+                selectedXtal.value = xtal
+                // elementパラメータの取得
+                selectedElement.value = xmlDoc.querySelector('element > symbol')?.textContent || 'Cu'
+                selectedEdge.value = xmlDoc.querySelector('element > edge')?.textContent || 'K'
+                // edgeエネルギーは設定ファイルから読み込まないでelementパラメータから再構成する。  
+                await nextTick() // elementとedgeを読み込んだ段階で一度描画を待たないと以降で再描画が行われない
+                // scanパラメータの取得
+                const agendaUnit = xmlDoc.querySelector('agenda').getAttribute('unit').toLowerCase() || 'unknown'
+                const iniEnergyText = xmlDoc.querySelector('agenda > block[id="1"] > ini')?.textContent || '8651.00'
+                const finalEnergyText = xmlDoc.querySelector('agenda').getAttribute('final') || '10505.00'
+                const stepForQuickText = xmlDoc.querySelector('agenda').getAttribute('step_for_quick') || '0.36384'
+                if (agendaUnit === 'ev') {
+                    Ebegin.value = parseFloat(iniEnergyText)
+                    Eend.value = parseFloat(finalEnergyText)
+                    Estep.value = parseFloat(stepForQuickText)
+                } else if (agendaUnit === 'kev') {
+                    Ebegin.value = parseFloat(iniEnergyText) * 1000.0
+                    Eend.value = parseFloat(finalEnergyText) * 1000.0
+                    Estep.value = parseFloat(stepForQuickText) * 1000.0
+                } else if (agendaUnit === 'a' || agendaUnit === 'ang' || agendaUnit === 'angstrom') {
+                    Ebegin.value = EL / parseFloat(iniEnergyText)
+                    Eend.value = EL / parseFloat(finalEnergyText)
+                    Estep.value = EL / parseFloat(stepForQuickText)
+                } else if (agendaUnit === 'd' || agendaUnit === 'deg' || agendaUnit === 'degree') {
+                    Ebegin.value = deg2eV(parseFloat(iniEnergyText), selectedXtal.value.d)
+                    Eend.value = deg2eV(parseFloat(finalEnergyText), selectedXtal.value.d)
+                    Estep.value = deg2eV(parseFloat(stepForQuickText), selectedXtal.value.d)
+                }
+                onChange_Ebegin() // beginDeltaを強制定期に更新
+                onChange_Eend() // Kendを強制定期に更新
+                const timeForQuickText = xmlDoc.querySelector('agenda').getAttribute('time_for_quick') || '120'
+                expTime.value = parseFloat(timeForQuickText)
+            } catch (err) {
+                // ユーザーがダイアログをキャンセルした（閉じられた）場合は AbortError が発生します
+                if (err.name === 'AbortError') {
+                    return
+                }
+                // その他のエラー（ファイル破損、権限エラーなど）
+                alert(err.message)
+            }
         }
 
         return {
