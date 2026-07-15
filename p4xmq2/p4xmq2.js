@@ -10,7 +10,7 @@ createApp({
         const licenseContent = ref('')
         const selectedXtal = ref(null)
         const selectedElement = ref(null)
-        const selectedEdge = ref('K')
+        const selectedEdge = ref(null)
         const availableEdges = ref([])
         const Ebegin = ref()
         const beginDelta = ref()
@@ -37,17 +37,7 @@ createApp({
             { name: 'Si(220)', d: 1.92010 },
             { name: 'Other...', d: 3.13551 }
         ]
-        selectedXtal.value = xtals[0]
         const elementNames = getElementNames()
-
-        // 初期値の宣言
-        selectedElement.value = 'Cu'
-        Ebegin.value = 8651.00 // Cu-K E0 -330eV
-        beginDelta.value = -330.0
-        Eend.value = 10505.00 // Cu-K K=20
-        Kend.value = 20.00
-        Estep.value = 0.36384
-        expTime.value = 120
 
         // ユーティリティ関数
         const eV2deg = function (e, d) { return Math.toDegrees(Math.asin(12398.4264684 / (2 * d * e))); }
@@ -75,6 +65,17 @@ createApp({
         const formatI = function (i, w) {
             return Array(w - ("" + i).length + 1).join(" ") + i;
         }
+
+        // 初期値の宣言
+        selectedXtal.value = xtals[0]
+        selectedElement.value = 'Cu'
+        selectedEdge.value = 'K'
+        beginDelta.value = -330.0
+        Kend.value = 20.00
+        Ebegin.value = 8951.00 + beginDelta.value
+        Eend.value = k2eV(Kend.value, 8951.00)
+        expTime.value = 120
+        Estep.value = 0.36384
 
 
 
@@ -111,7 +112,24 @@ createApp({
         // selectedElement が変化したら Edge リストを再構築する
         watch(selectedElement, (newVal) => {
             buildAvailableEdges(newVal)
-            console.log("SelectedElement")
+            // Parametersの再構築
+            beginDelta.value = -330
+            Kend.value = 20.00
+            Ebegin.value = selectedEdgeValue.value + beginDelta.value
+            Eend.value = k2eV(Kend.value, selectedEdgeValue.value)
+            expTime.value = 120
+            Estep.value = 0.36384
+        }, { immediate: true, deep: true })
+
+        // selectedEdge が変化したら Edge リストを再構築する
+        watch(selectedEdge, (newVal) => {
+            // Parametersの再構築
+            beginDelta.value = -330
+            Kend.value = 20.00
+            Ebegin.value = selectedEdgeValue.value + beginDelta.value
+            Eend.value = k2eV(Kend.value, selectedEdgeValue.value)
+            expTime.value = 120
+            Estep.value = 0.36384
         }, { immediate: true, deep: true })
 
         const onChange_Ebegin = () => {
@@ -141,7 +159,7 @@ createApp({
             selectedXtal,
             changeXtalPlane,
             elementNames,
-            selectedElement,
+            selectedElement, selectedEdge,
             edges,
             selectedEdge,
             selectedEdgeValue,

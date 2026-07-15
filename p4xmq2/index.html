@@ -30,8 +30,9 @@
                             <!-- Title -->
                             <v-toolbar id="TITLE" color="primary" height="80" class="position-relative">
                                 <v-toolbar-title class="text-center font-weight-bold">
-                                    <div class="text-h5">P4XMQ</div>
-                                    <div class="text-caption font-weight-regular text-grey-lighten-3">
+                                    <div class="text-h5" style="cursor: default;">P4XMQ</div>
+                                    <div class=" text-caption font-weight-regular text-grey-lighten-3"
+                                        style="cursor: default;">
                                         - Parameters for XAS Measurement in Quick scan -
                                     </div>
                                 </v-toolbar-title>
@@ -41,7 +42,8 @@
                             </v-toolbar>
                             <!-- Monochrometer settings -->
                             <v-toolbar id="MONOCHROMETER" color="blue-lighten-2" density="compact">
-                                <v-toolbar-title class="text-subtitle-1 font-weight-bold text-white">
+                                <v-toolbar-title class="text-subtitle-1 font-weight-bold text-white"
+                                    style="cursor: default;">
                                     Monochrometer
                                 </v-toolbar-title>
                             </v-toolbar>
@@ -52,24 +54,25 @@
                                             return-object variant="outlined" density="compact" hide-details
                                             @update:model-value="changeXtalPlane"></v-select>
                                     </v-col>
-                                    <v-col cols="7" class="text-subtitle-1 text-grey-darken-3">
+                                    <v-col cols="7" class="text-subtitle-2 text-grey-darken-3" style="cursor: default;">
                                         d = {{ selectedXtal?.d }} Å
                                     </v-col>
                                 </v-row>
                             </v-card-text>
                             <!-- Elements & Edges -->
                             <v-toolbar id="ELEMENTS" color="blue-lighten-2" density="compact">
-                                <v-toolbar-title class="text-subtitle-1 font-weight-bold text-white">
+                                <v-toolbar-title class="text-subtitle-1 font-weight-bold text-white"
+                                    style="cursor: default;">
                                     Elements
                                 </v-toolbar-title>
                             </v-toolbar>
                             <v-card-text class="pa-4">
-                                <v-row align="center" class="mb-2">
-                                    <v-col cols="3">
+                                <v-row align="center" dense="compact" class="mb-2">
+                                    <v-col cols="2">
                                         <v-select label="Element" :items="elementNames" v-model="selectedElement"
                                             variant="outlined" density="compact" hide-details></v-select>
                                     </v-col>
-                                    <v-col cols="3">
+                                    <v-col cols="2">
                                         <v-select label="Edge" :items="availableEdges" v-model="selectedEdge"
                                             variant="outlined" density="compact" hide-details>
                                             <!-- ▼ このスロットを追加して、各選択肢を直接制御します -->
@@ -78,50 +81,56 @@
                                             </template>
                                         </v-select>
                                     </v-col>
-                                    <v-col cols="5" class="text-subtitle-1 text-grey-darken-3">
-                                        edge = {{ selectedEdgeValue }} eV ({{ formatF(eV2deg(selectedEdgeValue,
+                                    <v-col cols="8" class="text-subtitle-2 text-grey-darken-3" style="cursor: default;">
+                                        edge = {{ selectedEdgeValue.toFixed(2) }} eV ({{
+                                        formatF(eV2deg(selectedEdgeValue,
                                         selectedXtal?.d), 8, 5) }} °)
                                     </v-col>
                                 </v-row>
                             </v-card-text>
                             <!-- Parameters -->
                             <v-toolbar id="PARAMETERS" color="blue-lighten-2" density="compact">
-                                <v-toolbar-title class="text-subtitle-1 font-weight-bold text-white">
+                                <v-toolbar-title class="text-subtitle-1 font-weight-bold text-white"
+                                    style="cursor: default;">
                                     Parameters
                                 </v-toolbar-title>
                             </v-toolbar>
                             <v-card-text class="pa-4">
-                                <v-row align="center" class="mb-2">
+                                <v-row align="center" dense="compact" class="mb-2">
                                     <v-col cols="4">
                                         <v-number-input label="Begin (eV)" v-model="Ebegin"
-                                            @update:model-value="onChange_Ebegin" control-variant="hidden"
-                                            variant="outlined" :precision="2" :step="0.01"></v-number-input>
+                                            @update:model-value="onChange_Ebegin" density="compact"
+                                            control-variant="hidden" variant="outlined" :precision="2"
+                                            :step="0.01"></v-number-input>
                                     </v-col>
                                     <v-col cols="4">
                                         <v-number-input label="ΔE0 (eV)" v-model="beginDelta"
-                                            @update:model-value="onChange_beginDelta" control-variant="hidden"
-                                            variant="outlined" :precision="2" :step="0.01"></v-number-input>
+                                            @update:model-value="onChange_beginDelta" density="compact"
+                                            control-variant="hidden" variant="outlined" :precision="2"
+                                            :step="0.01"></v-number-input>
                                     </v-col>
                                 </v-row>
-                                <v-row align="center" class="mb-2">
+                                <v-row align="center" dense="compact" class="mb-2">
                                     <v-col cols="4">
                                         <v-number-input label="End (eV)" v-model="Eend"
-                                            @update:model-value="onChange_Eend" control-variant="hidden"
-                                            variant="outlined" :precision="2" :step="0.01"></v-number-input>
+                                            @update:model-value="onChange_Eend" density="compact"
+                                            control-variant="hidden" variant="outlined" :precision="2"
+                                            :step="0.01"></v-number-input>
                                     </v-col>
                                     <v-col cols="4">
                                         <v-number-input label="K" v-model="Kend" @update:model-value="onChange_Kend"
-                                            control-variant="hidden" variant="outlined" :precision="2"
+                                            density="compact" control-variant="hidden" variant="outlined" :precision="2"
                                             :step="0.01"></v-number-input>
                                     </v-col>
                                 </v-row>
                                 <v-row align="center" class="mb-2">
                                     <v-col cols="4">
                                         <v-number-input label="Step (eV)" v-model="Estep"
-                                            @update:model-value="onChange_Eend" control-variant="hidden"
-                                            variant="outlined" :precision="5" :step="0.00001"></v-number-input>
+                                            @update:model-value="onChange_Eend" density="compact"
+                                            control-variant="hidden" variant="outlined" :precision="5"
+                                            :step="0.00001"></v-number-input>
                                     </v-col>
-                                    <v-col cols="8" class="text-subtitle-1 text-grey-darken-3">
+                                    <v-col cols="8" class="text-subtitle-2 text-grey-darken-3" style="cursor: default;">
                                         Total {{
                                         ((eV2deg(Ebegin, selectedXtal?.d) - eV2deg(Eend, selectedXtal?.d))
                                         / (eV2deg(selectedEdgeValue, selectedXtal?.d) - eV2deg(selectedEdgeValue +
@@ -133,16 +142,26 @@
                                 <v-row align="center" class="mb-2">
                                     <v-col cols="4">
                                         <v-number-input label="Exposure (sec.)" v-model="expTime"
-                                            @update:model-value="onChange_expTime" control-variant="hidden"
-                                            variant="outlined"></v-number-input>
+                                            @update:model-value="onChange_expTime" density="compact"
+                                            control-variant="hidden" variant="outlined"></v-number-input>
                                     </v-col>
-                                    <v-col cols="8" class="text-subtitle-1 text-grey-darken-3">
+                                    <v-col cols="8" class="text-subtitle-2 text-grey-darken-3" style="cursor: default;">
                                         Speed = {{
                                         ((eV2deg(Ebegin, selectedXtal?.d) - eV2deg(Eend, selectedXtal?.d)) /
                                         expTime).toFixed(5)
                                         }} °/sec.
                                     </v-col>
                                 </v-row>
+                            </v-card-text>
+                            <!-- File -->
+                            <v-toolbar id="FILE" color="blue-lighten-2" density="compact">
+                                <v-toolbar-title class="text-subtitle-1 font-weight-bold text-white"
+                                    style="cursor: default;">
+                                    File
+                                </v-toolbar-title>
+                            </v-toolbar>
+                            <v-card-text class="pa-4">
+
                             </v-card-text>
                         </v-card>
                     </v-col>
