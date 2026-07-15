@@ -79,8 +79,68 @@
                                         </v-select>
                                     </v-col>
                                     <v-col cols="5" class="text-subtitle-1 text-grey-darken-3">
-                                        edge = {{ selectedEdgeValue }} eV
-                                        <pre>{{ availableEdges }}</pre>
+                                        edge = {{ selectedEdgeValue }} eV ({{ formatF(eV2deg(selectedEdgeValue,
+                                        selectedXtal?.d), 8, 5) }} °)
+                                    </v-col>
+                                </v-row>
+                            </v-card-text>
+                            <!-- Parameters -->
+                            <v-toolbar id="PARAMETERS" color="blue-lighten-2" density="compact">
+                                <v-toolbar-title class="text-subtitle-1 font-weight-bold text-white">
+                                    Parameters
+                                </v-toolbar-title>
+                            </v-toolbar>
+                            <v-card-text class="pa-4">
+                                <v-row align="center" class="mb-2">
+                                    <v-col cols="4">
+                                        <v-number-input label="Begin (eV)" v-model="Ebegin"
+                                            @update:model-value="onChange_Ebegin" control-variant="hidden"
+                                            variant="outlined" :precision="2" :step="0.01"></v-number-input>
+                                    </v-col>
+                                    <v-col cols="4">
+                                        <v-number-input label="ΔE0 (eV)" v-model="beginDelta"
+                                            @update:model-value="onChange_beginDelta" control-variant="hidden"
+                                            variant="outlined" :precision="2" :step="0.01"></v-number-input>
+                                    </v-col>
+                                </v-row>
+                                <v-row align="center" class="mb-2">
+                                    <v-col cols="4">
+                                        <v-number-input label="End (eV)" v-model="Eend"
+                                            @update:model-value="onChange_Eend" control-variant="hidden"
+                                            variant="outlined" :precision="2" :step="0.01"></v-number-input>
+                                    </v-col>
+                                    <v-col cols="4">
+                                        <v-number-input label="K" v-model="Kend" @update:model-value="onChange_Kend"
+                                            control-variant="hidden" variant="outlined" :precision="2"
+                                            :step="0.01"></v-number-input>
+                                    </v-col>
+                                </v-row>
+                                <v-row align="center" class="mb-2">
+                                    <v-col cols="4">
+                                        <v-number-input label="Step (eV)" v-model="Estep"
+                                            @update:model-value="onChange_Eend" control-variant="hidden"
+                                            variant="outlined" :precision="5" :step="0.00001"></v-number-input>
+                                    </v-col>
+                                    <v-col cols="8" class="text-subtitle-1 text-grey-darken-3">
+                                        Total {{
+                                        ((eV2deg(Ebegin, selectedXtal?.d) - eV2deg(Eend, selectedXtal?.d))
+                                        / (eV2deg(selectedEdgeValue, selectedXtal?.d) - eV2deg(selectedEdgeValue +
+                                        Estep, selectedXtal?.d))
+                                        + 1).toFixed(0)
+                                        }} points
+                                    </v-col>
+                                </v-row>
+                                <v-row align="center" class="mb-2">
+                                    <v-col cols="4">
+                                        <v-number-input label="Exposure (sec.)" v-model="expTime"
+                                            @update:model-value="onChange_expTime" control-variant="hidden"
+                                            variant="outlined"></v-number-input>
+                                    </v-col>
+                                    <v-col cols="8" class="text-subtitle-1 text-grey-darken-3">
+                                        Speed = {{
+                                        ((eV2deg(Ebegin, selectedXtal?.d) - eV2deg(Eend, selectedXtal?.d)) /
+                                        expTime).toFixed(5)
+                                        }} °/sec.
                                     </v-col>
                                 </v-row>
                             </v-card-text>

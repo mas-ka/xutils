@@ -12,6 +12,12 @@ createApp({
         const selectedElement = ref(null)
         const selectedEdge = ref('K')
         const availableEdges = ref([])
+        const Ebegin = ref()
+        const beginDelta = ref()
+        const Eend = ref()
+        const Kend = ref()
+        const Estep = ref()
+        const expTime = ref()
 
         onMounted(async () => {
             try {
@@ -33,11 +39,21 @@ createApp({
         ]
         selectedXtal.value = xtals[0]
         const elementNames = getElementNames()
+
+        // 初期値の宣言
         selectedElement.value = 'Cu'
+        Ebegin.value = 8651.00 // Cu-K E0 -330eV
+        beginDelta.value = -330.0
+        Eend.value = 10505.00 // Cu-K K=20
+        Kend.value = 20.00
+        Estep.value = 0.36384
+        expTime.value = 120
 
         // ユーティリティ関数
         const eV2deg = function (e, d) { return Math.toDegrees(Math.asin(12398.4264684 / (2 * d * e))); }
         const deg2eV = function (t, d) { return 12398.4264684 / (2 * d * Math.sin(Math.toRadians(t))); }
+        const k2eV = function (k, e0) { return e0 + k * k / 0.262467191; }
+        const eV2k = function (e, e0) { return Math.sqrt(0.262467191 * (e - e0)); }
         Math.toDegrees = function (radian) {
             var toDegree = 180 / Math.PI;
             if (isNaN(radian)) return NaN;
@@ -46,7 +62,7 @@ createApp({
         Math.toRadians = function (degree) {
             return isNaN(degree) ? NaN : degree * Math.PI / 180;
         }
-        String.formatF = function (f, w, d) {
+        const formatF = function (f, w, d) {
             var z = Array(d + 1).join("0");
             var y = "" + f + ((("" + f).indexOf('.') < 0) ? "." + z : z);
             var t = "." + (y.split('\.'))[1].substr(0, d);
@@ -56,7 +72,7 @@ createApp({
                 return Array(w - (y.split('\.'))[0].length - t.length + 1).join(" ") + (y.split('\.'))[0] + t;
             }
         }
-        String.formatI = function (i, w) {
+        const formatI = function (i, w) {
             return Array(w - ("" + i).length + 1).join(" ") + i;
         }
 
@@ -98,9 +114,27 @@ createApp({
             console.log("SelectedElement")
         }, { immediate: true, deep: true })
 
+        const onChange_Ebegin = () => {
+            beginDelta.value = Ebegin.value - selectedEdgeValue.value
+        }
 
+        const onChange_beginDelta = () => {
+            Ebegin.value = selectedEdgeValue.value + beginDelta.value
+        }
+
+        const onChange_Eend = () => {
+            Kend.value = eV2k(Eend.value, selectedEdgeValue.value)
+        }
+
+        const onChange_Kend = () => {
+            Eend.value = k2eV(Kend.value, selectedEdgeValue.value)
+        }
+
+        const onChange_expTime = () => {
+        }
 
         return {
+            formatF, eV2deg, eV2k,
             licenseDialog,
             licenseContent,
             xtals,
@@ -111,7 +145,12 @@ createApp({
             edges,
             selectedEdge,
             selectedEdgeValue,
-            availableEdges
+            availableEdges,
+            Ebegin, Eend, Estep,
+            beginDelta, Kend, expTime,
+            onChange_Ebegin, onChange_beginDelta,
+            onChange_Eend, onChange_Kend,
+            onChange_expTime,
         }
     }
 }).use(createVuetify()).mount('#app')
