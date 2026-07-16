@@ -1,97 +1,145 @@
 <!DOCTYPE html>
-<html ng-app="myApp">
+<html>
 
 <head>
     <meta charset="UTF-8">
-    <!-- import Web font -->
-    <link href="https://fonts.googleapis.com/css?family=Noto+Serif:700|Roboto+Mono|Open+Sans" rel="stylesheet">
-
-    <!-- import AngularJS -->
-    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.5/angular.min.js"></script>
-
-    <!-- import Angular Material -->
-    <link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/angular_material/1.0.0/angular-material.min.css">
-    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.5/angular-animate.min.js"></script>
-    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.5/angular-aria.min.js"></script>
-    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.5/angular-messages.min.js"></script>
-    <script src="https://ajax.googleapis.com/ajax/libs/angular_material/1.1.0/angular-material.min.js"></script>
-
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- import font -->
+    <link href="https://fonts.googleapis.com/css?family=Noto+Serif:700|Roboto+Mono" rel="stylesheet">
+    <!-- import Vuetify CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/@mdi/font@5.x/css/materialdesignicons.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/vuetify@3.12.6/dist/vuetify.min.css" rel="stylesheet">
+    <!-- import Vue3 JS code -->
+    <!-- load other JS files -->
     <!-- import local scripts -->
-    <link rel="stylesheet" type="text/css" href="index.css">
-    <script type="text/javascript" src="index.js"></script>
+    <style>
+        html,
+        body,
+        #app {
+            height: 100%;
+            margin: 0;
+        }
+
+        .iframe-container,
+        .full-iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+    </style>
+    <!-- Page Title -->
     <title>xutils</title>
 </head>
 
 <body>
-    <div  ng-controller="myController as Cntl" layout="column" layout-fill ng-cloak>
-    <section layout="row" flex>
-        <md-sidenav
-            class="md-sidenav-left"
-            md-component-id="left"
-            md-is-locked-open="true"
-            md-whiteframe="2">
-            <md-toolbar class="md-theme-indigo">
-                <h1 class="md-toolbar-tools" style="cursor: default;">xutils : Menu</h1>
-            </md-toolbar>
-            <md-content layout-padding>
-                <!-- <md-subheader class="md-no-sticky md-primary md-hue-2"><b>General</b></md-subheader>
-                <md-list-item flex>
-                    <md-button class="btn_sidenav" md-colors="{color:'primary'}" href="bragg/index.html" target="main_column" flex>
-                        <md-tooltip>Bragg angle of monochromatic crystal</md-tooltip>
-                        bragg
-                    </md-button>
-                </md-list-item> -->
-                <md-subheader class="md-no-sticky md-primary md-hue-2" style="cursor: default;"><b>XAFS</b></md-subheader>
-                <md-list-item flex>
-                    <md-button class="btn_sidenav" md-colors="{color:'primary'}" href="samxam/index.html" target="main_column" flex>
-                        <md-tooltip>Sample preparation for XAS measurement</md-tooltip>
-                        samxam
-                    </md-button>
-                </md-list-item>
-                <md-list-item flex>
-                    <md-button class="btn_sidenav" md-colors="{color:'primary'}" href="p4xms/index.html" target="main_column" flex>
-                        <md-tooltip>Parameters for XAS measurement in Step scan</md-tooltip>
-                        p4xms
-                    </md-button>
-                </md-list-item>
-                <md-list-item flex>
-                    <md-button class="btn_sidenav" md-colors="{color:'primary'}" href="p4xmq/index.html" target="main_column" flex>
-                        <md-tooltip>Parameters for XAS measurement in Quick scan</md-tooltip>
-                        p4xmq
-                    </md-button>
-                </md-list-item>
-                <md-list-item flex>
-                    <md-button class="btn_sidenav" md-colors="{color:'primary'}" href="retrocog/index.html" target="main_column" flex>
-                        <md-tooltip>Viewer of XAS file in '9809' format</md-tooltip>
-                        RetroCog
-                    </md-button>
-                </md-list-item>
-                <md-list-item flex>
-                    <md-button class="btn_sidenav" md-colors="{color:'primary'}" href="epiphany/index.html" target="main_column" flex>
-                        <md-tooltip>Applying ROI to "Spectrogram" Post-productively</md-tooltip>
-                        Epiphany
-                    </md-button>
-                </md-list-item>
-                <md-subheader class="md-no-sticky md-primary md-hue-2" style="cursor: default;"><b>SAXS</b></md-subheader>
-                <md-list-item flex>
-                    <md-button class="btn_sidenav" md-colors="{color:'primary'}" href="calq/index.html" target="main_column" flex>
-                        <md-tooltip>Calcurator for Q range</md-tooltip>
-                        calq
-                    </md-button>
-                </md-list-item>
-            </md-content>
-        </md-sidenav>
-        <md-content layout-fill>
-            <div layout-fill>
-                <iframe id="parent-iframe"
-                        width='100%'
-                        name="main_column"
-                        frameborder="no"
-                        layout-fill></iframe>
-            </div>
-        </md-content>
-    </section>
+    <!-- body直下ではなく、マウント用のdivを用意します -->
+    <div id="app">
+        <v-app>
+            <!-- 左側サイドナビ（常時固定表示） -->
+            <v-navigation-drawer permanent elevation="2" width="180">
+                <!-- メニューヘッダー -->
+                <v-toolbar color="indigo" dark>
+                    <v-toolbar-title class="bg-indigo text-h6 text-white font-weight-bold font-italic rounded"
+                        style="cursor: default; font-family: 'Noto Serif'">
+                        xutils : Menu
+                    </v-toolbar-title>
+                </v-toolbar>
+
+                <v-list class="pa-4">
+                    <!-- XAFS セクション -->
+                    <v-list-subheader
+                        class="bg-indigo-lighten-2 text-subtitle-2 text-white font-weight-bold rounded mb-2"
+                        style="cursor: default;">
+                        X A F S
+                    </v-list-subheader>
+
+                    <v-list-item>
+                        <v-btn block color="primary" variant="text" href="samxam/index.html" target="main_column">
+                            samxam
+                            <v-tooltip activator="parent" location="right">
+                                Sample preparation for XAS measurement
+                            </v-tooltip>
+                        </v-btn>
+                    </v-list-item>
+
+                    <v-list-item>
+                        <v-btn block color="primary" variant="text" href="p4xms/index.html" target="main_column">
+                            p4xms
+                            <v-tooltip activator="parent" location="right">
+                                Parameters for XAS measurement in Step scan
+                            </v-tooltip>
+                        </v-btn>
+                    </v-list-item>
+
+                    <v-list-item>
+                        <v-btn block color="primary" variant="text" href="p4xmq2/index.html" target="main_column">
+                            p4xmq
+                            <v-tooltip activator="parent" location="right">
+                                Parameters for XAS measurement in Quick scan
+                            </v-tooltip>
+                        </v-btn>
+                    </v-list-item>
+
+                    <v-list-item>
+                        <v-btn block color="primary" variant="text" href="retrocog/index.html" target="main_column">
+                            RetroCog
+                            <v-tooltip activator="parent" location="right">
+                                Viewer of XAS file in '9809' format
+                            </v-tooltip>
+                        </v-btn>
+                    </v-list-item>
+
+                    <v-list-item>
+                        <v-btn block color="primary" variant="text" href="epiphany/index.html" target="main_column">
+                            Epiphany
+                            <v-tooltip activator="parent" location="right">
+                                Applying ROI to "Spectrogram" Post-productively
+                            </v-tooltip>
+                        </v-btn>
+                    </v-list-item>
+
+                    <!-- SAXS セクション -->
+                    <v-list-subheader
+                        class="bg-indigo-lighten-2 text-subtitle-2 text-white font-weight-bold rounded mb-2 mt-3"
+                        style="cursor: default;">
+                        S A X S
+                    </v-list-subheader>
+
+                    <v-list-item>
+                        <v-btn block color="primary" variant="text" href="calq/index.html" target="main_column">
+                            calq
+                            <v-tooltip activator="parent" location="right">
+                                Calcurator for Q range
+                            </v-tooltip>
+                        </v-btn>
+                    </v-list-item>
+                </v-list>
+            </v-navigation-drawer>
+
+            <!-- 右側メインコンテンツ（iframe領域） -->
+            <v-main style="height: 100vh;">
+                <div class="iframe-container">
+                    <iframe id="parent-iframe" name="main_column" class="full-iframe"></iframe>
+                </div>
+            </v-main>
+        </v-app>
     </div>
+
+    <!-- 1. Vue 3 本体（グローバル版CDN） -->
+    <script src="https://unpkg.com/vue@3.5.40/dist/vue.global.js"></script>
+    <!-- 2. Vuetify 3 本体（グローバル版CDN：全コンポーネントが自動登録されます） -->
+    <script src="https://cdn.jsdelivr.net/npm/vuetify@4.1.5/dist/vuetify.min.js"></script>
+
+    <!-- 3. インラインでのVue初期化スクリプト -->
+    <script>
+        const { createApp } = Vue;
+        const { createVuetify } = Vuetify;
+
+        // グローバル読み込みなので、Vuetifyがすべてのコンポーネントを自動で保持しています
+        const vuetify = createVuetify();
+
+        createApp({}).use(vuetify).mount('#app');
+    </script>
 </body>
 
 </html>
