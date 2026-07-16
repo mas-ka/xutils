@@ -80,9 +80,7 @@ createApp({
 
 
 
-        const changeXtalPlane = function () {
-            console.log('changeXtalPlane called')
-        }
+        const changeXtalPlane = function () { }
 
         // 選択された Element の選択された Edge のエネルギー値を返す
         const selectedEdgeValue = computed(() => {
@@ -100,7 +98,6 @@ createApp({
                 value: edge,
                 disabled: (el[edge] ?? 0) === 0
             }))
-            console.log(list)
             availableEdges.value = list
             // 現在選択中の Edge が disabled になった場合、最初の有効な Edge に切り替える
             const current = list.find(item => item.value === selectedEdge.value)
@@ -278,7 +275,8 @@ createApp({
                 } else if (agendaUnit === 'd' || agendaUnit === 'deg' || agendaUnit === 'degree') {
                     Ebegin.value = deg2eV(parseFloat(iniEnergyText), selectedXtal.value.d)
                     Eend.value = deg2eV(parseFloat(finalEnergyText), selectedXtal.value.d)
-                    Estep.value = deg2eV(parseFloat(stepForQuickText), selectedXtal.value.d)
+                    const degE0 = eV2deg(selectedEdgeValue.value, selectedXtal.value.d)
+                    Estep.value = deg2eV(degE0 + parseFloat(stepForQuickText), selectedXtal.value.d) - selectedEdgeValue.value
                 }
                 onChange_Ebegin() // beginDeltaを強制定期に更新
                 onChange_Eend() // Kendを強制定期に更新
