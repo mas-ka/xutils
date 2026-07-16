@@ -23,14 +23,14 @@
 <body id="app">
     <v-app>
         <v-main class="bg-grey-lighten-4">
-            <v-container>
-                <v-row justify="center">
-                    <v-col cols="12" sm="8" md="6">
-                        <v-card class="elevation-4">
+            <v-container class="py-8 ml-0" style="overflow-x: auto;">
+                <v-row justify="start">
+                    <v-col cols="auto">
+                        <v-card class="elevation-4" style="width: 600px; min-width: 600px;">
                             <!-- Title -->
                             <v-toolbar id="TITLE" color="primary" height="80" class="position-relative">
                                 <v-toolbar-title class="text-center font-weight-bold">
-                                    <div class="text-h5" style="cursor: default; font-family: 'Noto Serif';">P 4 X M Q
+                                    <div class="text-h4" style="cursor: default; font-family: 'Noto Serif';">P 4 X M Q
                                     </div>
                                     <div class="text-caption font-weight-regular text-grey-lighten-3"
                                         style="cursor: default; font-family: 'Noto Serif';">
@@ -42,37 +42,37 @@
                                     @click="licenseDialog = true"></v-btn>
                             </v-toolbar>
                             <!-- Monochrometer settings -->
-                            <v-toolbar id="MONOCHROMETER" color="blue-lighten-2" density="compact">
+                            <v-toolbar id="MONOCHROMETER" class="mb-3" color="blue-lighten-2" density="compact">
                                 <v-toolbar-title class="text-subtitle-1 font-weight-bold text-white"
                                     style="cursor: default;">
                                     Monochrometer
                                 </v-toolbar-title>
                             </v-toolbar>
                             <v-card-text class="pa-4">
-                                <v-row align="center" class="mb-2">
+                                <v-row align="center" class="mb-2" dense="compact">
                                     <v-col cols="4">
-                                        <v-select label="Plane" :items="xtals" item-title="name" v-model="selectedXtal"
-                                            return-object variant="outlined" density="compact" hide-details
-                                            @update:model-value="changeXtalPlane"></v-select>
+                                        <v-select label="Crystal Plane" :items="xtals" item-title="name"
+                                            v-model="selectedXtal" return-object variant="outlined" density="compact"
+                                            hide-details @update:model-value="changeXtalPlane"></v-select>
                                     </v-col>
-                                    <v-col cols="4">
-                                        <!-- 1. 「Other...」が選択された場合：数値入力インプットを表示 -->
-                                        <template v-if="selectedXtal?.name === 'Other...'">
-                                            <v-text-field label="d" v-model.number="selectedXtal.d" type="number"
-                                                suffix="Å" variant="outlined" density="compact" hide-details
-                                                step="0.001"></v-text-field>
-                                        </template>
-                                        <!-- 2. それ以外（通常の結晶面）の場合：固定テキストを表示 -->
-                                        <template v-else>
-                                            <div class="text-subtitle-2 text-grey-darken-3" style="cursor: default;">
-                                                d = {{ selectedXtal?.d ?? '-' }} Å
-                                            </div>
-                                        </template>
+                                    <v-col cols="5">
+                                        <!-- 「Other...」選択時はカスタム数値を入力可能、それ以外は読取専用で固定値を表示 -->
+                                        <v-text-field v-if="selectedXtal?.name === 'Other...'"
+                                            label="Lattice Spacing (d)" v-model.number="selectedXtal.d" type="number"
+                                            suffix="Å" variant="outlined" density="compact" hide-details
+                                            step="0.00001"></v-text-field>
+                                        <div v-else
+                                            class="d-flex align-center bg-grey-lighten-3 rounded px-4 py-3 border text-body-2 text-grey-darken-3"
+                                            style="min-height: 40px; max-height: 40px; cursor: default;">
+                                            <span class="text-grey-medium-emphasis mr-2">d =</span>
+                                            <strong>{{ selectedXtal?.d ?? '-' }}</strong> <span
+                                                class="ml-1 text-caption text-grey-medium-emphasis">Å</span>
+                                        </div>
                                     </v-col>
                                 </v-row>
                             </v-card-text>
                             <!-- Elements & Edges -->
-                            <v-toolbar id="ELEMENTS" color="blue-lighten-2" density="compact">
+                            <v-toolbar id="ELEMENTS" class="mb-3" color="blue-lighten-2" density="compact">
                                 <v-toolbar-title class="text-subtitle-1 font-weight-bold text-white"
                                     style="cursor: default;">
                                     Elements
@@ -82,34 +82,42 @@
                                 <v-row align="center" dense="compact" class="mb-2">
                                     <v-col cols="2">
                                         <v-select label="Element" :items="elementNames" v-model="selectedElement"
-                                            variant="outlined" density="compact" hide-details></v-select>
+                                            variant="outlined" density="comfortable" hide-details></v-select>
                                     </v-col>
                                     <v-col cols="2">
                                         <v-select label="Edge" :items="availableEdges" v-model="selectedEdge"
-                                            variant="outlined" density="compact" hide-details>
+                                            variant="outlined" density="comfortable" hide-details>
                                             <!-- ▼ このスロットを追加して、各選択肢を直接制御します -->
                                             <template #item="{ props, item }">
                                                 <v-list-item v-bind="props" :disabled="item.raw.disabled"></v-list-item>
                                             </template>
                                         </v-select>
                                     </v-col>
-                                    <v-col cols="8" class="text-subtitle-2 text-grey-darken-3" style="cursor: default;">
-                                        edge = {{ selectedEdgeValue.toFixed(2) }} eV
-                                        ({{formatF(eV2deg(selectedEdgeValue,
-                                        selectedXtal?.d), 8, 5) }} °)
+                                    <v-col cols="5">
+                                        <div class="d-flex flex-column justify-center bg-blue-grey-lighten-5 border rounded px-4 py-2"
+                                            style="min-height: 48px; max-height: 48px; cursor: default;">
+                                            <div class="text-body-2 text-grey-darken-3 font-weight-medium">
+                                                Edge : <span class="text-primary font-weight-bold">{{
+                                                    selectedEdgeValue.toFixed(2) }}</span> eV
+                                            </div>
+                                            <div class="text-caption text-grey-darken-1">
+                                                Bragg Angle: <span class="font-weight-medium">{{
+                                                    formatF(eV2deg(selectedEdgeValue, selectedXtal?.d), 8, 5) }}°</span>
+                                            </div>
+                                        </div>
                                     </v-col>
                                 </v-row>
                             </v-card-text>
                             <!-- Parameters -->
-                            <v-toolbar id="PARAMETERS" color="blue-lighten-2" density="compact">
+                            <v-toolbar id="PARAMETERS" class="mb-3" color="blue-lighten-2" density="compact">
                                 <v-toolbar-title class="text-subtitle-1 font-weight-bold text-white"
                                     style="cursor: default;">
                                     Parameters
                                 </v-toolbar-title>
                             </v-toolbar>
                             <v-card-text class="pa-4">
-                                <v-row align="center" dense="compact" class="mb-2">
-                                    <v-col cols="4">
+                                <v-row align="center" dense="compact" class="mb-1">
+                                    <v-col cols="5">
                                         <v-number-input label="Begin" v-model="Ebegin" suffix="eV"
                                             @update:model-value="onChange_Ebegin" density="compact"
                                             control-variant="hidden" variant="outlined" :precision="2"
@@ -122,8 +130,8 @@
                                             :step="0.01"></v-number-input>
                                     </v-col>
                                 </v-row>
-                                <v-row align="center" dense="compact" class="mb-2">
-                                    <v-col cols="4">
+                                <v-row align="center" dense="compact" class="mb-1">
+                                    <v-col cols="5">
                                         <v-number-input label="End" v-model="Eend" suffix="eV"
                                             @update:model-value="onChange_Eend" density="compact"
                                             control-variant="hidden" variant="outlined" :precision="2"
@@ -135,33 +143,43 @@
                                             :step="0.01"></v-number-input>
                                     </v-col>
                                 </v-row>
-                                <v-row align="center" class="mb-2">
-                                    <v-col cols="4">
+                                <v-row align="stretch" dense class="mb-8">
+                                    <v-col cols="5">
                                         <v-number-input label="Step" v-model="Estep" suffix="eV"
                                             @update:model-value="onChange_Eend" density="compact"
-                                            control-variant="hidden" variant="outlined" :precision="5"
+                                            control-variant="hidden" variant="outlined" :precision="5" hide-details
                                             :step="0.00001"></v-number-input>
                                     </v-col>
-                                    <v-col cols="8" class="text-subtitle-2 text-grey-darken-3" style="cursor: default;">
-                                        Total {{
-                                        ((eV2deg(Ebegin, selectedXtal?.d) - eV2deg(Eend, selectedXtal?.d))
-                                        / (eV2deg(selectedEdgeValue, selectedXtal?.d) - eV2deg(selectedEdgeValue +
-                                        Estep, selectedXtal?.d))
-                                        + 1).toFixed(0)
-                                        }} points
+                                    <v-col cols="4">
+                                        <div class="d-flex align-center bg-grey-lighten-3 rounded px-4 border text-body-2 text-grey-darken-3 h-100 w-100""
+                                            style=" min-height: 40px; max-height: 40px; cursor: default;">
+                                            <span class="text-grey-medium-emphasis mr-2">Total </span>
+                                            <strong>{{ ((eV2deg(Ebegin, selectedXtal?.d) - eV2deg(Eend,
+                                                selectedXtal?.d))
+                                                / (eV2deg(selectedEdgeValue, selectedXtal?.d) - eV2deg(selectedEdgeValue
+                                                +
+                                                Estep, selectedXtal?.d))
+                                                + 1).toFixed(0) }}</strong> <span
+                                                class="ml-1 text-caption text-grey-medium-emphasis">points</span>
+                                        </div>
                                     </v-col>
                                 </v-row>
-                                <v-row align="center" class="mb-2">
-                                    <v-col cols="4">
+                                <v-row align="stretch" dense class="mb-2">
+                                    <v-col cols="5">
                                         <v-number-input label="Exposure" v-model="expTime" suffix="sec."
-                                            @update:model-value="onChange_expTime" density="compact"
+                                            @update:model-value="onChange_expTime" density="compact" hide-details
                                             control-variant="hidden" variant="outlined"></v-number-input>
                                     </v-col>
-                                    <v-col cols="8" class="text-subtitle-2 text-grey-darken-3" style="cursor: default;">
-                                        Speed = {{
-                                        ((eV2deg(Ebegin, selectedXtal?.d) - eV2deg(Eend, selectedXtal?.d)) /
-                                        expTime).toFixed(5)
-                                        }} °/sec.
+                                    <v-col cols="4">
+                                        <div class="d-flex align-center bg-grey-lighten-3 rounded px-4 border text-body-2 text-grey-darken-3 h-100 w-100""
+                                            style=" min-height: 40px; max-height: 40px; cursor: default;">
+                                            <!-- <span class="text-grey-medium-emphasis mr-2">Speed = </span> -->
+                                            <strong>{{
+                                                ((eV2deg(Ebegin, selectedXtal?.d) - eV2deg(Eend, selectedXtal?.d)) /
+                                                expTime).toFixed(5)
+                                                }}</strong> <span
+                                                class="ml-1 text-caption text-grey-medium-emphasis">°/sec.</span>
+                                        </div>
                                     </v-col>
                                 </v-row>
                             </v-card-text>
@@ -187,6 +205,7 @@
                                             </v-list>
                                         </v-menu>
                                     </v-col>
+                                    <v-col cols="1"></v-col>
                                     <v-col cols="4">
                                         <v-menu>
                                             <template v-slot:activator="{ props }">
