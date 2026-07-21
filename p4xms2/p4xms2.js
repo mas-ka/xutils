@@ -13,6 +13,11 @@ createApp({
         const selectedEdge = ref(null)
         const availableEdges = ref([])
         const blocks = ref([])
+        const editingIndex = ref(null)          // 現在ダイアログで編集している行のインデックス
+        const dialogInputValue = ref(0)         // ダイアログ内の入力欄の値
+        const isDialogOpen_K = ref(false)         // ダイアログの開閉フラグ
+        const dialog_Kmin = ref(0.00)           // K値入力ダイアログの最小値
+        const dialog_Kmax = ref(999999.99)      // K値入力ダイアログの最大値
 
 
         // ローカルの宣言
@@ -58,15 +63,13 @@ createApp({
         selectedElement.value = 'Cu'
         selectedEdge.value = 'K'
         blocks.value = [
-            { BEGIN: '8651' },
-            { BEGIN: '8951' },
-            { BEGIN: '9041.96' },
-            { BEGIN: '9118.16' },
-            { BEGIN: '9224.84' },
-            { BEGIN: '9362' },
+            { BEGIN: 8651.00 },
+            { BEGIN: 8951.00 },
+            { BEGIN: 9041.96 },
+            { BEGIN: 9118.16 },
+            { BEGIN: 9224.84 },
+            { BEGIN: 9362.00 },
         ]
-
-
 
         onMounted(async () => {
             try {
@@ -120,6 +123,65 @@ createApp({
             // Parametersの再構築
         }
 
+        // Ｋ値入力ダイアログを開く
+        const openDialog_K = (index, block) => {
+            editingIndex.value = index
+            // 直接元のデータを書き換えないよう、現在の値を一時変数にコピー
+            dialogInputValue.value = eV2k(Number(block.BEGIN), selectedEdgeValue.value)
+
+
+            const prevK = (index > 0)
+                ? ((blocks.value[index - 1].BEGIN < selectedEdgeValue.value)
+                    ? 0.00
+                    : Number(eV2k(blocks.value[index - 1].BEGIN, selectedEdgeValue.value).toFixed(2)))
+                : 0.00
+            const nextK = (index < blocks.value.length - 1)
+                ? Number(eV2k(blocks.value[index + 1].BEGIN, selectedEdgeValue.value).toFixed(2))
+                : 999999.99
+            dialog_Kmin.value = Number((prevK + 0.01).toFixed(2))
+            dialog_Kmax.value = Number((nextK - 0.01).toFixed(2))
+
+            isDialogOpen_K.value = true
+        }
+
+        const isOKDisabled_K = computed(() => {
+            const val = Number(dialogInputValue.value)
+            console.log(val)
+
+            // 1. 入力が空（手入力で全部消した時など）や数値ではない場合は無効化
+            if (val === null || val === undefined || isNaN(val)) {
+                return true
+            }
+
+            // 2. 最小値の制限を下回っている、または最大値の制限を上回っている場合は無効化
+            if (val < dialog_Kmin.value || val > dialog_Kmax.value) {
+                return true
+            }
+
+            // すべての条件をクリアしていればボタンを有効（disabled = false）にする
+            return false
+        })
+
+        // Enterキーが押された
+        const onEnter_K = () => {
+            if (!isOKDisabled_K.value) {
+                cancelDialog_K(false)
+            }
+        }
+
+        // Ｋ値入力ダイアログを閉じる（キャンセルもしくはOK）
+        const cancelDialog_K = (isCanceled) => {
+            if (isCanceled) { // キャンセルされた
+                editingIndex.value = null
+            } else { // OKされた
+                if (editingIndex.value !== null) {
+                    const finalK = Number(dialogInputValue.value)
+                    const e0 = Number(selectedEdgeValue.value) || 0
+                    blocks.value[editingIndex.value].BEGIN = Number(k2eV(finalK, e0).toFixed(2))
+                }
+            }
+            isDialogOpen_K.value = false
+        }
 
 
 
@@ -130,6 +192,8 @@ createApp({
             elementNames, selectedElement, selectedEdge, edges,
             selectedEdge, selectedEdgeValue, availableEdges,
             blocks,
+            editingIndex, dialogInputValue,
+            isDialogOpen_K, openDialog_K, cancelDialog_K, dialog_Kmin, dialog_Kmax, isOKDisabled_K, onEnter_K,
         }
     }
 }).use(createVuetify()).mount('#app')

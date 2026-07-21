@@ -116,6 +116,27 @@
                                 </v-toolbar-title>
                             </v-toolbar>
                             <v-card-text class="pa-4">
+                                <!-- Ｋ値入力ダイアログ -->
+                                <v-dialog v-model="isDialogOpen_K" max-width="400px">
+                                    <v-card title="Input K-value">
+                                        <v-card-text>
+                                            <!-- ダイアログ内の数値入力欄 -->
+                                            <v-number-input v-model.string="dialogInputValue" density="comfortable"
+                                                variant="outlined" suffix="[Å⁻¹]" :precision="2" :step="0.1"
+                                                :min="dialog_Kmin" :max="dialog_Kmax" hide-details
+                                                @keydown.enter="onEnter_K" autofocus></v-number-input>
+                                        </v-card-text>
+
+                                        <v-card-actions>
+                                            <v-spacer></v-spacer>
+                                            <!-- Cancelボタン：何もせず閉じる -->
+                                            <v-btn text="Cancel" variant="text" @click="cancelDialog_K(true)"></v-btn>
+                                            <!-- OKボタン：値をテーブルに反映して閉じる -->
+                                            <v-btn text="OK" variant="tonal" color="primary" :disabled="isOKDisabled_K"
+                                                @click="cancelDialog_K(false)"></v-btn>
+                                        </v-card-actions>
+                                    </v-card>
+                                </v-dialog>
                                 <table class="w-100 border-thin text-body-2"
                                     style="border-collapse: collapse; table-layout: fixed;">
                                     <thead>
@@ -132,10 +153,23 @@
                                             <!-- 1列目：自動で 80px になります -->
                                             <td class="pa-3 border-thin">{{ index + 1 }}</td>
                                             <!-- 2列目：自動で残りの幅にぴったり合わさります -->
-                                            <td class="pa-3 border-thin">{{ block.BEGIN }}</td>
+                                            <td class="pa-3 border-thin">
+                                                <v-number-input density="compact" v-model="block.BEGIN"
+                                                    control-variant="hidden" hide-details suffix="eV" :precision="2"
+                                                    style="width: 210px;">
+                                                    <template v-slot:prepend>
+                                                        <v-btn density="comfortable" rounded="xl" variant="tonal"
+                                                            style="width: 60px;" @click="openDialog_K(index, block)">
+                                                            {{ Number(block.BEGIN) < Number(selectedEdgeValue) ? '-' :
+                                                                eV2k(Number(block.BEGIN),
+                                                                Number(selectedEdgeValue)).toFixed(2) }} </v-btn>
+                                                    </template>
+                                                </v-number-input>
+                                            </td>
                                         </tr>
                                     </tbody>
                                 </table>
+                                <v-btn @click="console.log(blocks)">console.log(blocks)</v-btn>
                             </v-card-text>
                             <!-- File -->
                             <v-toolbar id="FILE" color="blue-lighten-2" density="compact">
