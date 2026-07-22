@@ -122,8 +122,8 @@
                                         <v-card-text>
                                             <!-- ダイアログ内の数値入力欄 -->
                                             <v-number-input v-model.string="dialogInputValue" density="comfortable"
-                                                variant="outlined" :suffix="dialog_Ksuffix" :precision="2" :step="0.1"
-                                                :min="dialog_Kmin" :max="dialog_Kmax" hide-details
+                                                variant="outlined" :suffix="dialog_Ksuffix" :precision="dialog_Kpreci"
+                                                :step="dialog_Kstep" :min="dialog_Kmin" :max="dialog_Kmax" hide-details
                                                 @keydown.enter="onEnter_K" autofocus></v-number-input>
                                         </v-card-text>
 

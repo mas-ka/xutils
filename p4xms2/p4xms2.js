@@ -17,6 +17,8 @@ createApp({
         const dialogInputValue = ref(0)         // ダイアログ内の入力欄の値
         const isDialogOpen_K = ref(false)       // ダイアログの開閉フラグ
         const dialog_Ksuffix = ref('')          // K値入力ダイアログの単位
+        const dialog_Kpreci = ref(2)            // K値入力ダイアログの精度
+        const dialog_Kstep = ref(0.1)           // K値入力ダイアログのステップ
         const dialog_Kmin = ref(0.00)           // K値入力ダイアログの最小値
         const dialog_Kmax = ref(999999.99)      // K値入力ダイアログの最大値
 
@@ -136,10 +138,14 @@ createApp({
                 // 編集行がE0未満だったのでΔE0として扱う
                 dialogInputValue.value = blocks.value[index].BEGIN - selectedEdgeValue.value
                 dialog_Ksuffix.value = 'eV'
+                dialog_Kpreci.value = 0
+                dialog_Kstep.value = 1
             } else {
                 // 編集行がE0以上だったのでE0からの波数kとして扱う
                 dialogInputValue.value = eV2k(Number(block.BEGIN), selectedEdgeValue.value)
                 dialog_Ksuffix.value = 'Å⁻¹'
+                dialog_Kpreci.value = 2
+                dialog_Kstep.value = 0.1
             }
 
             const prevK = (index > 0)
@@ -165,8 +171,21 @@ createApp({
             // 0. ついでにsuffixを制御する
             if (val < 0) {
                 dialog_Ksuffix.value = 'eV'
+                dialog_Kpreci.value = 0
+                dialog_Kstep.value = 1
+            } else if (val === 0) {
+                dialog_Ksuffix.value = 'Å⁻¹'
+                if (dialog_Kpreci.value === 0) { // 負から正へ
+                    dialog_Kpreci.value = 2
+                    dialog_Kstep.value = 0.1
+                } else { // 正から負へ
+                    dialog_Kpreci.value = 0
+                    dialog_Kstep.value = 1
+                }
             } else {
                 dialog_Ksuffix.value = 'Å⁻¹'
+                dialog_Kpreci.value = 2
+                dialog_Kstep.value = 0.1
             }
 
             // 1. 入力が空（手入力で全部消した時など）や数値ではない場合は無効化
@@ -219,7 +238,9 @@ createApp({
             selectedEdge, selectedEdgeValue, availableEdges,
             blocks,
             editingIndex, dialogInputValue,
-            isDialogOpen_K, openDialog_K, cancelDialog_K, dialog_Ksuffix, dialog_Kmin, dialog_Kmax, isOKDisabled_K, onEnter_K,
+            isDialogOpen_K, openDialog_K, cancelDialog_K,
+            dialog_Ksuffix, dialog_Kpreci, dialog_Kstep,
+            dialog_Kmin, dialog_Kmax, isOKDisabled_K, onEnter_K,
         }
     }
 }).use(createVuetify()).mount('#app')
