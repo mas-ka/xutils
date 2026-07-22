@@ -15,7 +15,8 @@ createApp({
         const blocks = ref([])
         const editingIndex = ref(null)          // 現在ダイアログで編集している行のインデックス
         const dialogInputValue = ref(0)         // ダイアログ内の入力欄の値
-        const isDialogOpen_K = ref(false)         // ダイアログの開閉フラグ
+        const isDialogOpen_K = ref(false)       // ダイアログの開閉フラグ
+        const dialog_Ksuffix = ref('')          // K値入力ダイアログの単位
         const dialog_Kmin = ref(0.00)           // K値入力ダイアログの最小値
         const dialog_Kmax = ref(999999.99)      // K値入力ダイアログの最大値
 
@@ -58,18 +59,27 @@ createApp({
             return Array(w - ("" + i).length + 1).join(" ") + i;
         }
 
+        // 初期化関数
+        const init_parameters = function (E0) {
+            blocks.value = [] // 一旦全削除
+            blocks.value.push( // [0]
+                { BEGIN: E0 - 330 }
+            )
+            blocks.value.push( // [1]
+                { BEGIN: E0 - 30 }
+            )
+            for (let i = 2; i < 6; i++) { // [2...]
+                blocks.value.push(
+                    { BEGIN: k2eV(2 * i, E0) }
+                )
+            }
+        }
+
         // 初期値の宣言
         selectedXtal.value = xtals[0]
         selectedElement.value = 'Cu'
         selectedEdge.value = 'K'
-        blocks.value = [
-            { BEGIN: 8651.00 },
-            { BEGIN: 8951.00 },
-            { BEGIN: 9041.96 },
-            { BEGIN: 9118.16 },
-            { BEGIN: 9224.84 },
-            { BEGIN: 9362.00 },
-        ]
+        init_parameters(8981.00) // 初回起動時なので手動でCu-KのE0である「8981.00」を与える
 
         onMounted(async () => {
             try {
@@ -110,43 +120,54 @@ createApp({
         // selectedElement が変化したら Edge リストを再構築する
         watch(selectedElement, (newVal) => {
             buildAvailableEdges(newVal)
-            // Parametersの再構築
+            init_parameters(selectedEdgeValue.value)
         }, { immediate: true, deep: true })
 
         // selectedEdge が変化したら Edge リストを再構築する
         watch(selectedEdge, (newVal) => {
-            // Parametersの再構築
+            init_parameters(selectedEdgeValue.value)
         }, { immediate: true, deep: true })
-
-        const onChangeUnit = function () {
-            console.log(unit.value)
-            // Parametersの再構築
-        }
 
         // Ｋ値入力ダイアログを開く
         const openDialog_K = (index, block) => {
             editingIndex.value = index
-            // 直接元のデータを書き換えないよう、現在の値を一時変数にコピー
-            dialogInputValue.value = eV2k(Number(block.BEGIN), selectedEdgeValue.value)
-
+            // 直接元のデータを書き換えないよう、現在の値を一時変数にコピー[Å⁻¹]
+            if (blocks.value[index].BEGIN < selectedEdgeValue.value) {
+                // 編集行がE0未満だったのでΔE0として扱う
+                dialogInputValue.value = blocks.value[index].BEGIN - selectedEdgeValue.value
+                dialog_Ksuffix.value = 'eV'
+            } else {
+                // 編集行がE0以上だったのでE0からの波数kとして扱う
+                dialogInputValue.value = eV2k(Number(block.BEGIN), selectedEdgeValue.value)
+                dialog_Ksuffix.value = 'Å⁻¹'
+            }
 
             const prevK = (index > 0)
                 ? ((blocks.value[index - 1].BEGIN < selectedEdgeValue.value)
-                    ? 0.00
+                    ? blocks.value[index - 1].BEGIN - selectedEdgeValue.value // １つ前がE0より小さいのでそのまま
                     : Number(eV2k(blocks.value[index - 1].BEGIN, selectedEdgeValue.value).toFixed(2)))
-                : 0.00
+                : -999999.99 // [0] なので下限なし
             const nextK = (index < blocks.value.length - 1)
-                ? Number(eV2k(blocks.value[index + 1].BEGIN, selectedEdgeValue.value).toFixed(2))
-                : 999999.99
+                ? ((blocks.value[index + 1].BEGIN < selectedEdgeValue.value)
+                    ? blocks.value[index + 1].BEGIN - selectedEdgeValue.value // １つ後がE0より小さいのでそのまま
+                    : Number(eV2k(blocks.value[index + 1].BEGIN, selectedEdgeValue.value).toFixed(2)))
+                : 999999.99 // finalなので上限なし
             dialog_Kmin.value = Number((prevK + 0.01).toFixed(2))
             dialog_Kmax.value = Number((nextK - 0.01).toFixed(2))
+            console.log('index', index, 'prevK', prevK, 'nextK', nextK)
 
             isDialogOpen_K.value = true
         }
 
         const isOKDisabled_K = computed(() => {
             const val = Number(dialogInputValue.value)
-            console.log(val)
+
+            // 0. ついでにsuffixを制御する
+            if (val < 0) {
+                dialog_Ksuffix.value = 'eV'
+            } else {
+                dialog_Ksuffix.value = 'Å⁻¹'
+            }
 
             // 1. 入力が空（手入力で全部消した時など）や数値ではない場合は無効化
             if (val === null || val === undefined || isNaN(val)) {
@@ -175,9 +196,14 @@ createApp({
                 editingIndex.value = null
             } else { // OKされた
                 if (editingIndex.value !== null) {
-                    const finalK = Number(dialogInputValue.value)
-                    const e0 = Number(selectedEdgeValue.value) || 0
-                    blocks.value[editingIndex.value].BEGIN = Number(k2eV(finalK, e0).toFixed(2))
+                    const index = editingIndex.value
+                    const val = Number(dialogInputValue.value)
+                    const E0 = selectedEdgeValue.value
+                    if (val < 0) { // 入力値が負だったのでΔE0として扱う
+                        blocks.value[index].BEGIN = Number((E0 + val).toFixed(2))
+                    } else { // 入力値がゼロか正だったのでkとして扱う
+                        blocks.value[index].BEGIN = Number(k2eV(val, E0).toFixed(2))
+                    }
                 }
             }
             isDialogOpen_K.value = false
@@ -193,7 +219,7 @@ createApp({
             selectedEdge, selectedEdgeValue, availableEdges,
             blocks,
             editingIndex, dialogInputValue,
-            isDialogOpen_K, openDialog_K, cancelDialog_K, dialog_Kmin, dialog_Kmax, isOKDisabled_K, onEnter_K,
+            isDialogOpen_K, openDialog_K, cancelDialog_K, dialog_Ksuffix, dialog_Kmin, dialog_Kmax, isOKDisabled_K, onEnter_K,
         }
     }
 }).use(createVuetify()).mount('#app')

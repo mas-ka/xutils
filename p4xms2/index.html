@@ -118,11 +118,11 @@
                             <v-card-text class="pa-4">
                                 <!-- Ｋ値入力ダイアログ -->
                                 <v-dialog v-model="isDialogOpen_K" max-width="400px">
-                                    <v-card title="Input K-value">
+                                    <v-card title="">
                                         <v-card-text>
                                             <!-- ダイアログ内の数値入力欄 -->
                                             <v-number-input v-model.string="dialogInputValue" density="comfortable"
-                                                variant="outlined" suffix="[Å⁻¹]" :precision="2" :step="0.1"
+                                                variant="outlined" :suffix="dialog_Ksuffix" :precision="2" :step="0.1"
                                                 :min="dialog_Kmin" :max="dialog_Kmax" hide-details
                                                 @keydown.enter="onEnter_K" autofocus></v-number-input>
                                         </v-card-text>
@@ -141,26 +141,23 @@
                                     style="border-collapse: collapse; table-layout: fixed;">
                                     <thead>
                                         <tr class="bg-grey-lighten-4">
-                                            <!-- 1列目の幅を 80px に固定。下の td も自動的に 80px になります -->
                                             <th class="text-left font-weight-bold pa-3 border-thin"
                                                 style="width: 80px;">No.</th>
-                                            <!-- 2列目は width を指定しないことで、残りの横幅（600px - 80px）をすべて自動で使います -->
                                             <th class="text-left font-weight-bold pa-3 border-thin">BEGIN</th>
                                         </tr>
                                     </thead>
                                     <tbody>
                                         <tr v-for="(block, index) in blocks" :key="index">
-                                            <!-- 1列目：自動で 80px になります -->
-                                            <td class="pa-3 border-thin">{{ index + 1 }}</td>
-                                            <!-- 2列目：自動で残りの幅にぴったり合わさります -->
-                                            <td class="pa-3 border-thin">
+                                            <td class="pa-1 border-thin">{{ index + 1 }}</td>
+                                            <td class="pa-1 border-thin">
                                                 <v-number-input density="compact" v-model="block.BEGIN"
                                                     control-variant="hidden" hide-details suffix="eV" :precision="2"
-                                                    style="width: 210px;">
+                                                    style="width: 240px;">
                                                     <template v-slot:prepend>
                                                         <v-btn density="comfortable" rounded="xl" variant="tonal"
-                                                            style="width: 60px;" @click="openDialog_K(index, block)">
-                                                            {{ Number(block.BEGIN) < Number(selectedEdgeValue) ? '-' :
+                                                            style="width: 90px;" @click="openDialog_K(index, block)">
+                                                            {{ Number(block.BEGIN) < Number(selectedEdgeValue) ? '(' +
+                                                                (block.BEGIN - selectedEdgeValue).toFixed(1) + ')' :
                                                                 eV2k(Number(block.BEGIN),
                                                                 Number(selectedEdgeValue)).toFixed(2) }} </v-btn>
                                                     </template>
