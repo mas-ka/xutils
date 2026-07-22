@@ -37,6 +37,12 @@ createApp({
         ]
         const elementNames = getElementNames()
 
+        const TYPE_I = Object.freeze({
+            BY_FINAL: 0,
+            BY_DIVS: 1,
+            BY_STEP: 2,
+        })
+
 
         // ユーティリティ関数
         const eV2deg = function (e, d) { return Math.toDegrees(Math.asin(EL / (2 * d * e))); }
@@ -69,16 +75,19 @@ createApp({
         const init_parameters = function (E0) {
             blocks.value = [] // 一旦全削除
             blocks.value.push( // [0]
-                { BEGIN: E0 - 330 }
+                { BEGIN: E0 - 330, TYPE_I: TYPE_I.BY_STEP, NUM_I: 0.2, EXPT: 1.0, }
             )
             blocks.value.push( // [1]
-                { BEGIN: E0 - 30 }
+                { BEGIN: E0 - 30, TYPE_I: TYPE_I.BY_DIVS, NUM_I: 250, EXPT: 2.0, }
             )
-            for (let i = 2; i < 6; i++) { // [2...]
+            for (let i = 2; i < 5; i++) { // [2...]
                 blocks.value.push(
-                    { BEGIN: k2eV(2 * i, E0) }
+                    { BEGIN: k2eV(2 * i, E0), TYPE_I: TYPE_I.BY_DIVS, NUM_I: 40, EXPT: 4.0, }
                 )
             }
+            blocks.value.push( // 最終行
+                { BEGIN: k2eV(2 * blocks.value.length, E0), TYPE_I: TYPE_I.BY_FINAL, NUM_I: 1, EXPT: 4.0, }
+            )
         }
 
         // 初期値の宣言
@@ -294,7 +303,7 @@ createApp({
 
 
         return {
-            formatF, eV2deg, eV2k,
+            formatF, eV2deg, eV2k, TYPE_I,
             licenseDialog, licenseContent,
             xtals, selectedXtal, changeXtalPlane,
             elementNames, selectedElement, selectedEdge, edges,
