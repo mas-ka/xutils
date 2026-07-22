@@ -117,23 +117,53 @@
                             </v-toolbar>
                             <v-card-text class="pa-4">
                                 <!-- Ｋ値入力ダイアログ -->
-                                <v-dialog v-model="isDialogOpen_K" max-width="400px">
-                                    <v-card title="">
+                                <v-dialog v-model="isDialogOpen_K" max-width="320px">
+                                    <v-card>
+                                        <v-card-title class="bg-grey-darken-3 text-body-1 font-weight-bold pa-3">
+                                            ΔE<sub>0</sub> | k</v-card-title>
+                                        <v-card-text>
+                                            <v-card-text>
+                                                <!-- ダイアログ内の数値入力欄 -->
+                                                <v-number-input v-model.string="dialogInputValue" density="comfortable"
+                                                    variant="outlined" :suffix="dialog_Ksuffix"
+                                                    control-variant="stacked" :precision="dialog_Kpreci"
+                                                    :step="dialog_Kstep" :min="dialog_Kmin" :max="dialog_Kmax"
+                                                    hide-details @keydown.enter="onEnter_K" autofocus>
+                                                    <template v-slot:prepend>
+                                                        {{ dialog_Kprefix }}
+                                                    </template>
+                                                </v-number-input>
+                                            </v-card-text>
+                                            <v-card-actions>
+                                                <v-spacer></v-spacer>
+                                                <!-- Cancelボタン：何もせず閉じる -->
+                                                <v-btn text="Cancel" variant="text"
+                                                    @click="cancelDialog_K(true)"></v-btn>
+                                                <!-- OKボタン：値をテーブルに反映して閉じる -->
+                                                <v-btn text="OK" variant="tonal" color="primary"
+                                                    :disabled="isOKDisabled_K" @click="cancelDialog_K(false)"></v-btn>
+                                            </v-card-actions>
+                                    </v-card>
+                                </v-dialog>
+                                <!-- Ｅ値入力ダイアログ -->
+                                <v-dialog v-model="isDialogOpen_E" max-width="320px">
+                                    <v-card>
+                                        <v-card-title
+                                            class="bg-grey-darken-3 text-body-1 font-weight-bold pa-3">Energy</v-card-title>
                                         <v-card-text>
                                             <!-- ダイアログ内の数値入力欄 -->
                                             <v-number-input v-model.string="dialogInputValue" density="comfortable"
-                                                variant="outlined" :suffix="dialog_Ksuffix" :precision="dialog_Kpreci"
-                                                :step="dialog_Kstep" :min="dialog_Kmin" :max="dialog_Kmax" hide-details
-                                                @keydown.enter="onEnter_K" autofocus></v-number-input>
+                                                control-variant="stacked" variant="outlined" suffix="eV" :precision="2"
+                                                :step="1.00" :min="dialog_Emin" :max="dialog_Emax" hide-details
+                                                @keydown.enter="onEnter_E" autofocus></v-number-input>
                                         </v-card-text>
-
                                         <v-card-actions>
                                             <v-spacer></v-spacer>
                                             <!-- Cancelボタン：何もせず閉じる -->
-                                            <v-btn text="Cancel" variant="text" @click="cancelDialog_K(true)"></v-btn>
+                                            <v-btn text="Cancel" variant="text" @click="cancelDialog_E(true)"></v-btn>
                                             <!-- OKボタン：値をテーブルに反映して閉じる -->
-                                            <v-btn text="OK" variant="tonal" color="primary" :disabled="isOKDisabled_K"
-                                                @click="cancelDialog_K(false)"></v-btn>
+                                            <v-btn text="OK" variant="tonal" color="primary" :disabled="isOKDisabled_E"
+                                                @click="cancelDialog_E(false)"></v-btn>
                                         </v-card-actions>
                                     </v-card>
                                 </v-dialog>
@@ -151,11 +181,13 @@
                                             <td class="pa-1 border-thin">{{ index + 1 }}</td>
                                             <td class="pa-1 border-thin">
                                                 <v-number-input density="compact" v-model="block.BEGIN"
-                                                    control-variant="hidden" hide-details suffix="eV" :precision="2"
-                                                    style="width: 240px;">
+                                                    control-variant="hidden" hide-details readonly suffix="eV"
+                                                    :precision="2" style="width: 240px;"
+                                                    @click.stop="openDialog_E(index, block)">
                                                     <template v-slot:prepend>
                                                         <v-btn density="comfortable" rounded="xl" variant="tonal"
-                                                            style="width: 90px;" @click="openDialog_K(index, block)">
+                                                            style="width: 90px;"
+                                                            @click.stop="openDialog_K(index, block)">
                                                             {{ Number(block.BEGIN) < Number(selectedEdgeValue) ? '(' +
                                                                 (block.BEGIN - selectedEdgeValue).toFixed(1) + ')' :
                                                                 eV2k(Number(block.BEGIN),

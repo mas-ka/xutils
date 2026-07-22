@@ -15,12 +15,16 @@ createApp({
         const blocks = ref([])
         const editingIndex = ref(null)          // 現在ダイアログで編集している行のインデックス
         const dialogInputValue = ref(0)         // ダイアログ内の入力欄の値
-        const isDialogOpen_K = ref(false)       // ダイアログの開閉フラグ
+        const isDialogOpen_K = ref(false)       // K値入力ダイアログの開閉フラグ
+        const dialog_Kprefix = ref('')          // K値入力ダイアログのラベル
         const dialog_Ksuffix = ref('')          // K値入力ダイアログの単位
         const dialog_Kpreci = ref(2)            // K値入力ダイアログの精度
         const dialog_Kstep = ref(0.1)           // K値入力ダイアログのステップ
         const dialog_Kmin = ref(0.00)           // K値入力ダイアログの最小値
         const dialog_Kmax = ref(999999.99)      // K値入力ダイアログの最大値
+        const isDialogOpen_E = ref(false)       // E値入力ダイアログの開閉フラグ
+        const dialog_Emin = ref(0.00)           // E値入力ダイアログの最小値
+        const dialog_Emax = ref(999999.99)      // E値入力ダイアログの最大値
 
 
         // ローカルの宣言
@@ -137,12 +141,14 @@ createApp({
             if (blocks.value[index].BEGIN < selectedEdgeValue.value) {
                 // 編集行がE0未満だったのでΔE0として扱う
                 dialogInputValue.value = blocks.value[index].BEGIN - selectedEdgeValue.value
+                dialog_Kprefix.value = 'ΔE₀'
                 dialog_Ksuffix.value = 'eV'
                 dialog_Kpreci.value = 0
                 dialog_Kstep.value = 1
             } else {
                 // 編集行がE0以上だったのでE0からの波数kとして扱う
                 dialogInputValue.value = eV2k(Number(block.BEGIN), selectedEdgeValue.value)
+                dialog_Kprefix.value = 'k'
                 dialog_Ksuffix.value = 'Å⁻¹'
                 dialog_Kpreci.value = 2
                 dialog_Kstep.value = 0.1
@@ -160,7 +166,6 @@ createApp({
                 : 999999.99 // finalなので上限なし
             dialog_Kmin.value = Number((prevK + 0.01).toFixed(2))
             dialog_Kmax.value = Number((nextK - 0.01).toFixed(2))
-            console.log('index', index, 'prevK', prevK, 'nextK', nextK)
 
             isDialogOpen_K.value = true
         }
@@ -170,10 +175,12 @@ createApp({
 
             // 0. ついでにsuffixを制御する
             if (val < 0) {
+                dialog_Kprefix.value = 'ΔE₀'
                 dialog_Ksuffix.value = 'eV'
                 dialog_Kpreci.value = 0
                 dialog_Kstep.value = 1
             } else if (val === 0) {
+                dialog_Kprefix.value = 'k'
                 dialog_Ksuffix.value = 'Å⁻¹'
                 if (dialog_Kpreci.value === 0) { // 負から正へ
                     dialog_Kpreci.value = 2
@@ -183,6 +190,7 @@ createApp({
                     dialog_Kstep.value = 1
                 }
             } else {
+                dialog_Kprefix.value = 'k'
                 dialog_Ksuffix.value = 'Å⁻¹'
                 dialog_Kpreci.value = 2
                 dialog_Kstep.value = 0.1
@@ -228,6 +236,61 @@ createApp({
             isDialogOpen_K.value = false
         }
 
+        // Ｅ値入力ダイアログを開く
+        const openDialog_E = (index, block) => {
+            editingIndex.value = index
+            // 直接元のデータを書き換えないよう、現在の値を一時変数にコピー
+            dialogInputValue.value = block.BEGIN
+
+            const prevE = (index > 0)
+                ? blocks.value[index - 1].BEGIN
+                : -999999.99 // [0] なので下限なし
+            const nextE = (index < blocks.value.length - 1)
+                ? blocks.value[index + 1].BEGIN
+                : 999999.99 // finalなので上限なし
+            dialog_Emin.value = Number((prevE + 0.01).toFixed(2))
+            dialog_Emax.value = Number((nextE - 0.01).toFixed(2))
+            isDialogOpen_E.value = true
+        }
+
+        const isOKDisabled_E = computed(() => {
+            const val = Number(dialogInputValue.value)
+
+            // 1. 入力が空（手入力で全部消した時など）や数値ではない場合は無効化
+            if (val === null || val === undefined || isNaN(val)) {
+                return true
+            }
+
+            // 2. 最小値の制限を下回っている、または最大値の制限を上回っている場合は無効化
+            if (val < dialog_Emin.value || val > dialog_Emax.value) {
+                return true
+            }
+
+            // すべての条件をクリアしていればボタンを有効（disabled = false）にする
+            return false
+        })
+
+        // Enterキーが押された
+        const onEnter_E = () => {
+            if (!isOKDisabled_E.value) {
+                cancelDialog_E(false)
+            }
+        }
+
+        // Ｅ値入力ダイアログを閉じる（キャンセルもしくはOK）
+        const cancelDialog_E = (isCanceled) => {
+            if (isCanceled) { // キャンセルされた
+                editingIndex.value = null
+            } else { // OKされた
+                if (editingIndex.value !== null) {
+                    const index = editingIndex.value
+                    const val = Number(dialogInputValue.value)
+                    blocks.value[index].BEGIN = val
+                }
+            }
+            isDialogOpen_E.value = false
+        }
+
 
 
         return {
@@ -239,8 +302,10 @@ createApp({
             blocks,
             editingIndex, dialogInputValue,
             isDialogOpen_K, openDialog_K, cancelDialog_K,
-            dialog_Ksuffix, dialog_Kpreci, dialog_Kstep,
+            dialog_Kprefix, dialog_Ksuffix, dialog_Kpreci, dialog_Kstep,
             dialog_Kmin, dialog_Kmax, isOKDisabled_K, onEnter_K,
+            isDialogOpen_E, openDialog_E, cancelDialog_E,
+            dialog_Emin, dialog_Emax, isOKDisabled_E, onEnter_E,
         }
     }
 }).use(createVuetify()).mount('#app')
