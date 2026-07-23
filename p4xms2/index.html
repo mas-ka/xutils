@@ -229,6 +229,37 @@
                                         </v-card-actions>
                                     </v-card>
                                 </v-dialog>
+                                <!-- Ｉ値入力ダイアログ -->
+                                <v-dialog v-model="isDialogOpen_I" max-width="320px" scroll-strategy="none"
+                                    style="align-items: flex-start; padding-top: 16px;"
+                                    transition="dialog-top-transition">
+                                    <v-card>
+                                        <v-card-title
+                                            class="bg-grey-darken-3 text-body-1 font-weight-bold pa-3">Interpolation</v-card-title>
+                                        <v-card-text>
+                                            <!-- Ｉ値の補間方法 -->
+                                            <v-btn-toggle v-model="dialog_Itype" density="compact"
+                                                @update:model-value="onUpdate_Itype(true)" mandatory>
+                                                <v-btn> Step </v-btn>
+                                                <v-btn> Division </v-btn>
+                                            </v-btn-toggle>
+                                            <!-- ダイアログ内の数値入力欄 -->
+                                            <v-number-input v-model.string="dialogInputValue" density="comfortable"
+                                                control-variant="stacked" variant="outlined" :suffix="dialog_Isuffix"
+                                                :precision="dialog_Iprecision" :step="dialog_Istep" :min="dialog_Imin"
+                                                :max="dialog_Imax" hide-details @keydown.enter="onEnter_I"
+                                                autofocus></v-number-input>
+                                        </v-card-text>
+                                        <v-card-actions>
+                                            <v-spacer></v-spacer>
+                                            <!-- Cancelボタン：何もせず閉じる -->
+                                            <v-btn text="Cancel" variant="text" @click="cancelDialog_I(true)"></v-btn>
+                                            <!-- OKボタン：値をテーブルに反映して閉じる -->
+                                            <v-btn text="OK" variant="tonal" color="primary" :disabled="isOKDisabled_I"
+                                                @click="cancelDialog_I(false)"></v-btn>
+                                        </v-card-actions>
+                                    </v-card>
+                                </v-dialog>
                                 <table class="text-body-2" style="border-collapse: collapse; table-layout: fixed;">
                                     <thead>
                                         <tr class="bg-blue-darken-1 text-white">
@@ -273,7 +304,8 @@
                                                     style="width: 128px; display: block; position: relative; top: 24px;"
                                                     class="mx-0" density="compact" v-model="block.NUM_I"
                                                     control-variant="hidden" hide-details
-                                                    :precision="block.TYPE_I === TYPE_I.BY_DIVS ? 0 : 5">
+                                                    :precision="block.TYPE_I === TYPE_I.BY_DIVS ? 0 : 5"
+                                                    @click.stop="openDialog_I(index, block)">
                                                     <template v-slot:append-inner>
                                                         <span class="custom-suffix">{{block.TYPE_I === TYPE_I.BY_DIVS ?
                                                             'div.' : ' eV'}}</span>

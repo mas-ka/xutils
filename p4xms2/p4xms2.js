@@ -25,7 +25,13 @@ createApp({
         const isDialogOpen_E = ref(false)       // E値入力ダイアログの開閉フラグ
         const dialog_Emin = ref(0.00)           // E値入力ダイアログの最小値
         const dialog_Emax = ref(999999.99)      // E値入力ダイアログの最大値
-
+        const isDialogOpen_I = ref(false)       // I値入力ダイアログの開閉フラグ
+        const dialog_Imin = ref(1)              // I値入力ダイアログの最小値
+        const dialog_Imax = ref(9999999)        // I値入力ダイアログの最大値
+        const dialog_Itype = ref(1)             // I値の補間方法 By step or By division
+        const dialog_Isuffix = ref('eV')
+        const dialog_Iprecision = ref(0)
+        const dialog_Istep = ref(1)
 
         // ローカルの宣言
         const EL = 12398.4264684
@@ -38,9 +44,9 @@ createApp({
         const elementNames = getElementNames()
 
         const TYPE_I = Object.freeze({
-            BY_FINAL: 0,
+            BY_STEP: 0,
             BY_DIVS: 1,
-            BY_STEP: 2,
+            BY_FINAL: 2,
         })
 
 
@@ -90,9 +96,9 @@ createApp({
             // )
             blocks.value.push({ BEGIN: E0 - 331, TYPE_I: TYPE_I.BY_DIVS, NUM_I: 10, EXPT: 1.0, })
             blocks.value.push({ BEGIN: E0 - 31, TYPE_I: TYPE_I.BY_DIVS, NUM_I: 10, EXPT: 1.0, })
-            blocks.value.push({ BEGIN: 9000, TYPE_I: TYPE_I.BY_STEP, NUM_I: 10, EXPT: 1.0, })
+            blocks.value.push({ BEGIN: 9000, TYPE_I: TYPE_I.BY_STEP, NUM_I: 5, EXPT: 1.0, })
             blocks.value.push({ BEGIN: 9100, TYPE_I: TYPE_I.BY_DIVS, NUM_I: 10, EXPT: 1.0, })
-            blocks.value.push({ BEGIN: 9200, TYPE_I: TYPE_I.BY_DIVS, NUM_I: 10, EXPT: 1.0, })
+            blocks.value.push({ BEGIN: 9200, TYPE_I: TYPE_I.BY_DIVS, NUM_I: 100, EXPT: 1.0, })
             blocks.value.push({ BEGIN: 9300, TYPE_I: TYPE_I.BY_FINAL, NUM_I: 1, EXPT: 1.0, })
         }
 
@@ -327,6 +333,77 @@ createApp({
             isDialogOpen_E.value = false
         }
 
+        // Ｉ値入力ダイアログを開く
+        const openDialog_I = (index, block) => {
+            editingIndex.value = index
+            // 直接元のデータを書き換えないよう、現在の値を一時変数にコピー
+            dialogInputValue.value = block.NUM_I
+
+            // I値の補間方法を記憶
+            dialog_Itype.value = block.TYPE_I
+            onUpdate_Itype(false) // 単位とか上下限を補完
+            isDialogOpen_I.value = true
+        }
+
+        const isOKDisabled_I = computed(() => {
+            const val = Number(dialogInputValue.value)
+
+            // 1. 入力が空（手入力で全部消した時など）や数値ではない場合は無効化
+            if (val === null || val === undefined || isNaN(val)) {
+                return true
+            }
+
+            // 2. 最小値の制限を下回っている、または最大値の制限を上回っている場合は無効化
+            if (val < dialog_Imin.value || val > dialog_Imax.value) {
+                return true
+            }
+
+            // すべての条件をクリアしていればボタンを有効（disabled = false）にする
+            return false
+        })
+
+        // TYPE_Iの変更にともなう単位とか上下限の補完
+        const onUpdate_Itype = (flag) => {
+            const index = editingIndex.value
+            const block = blocks.value[index]
+            const nextBlock = blocks.value[index + 1]
+            if (dialog_Itype.value === TYPE_I.BY_STEP) {
+                dialog_Isuffix.value = 'eV'
+                dialog_Imin.value = 0.00001
+                dialog_Imax.value = 999999.99999
+                dialog_Iprecision.value = 5
+                dialog_Istep.value = 0.00001
+                if (flag) dialogInputValue.value = Number(((nextBlock.BEGIN - block.BEGIN) / dialogInputValue.value).toFixed(5))
+            } else if (dialog_Itype.value === TYPE_I.BY_DIVS) {
+                dialog_Isuffix.value = 'div.'
+                dialog_Imin.value = 1
+                dialog_Imax.value = 999999
+                dialog_Iprecision.value = 0
+                dialog_Istep.value = 1
+                if (flag) dialogInputValue.value = Number(((nextBlock.BEGIN - block.BEGIN) / dialogInputValue.value).toFixed(0))
+            }
+        }
+
+        // Enterキーが押された
+        const onEnter_I = () => {
+            if (!isOKDisabled_I.value) {
+                cancelDialog_I(false)
+            }
+        }
+
+        // Ｉ値入力ダイアログを閉じる（キャンセルもしくはOK）
+        const cancelDialog_I = (isCanceled) => {
+            if (isCanceled) { // キャンセルされた
+                editingIndex.value = null
+            } else { // OKされた
+                if (editingIndex.value !== null) {
+                    blocks.value[editingIndex.value].TYPE_I = dialog_Itype.value
+                    blocks.value[editingIndex.value].NUM_I = Number(dialogInputValue.value)
+                }
+            }
+            isDialogOpen_I.value = false
+        }
+
 
 
         return {
@@ -342,6 +419,9 @@ createApp({
             dialog_Kmin, dialog_Kmax, isOKDisabled_K, onEnter_K,
             isDialogOpen_E, openDialog_E, cancelDialog_E,
             dialog_Emin, dialog_Emax, isOKDisabled_E, onEnter_E,
+            isDialogOpen_I, openDialog_I, cancelDialog_I, onUpdate_Itype,
+            dialog_Isuffix, dialog_Iprecision, dialog_Istep,
+            dialog_Imin, dialog_Imax, isOKDisabled_I, onEnter_I, dialog_Itype,
         }
     }
 }).use(createVuetify()).mount('#app')
