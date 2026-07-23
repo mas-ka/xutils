@@ -404,6 +404,40 @@ createApp({
             isDialogOpen_I.value = false
         }
 
+        // 左スピードダイアルの[+]がクリックされた
+        const addBlock = (index) => {
+            if (index === 0) { // 先頭への追加
+                const e = blocks.value[0].BEGIN
+                const newBlock = { BEGIN: e - 300, TYPE_I: TYPE_I.BY_DIVS, NUM_I: 50, EXPT: 1.0, }
+                blocks.value.unshift(newBlock)
+            } else if (index === blocks.value.length - 1) { // 末尾への追加
+                const e = blocks.value[index].BEGIN
+                const old_k = eV2k(e, selectedEdgeValue.value)
+                const new_k = Math.floor(((Math.round(old_k * 1000) / 1000)) / 2) * 2 + 2
+                const new_e = k2eV(new_k, selectedEdgeValue.value)
+                console.log(old_k, new_k, new_e)
+                // 現在の最終Blockをfinalでなくする
+                blocks.value[index].TYPE_I = TYPE_I.BY_DIVS // 等分割に変更
+                blocks.value[index].NUM_I = Number(((new_k - old_k) * 20).toFixed(2)) // 分割数を計算してセット
+                blocks.value[index].EXPT = 1.0
+                const newBlock = { BEGIN: new_e, TYPE_I: TYPE_I.BY_FINAL, NUM_I: 1, EXPT: 1.0, }
+                blocks.value.push(newBlock)
+            }
+        }
+
+        // 左スピードダイアルの[-]がクリックされた
+        const removeBlock = (index) => {
+            if (index === 0) { // 先頭の削除
+                blocks.value.shift()
+            } else if (index === blocks.value.length - 1) { // 末尾の削除
+                // 末尾の１つ前のBlockを最終に変更する
+                blocks.value[index - 1].TYPE_I = TYPE_I.BY_FINAL
+                blocks.value[index - 1].NUM_I = 1
+                blocks.value[index - 1].EXPT = 1.0
+                // 末尾を削除
+                blocks.value.pop()
+            }
+        }
 
 
         return {
@@ -422,6 +456,7 @@ createApp({
             isDialogOpen_I, openDialog_I, cancelDialog_I, onUpdate_Itype,
             dialog_Isuffix, dialog_Iprecision, dialog_Istep,
             dialog_Imin, dialog_Imax, isOKDisabled_I, onEnter_I, dialog_Itype,
+            addBlock, removeBlock,
         }
     }
 }).use(createVuetify()).mount('#app')

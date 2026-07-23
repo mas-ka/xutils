@@ -273,8 +273,29 @@
                                     <tbody>
                                         <tr v-for="(block, index) in blocks" :key="index">
                                             <!-- 1. BLOCK -->
-                                            <td class="pa-1 text-center" style="height: 50px;">{{ index + 1
-                                                }}</td>
+                                            <td class="pa-1 text-right"
+                                                style="height: 50px; position: relative; overflow: visible;">
+                                                <div class="d-inline-flex align-center">
+                                                    <v-speed-dial size="small" location="right center"
+                                                        transition="fade-transition" attach>
+                                                        <template v-slot:activator="{ props: activatorProps }">
+                                                            <v-btn v-bind="activatorProps" icon="mdi-menu"
+                                                                variant="text" density="composite" size="small"
+                                                                class="ma-0"></v-btn>
+                                                        </template>
+                                                        <v-btn key="1" icon="mdi-plus-circle"
+                                                            :disabled="(blocks.length > 12) || (0 < index && index < blocks.length-1)"
+                                                            @click="addBlock(index)"></v-btn>
+                                                        <v-btn key="2" icon="mdi-minus-circle"
+                                                            :disabled="(blocks.length <= 2) || (0 < index && index < blocks.length-1)"
+                                                            @click="removeBlock(index)"></v-btn>
+                                                        <v-btn key="3" icon="mdi-close-circle"
+                                                            :disabled="index < 1 || blocks.length-1 <= index"></v-btn>
+                                                    </v-speed-dial>
+                                                    <span class="text-body-2 font-weight-bold ml-3">{{ index + 1
+                                                        }}.</span>
+                                                </div>
+                                            </td>
                                             <!-- 2. ENERGY -->
                                             <td class="pt-1 pb-1 pl-3 pr-1">
                                                 <v-number-input density="compact" v-model="block.BEGIN"
