@@ -175,7 +175,9 @@
                             </v-toolbar>
                             <v-card-text class="pa-4">
                                 <!-- Ｋ値入力ダイアログ -->
-                                <v-dialog v-model="isDialogOpen_K" max-width="320px">
+                                <v-dialog v-model="isDialogOpen_K" max-width="320px" scroll-strategy="none"
+                                    style="align-items: flex-start; padding-top: 16px;"
+                                    transition="dialog-top-transition">
                                     <v-card>
                                         <v-card-title class="bg-grey-darken-3 text-body-1 font-weight-bold pa-3">
                                             ΔE<sub>0</sub> | k</v-card-title>
@@ -204,7 +206,9 @@
                                     </v-card>
                                 </v-dialog>
                                 <!-- Ｅ値入力ダイアログ -->
-                                <v-dialog v-model="isDialogOpen_E" max-width="320px">
+                                <v-dialog v-model="isDialogOpen_E" max-width="320px" scroll-strategy="none"
+                                    style="align-items: flex-start; padding-top: 16px;"
+                                    transition="dialog-top-transition">
                                     <v-card>
                                         <v-card-title
                                             class="bg-grey-darken-3 text-body-1 font-weight-bold pa-3">Energy</v-card-title>
