@@ -74,20 +74,26 @@ createApp({
         // 初期化関数
         const init_parameters = function (E0) {
             blocks.value = [] // 一旦全削除
-            blocks.value.push( // [0]
-                { BEGIN: E0 - 330, TYPE_I: TYPE_I.BY_STEP, NUM_I: 0.2, EXPT: 1.0, }
-            )
-            blocks.value.push( // [1]
-                { BEGIN: E0 - 30, TYPE_I: TYPE_I.BY_DIVS, NUM_I: 250, EXPT: 2.0, }
-            )
-            for (let i = 2; i < 5; i++) { // [2...]
-                blocks.value.push(
-                    { BEGIN: k2eV(2 * i, E0), TYPE_I: TYPE_I.BY_DIVS, NUM_I: 40, EXPT: 4.0, }
-                )
-            }
-            blocks.value.push( // 最終行
-                { BEGIN: k2eV(2 * blocks.value.length, E0), TYPE_I: TYPE_I.BY_FINAL, NUM_I: 1, EXPT: 4.0, }
-            )
+            // blocks.value.push( // [0]
+            //     { BEGIN: E0 - 330, TYPE_I: TYPE_I.BY_STEP, NUM_I: 0.2, EXPT: 1.0, }
+            // )
+            // blocks.value.push( // [1]
+            //     { BEGIN: E0 - 30, TYPE_I: TYPE_I.BY_DIVS, NUM_I: 250, EXPT: 2.0, }
+            // )
+            // for (let i = 2; i < 5; i++) { // [2...]
+            //     blocks.value.push(
+            //         { BEGIN: k2eV(2 * i, E0), TYPE_I: TYPE_I.BY_DIVS, NUM_I: 40, EXPT: 4.0, }
+            //     )
+            // }
+            // blocks.value.push( // 最終行
+            //     { BEGIN: k2eV(2 * blocks.value.length, E0), TYPE_I: TYPE_I.BY_FINAL, NUM_I: 1, EXPT: 4.0, }
+            // )
+            blocks.value.push({ BEGIN: E0 - 331, TYPE_I: TYPE_I.BY_DIVS, NUM_I: 10, EXPT: 1.0, })
+            blocks.value.push({ BEGIN: E0 - 31, TYPE_I: TYPE_I.BY_DIVS, NUM_I: 10, EXPT: 1.0, })
+            blocks.value.push({ BEGIN: 9000, TYPE_I: TYPE_I.BY_STEP, NUM_I: 10, EXPT: 1.0, })
+            blocks.value.push({ BEGIN: 9100, TYPE_I: TYPE_I.BY_DIVS, NUM_I: 10, EXPT: 1.0, })
+            blocks.value.push({ BEGIN: 9200, TYPE_I: TYPE_I.BY_DIVS, NUM_I: 10, EXPT: 1.0, })
+            blocks.value.push({ BEGIN: 9300, TYPE_I: TYPE_I.BY_FINAL, NUM_I: 1, EXPT: 1.0, })
         }
 
         // 初期値の宣言
@@ -233,13 +239,24 @@ createApp({
             } else { // OKされた
                 if (editingIndex.value !== null) {
                     const index = editingIndex.value
-                    const val = Number(dialogInputValue.value)
                     const E0 = selectedEdgeValue.value
-                    if (val < 0) { // 入力値が負だったのでΔE0として扱う
-                        blocks.value[index].BEGIN = Number((E0 + val).toFixed(2))
+                    let val = 0;
+                    if (dialogInputValue.value < 0) { // 入力値が負だったのでΔE0として扱う
+                        val = Number((E0 + dialogInputValue.value).toFixed(2))
                     } else { // 入力値がゼロか正だったのでkとして扱う
-                        blocks.value[index].BEGIN = Number(k2eV(val, E0).toFixed(2))
+                        val = Number(k2eV(dialogInputValue.value, E0).toFixed(2))
                     }
+                    // １つ前とこのblockの補間値を計算する
+                    const prevBlock = blocks.value[index - 1]
+                    const currBlock = blocks.value[index]
+                    const nextBlock = blocks.value[index + 1]
+                    if (index > 0 && prevBlock.TYPE_I === TYPE_I.BY_DIVS) { // 等分割だった場合のみ再計算
+                        prevBlock.NUM_I = Number((prevBlock.NUM_I * ((val - prevBlock.BEGIN) / (currBlock.BEGIN - prevBlock.BEGIN))).toFixed(0))
+                    }
+                    if (index < blocks.value.length - 1 && currBlock.TYPE_I === TYPE_I.BY_DIVS) { // 等分割だった場合のみ再計算
+                        currBlock.NUM_I = Number((currBlock.NUM_I * ((nextBlock.BEGIN - val) / (nextBlock.BEGIN - currBlock.BEGIN))).toFixed(0))
+                    }
+                    blocks.value[index].BEGIN = val
                 }
             }
             isDialogOpen_K.value = false
@@ -294,6 +311,16 @@ createApp({
                 if (editingIndex.value !== null) {
                     const index = editingIndex.value
                     const val = Number(dialogInputValue.value)
+                    // １つ前とこのblockの補間値を計算する
+                    const prevBlock = blocks.value[index - 1]
+                    const currBlock = blocks.value[index]
+                    const nextBlock = blocks.value[index + 1]
+                    if (index > 0 && prevBlock.TYPE_I === TYPE_I.BY_DIVS) { // 等分割だった場合のみ再計算
+                        prevBlock.NUM_I = Number((prevBlock.NUM_I * ((val - prevBlock.BEGIN) / (currBlock.BEGIN - prevBlock.BEGIN))).toFixed(0))
+                    }
+                    if (index < blocks.value.length - 1 && currBlock.TYPE_I === TYPE_I.BY_DIVS) { // 等分割だった場合のみ再計算
+                        currBlock.NUM_I = Number((currBlock.NUM_I * ((nextBlock.BEGIN - val) / (nextBlock.BEGIN - currBlock.BEGIN))).toFixed(0))
+                    }
                     blocks.value[index].BEGIN = val
                 }
             }
