@@ -225,27 +225,26 @@
                                         </v-card-actions>
                                     </v-card>
                                 </v-dialog>
-                                <table class="w-100 border-thin text-body-2"
-                                    style="border-collapse: collapse; table-layout: fixed;">
+                                <table class="text-body-2" style="border-collapse: collapse; table-layout: fixed;">
                                     <thead>
                                         <tr class="bg-blue-darken-1 text-white">
-                                            <th class="text-center font-weight-bold pa-3 border-thin"
+                                            <th class="text-caption text-center font-weight-bold pa-3 border-thin"
                                                 style="width: 80px;">BLOCK</th>
-                                            <th class="text-center font-weight-bold pa-3 border-thin"
-                                                style="width: 270px;">ENERGY</th>
-                                            <th class="text-center font-weight-bold pa-3 border-thin"
-                                                style="width: 180px;">INTERPOLATION</th>
-                                            <th class="text-center font-weight-bold pa-3 border-thin"
-                                                style="width: 180px;">EXPOSURE</th>
+                                            <th class="text-caption text-center font-weight-bold pa-3 border-thin"
+                                                style="width: 180px;">ENERGY</th>
+                                            <th class="text-caption text-center font-weight-bold pa-3 border-thin"
+                                                style="width: 128px;">INTERPOLATION</th>
+                                            <th class="text-caption text-center font-weight-bold pa-3 border-thin"
+                                                style="width: 128px;">EXPOSURE</th>
                                         </tr>
                                     </thead>
                                     <tbody>
                                         <tr v-for="(block, index) in blocks" :key="index">
                                             <!-- 1. BLOCK -->
-                                            <td class="pa-1 text-center border-thin" style="height: 50px;">{{ index + 1
+                                            <td class="pa-1 text-center" style="height: 50px;">{{ index + 1
                                                 }}</td>
                                             <!-- 2. ENERGY -->
-                                            <td class="pt-1 pb-1 pl-3 pr-3 border-thin">
+                                            <td class="pt-1 pb-1 pl-3 pr-1">
                                                 <v-number-input density="compact" v-model="block.BEGIN"
                                                     control-variant="hidden" hide-details readonly :precision="2"
                                                     style="width: 240px;" @click.stop="openDialog_E(index, block)">
@@ -264,30 +263,33 @@
                                                 </v-number-input>
                                             </td>
                                             <!-- 3. INTERPOLATION -->
-                                            <td v-if="block.TYPE_I !== TYPE_I.BY_FINAL" class="border-thin"
+                                            <td v-if="block.TYPE_I !== TYPE_I.BY_FINAL" class="pa-1"
                                                 style="height: 50px; vertical-align: middle;">
-                                                <v-number-input style="width: 128px; display: block;" class="mx-auto"
-                                                    density="compact" v-model="block.NUM_I" control-variant="hidden"
-                                                    hide-details :precision="block.TYPE_I === TYPE_I.BY_DIVS ? 0 : 5">
+                                                <v-number-input
+                                                    style="width: 128px; display: block; position: relative; top: 24px;"
+                                                    class="mx-0" density="compact" v-model="block.NUM_I"
+                                                    control-variant="hidden" hide-details
+                                                    :precision="block.TYPE_I === TYPE_I.BY_DIVS ? 0 : 5">
                                                     <template v-slot:append-inner>
                                                         <span class="custom-suffix">{{block.TYPE_I === TYPE_I.BY_DIVS ?
                                                             'div.' : ' eV'}}</span>
                                                     </template>
                                                 </v-number-input>
                                             </td>
-                                            <td v-else class="border-thin bg-grey-lighten-5" style="height: 50px;"></td>
+                                            <td v-else style="display: none;"></td>
                                             <!-- 4. EXPOSURE -->
-                                            <td v-if="block.TYPE_I !== TYPE_I.BY_FINAL" class="border-thin"
+                                            <td v-if="block.TYPE_I !== TYPE_I.BY_FINAL"
                                                 style="height: 50px; vertical-align: middle;">
-                                                <v-number-input style="width: 128px; display: block;" class="mx-auto"
-                                                    density="compact" v-model="block.EXPT" control-variant="stacked"
-                                                    hide-details :precision="1">
+                                                <v-number-input
+                                                    style="width: 128px; display: block; position: relative; top: 24px;"
+                                                    class="mx-auto" density="compact" v-model="block.EXPT"
+                                                    control-variant="stacked" hide-details :precision="1">
                                                     <template v-slot:append-inner>
                                                         <span class="custom-suffix">sec.</span>
                                                     </template>
                                                 </v-number-input>
                                             </td>
-                                            <td v-else class="border-thin bg-grey-lighten-5" style="height: 50px;"></td>
+                                            <td v-else style="display: none;"></td>
                                         </tr>
                                     </tbody>
                                 </table>
