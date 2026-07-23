@@ -182,27 +182,24 @@
                                         <v-card-title class="bg-grey-darken-3 text-body-1 font-weight-bold pa-3">
                                             ΔE<sub>0</sub> | k</v-card-title>
                                         <v-card-text>
-                                            <v-card-text>
-                                                <!-- ダイアログ内の数値入力欄 -->
-                                                <v-number-input v-model.string="dialogInputValue" density="comfortable"
-                                                    variant="outlined" :suffix="dialog_Ksuffix"
-                                                    control-variant="stacked" :precision="dialog_Kpreci"
-                                                    :step="dialog_Kstep" :min="dialog_Kmin" :max="dialog_Kmax"
-                                                    hide-details @keydown.enter="onEnter_K" autofocus>
-                                                    <template v-slot:prepend>
-                                                        {{ dialog_Kprefix }}
-                                                    </template>
-                                                </v-number-input>
-                                            </v-card-text>
-                                            <v-card-actions>
-                                                <v-spacer></v-spacer>
-                                                <!-- Cancelボタン：何もせず閉じる -->
-                                                <v-btn text="Cancel" variant="text"
-                                                    @click="cancelDialog_K(true)"></v-btn>
-                                                <!-- OKボタン：値をテーブルに反映して閉じる -->
-                                                <v-btn text="OK" variant="tonal" color="primary"
-                                                    :disabled="isOKDisabled_K" @click="cancelDialog_K(false)"></v-btn>
-                                            </v-card-actions>
+                                            <!-- ダイアログ内の数値入力欄 -->
+                                            <v-number-input v-model.string="dialogInputValue" density="comfortable"
+                                                variant="outlined" :suffix="dialog_Ksuffix" control-variant="stacked"
+                                                :precision="dialog_Kpreci" :step="dialog_Kstep" :min="dialog_Kmin"
+                                                :max="dialog_Kmax" hide-details @keydown.enter="onEnter_K" autofocus>
+                                                <template v-slot:prepend>
+                                                    {{ dialog_Kprefix }}
+                                                </template>
+                                            </v-number-input>
+                                        </v-card-text>
+                                        <v-card-actions>
+                                            <v-spacer></v-spacer>
+                                            <!-- Cancelボタン：何もせず閉じる -->
+                                            <v-btn text="Cancel" variant="text" @click="cancelDialog_K(true)"></v-btn>
+                                            <!-- OKボタン：値をテーブルに反映して閉じる -->
+                                            <v-btn text="OK" variant="tonal" color="primary" :disabled="isOKDisabled_K"
+                                                @click="cancelDialog_K(false)"></v-btn>
+                                        </v-card-actions>
                                     </v-card>
                                 </v-dialog>
                                 <!-- Ｅ値入力ダイアログ -->
