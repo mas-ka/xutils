@@ -16,6 +16,64 @@
     <!-- import Vue3 JS code -->
     <script type="module" src="p4xms2.js"></script>
     <!-- load other JS files -->
+    <!-- custom style -->
+    <style>
+        /* 1. 全体のコントロール高さを制限 */
+        .custom-number-input .v-input__control {
+            --v-input-control-height: 24px;
+            /* 任意の高さ（例: 24px） */
+        }
+
+        /* 2. インプット要素を包む枠（v-field）の内余白と最小高さを削る */
+        .custom-number-input .v-field {
+            --v-field-padding-top: 0px;
+            --v-field-padding-bottom: 0px;
+            --v-field-input-padding-top: 0px;
+            --v-field-input-padding-bottom: 0px;
+            min-height: 24px !important;
+        }
+
+        /* 3. 中身の文字サイズとインプット要素自体の余白調整 */
+        .custom-number-input input {
+            font-size: 0.75rem !important;
+            padding-top: 0px !important;
+            padding-bottom: 0px !important;
+        }
+
+        .custom-number-input .v-number-input__control {
+            height: 100% !important;
+            min-height: 100% !important;
+        }
+
+        /* 4. 上下のボタンを「きっちり50%ずつ」に等分する */
+        .custom-number-input .v-number-input__control .v-btn {
+            height: 50% !important;
+            min-height: 0 !important;
+            min-width: 24px !important;
+            padding: 0 !important;
+        }
+
+        /* 5. ボタンの中の矢印アイコンがずれるのを防ぐ */
+        .custom-number-input .v-number-input__control .v-btn__content {
+            height: 100% !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+        }
+
+        /* 6. 矢印アイコン自体のサイズも少し小さくして収まりを良くする */
+        .custom-number-input .v-number-input__control .v-icon {
+            font-size: 14px !important;
+        }
+
+        /* 7. suffixのフォントサイズとマージン調整 */
+        .custom-suffix {
+            font-size: 0.75rem !important;
+            opacity: 0.7;
+            margin-right: 4px;
+            align-self: center;
+        }
+    </style>
     <!-- Page Title -->
     <title>P4XMS</title>
 </head>
@@ -189,9 +247,8 @@
                                             <!-- 2. ENERGY -->
                                             <td class="pt-1 pb-1 pl-3 pr-3 border-thin">
                                                 <v-number-input density="compact" v-model="block.BEGIN"
-                                                    control-variant="hidden" hide-details readonly suffix="eV"
-                                                    :precision="2" style="width: 240px;"
-                                                    @click.stop="openDialog_E(index, block)">
+                                                    control-variant="hidden" hide-details readonly :precision="2"
+                                                    style="width: 240px;" @click.stop="openDialog_E(index, block)">
                                                     <template v-slot:prepend>
                                                         <v-btn density="comfortable" rounded="xl" variant="tonal"
                                                             style="width: 90px;"
@@ -201,24 +258,34 @@
                                                                 eV2k(Number(block.BEGIN),
                                                                 Number(selectedEdgeValue)).toFixed(2) }} </v-btn>
                                                     </template>
+                                                    <template v-slot:append-inner>
+                                                        <span class="custom-suffix">eV</span>
+                                                    </template>
                                                 </v-number-input>
                                             </td>
                                             <!-- 3. INTERPOLATION -->
                                             <td v-if="block.TYPE_I !== TYPE_I.BY_FINAL" class="border-thin"
                                                 style="height: 50px; vertical-align: middle;">
-                                                <v-number-input style="width: 150px; display: block;" class="mx-auto"
+                                                <v-number-input style="width: 128px; display: block;" class="mx-auto"
                                                     density="compact" v-model="block.NUM_I" control-variant="hidden"
-                                                    hide-details
-                                                    :suffix="block.TYPE_I === TYPE_I.BY_DIVS ? 'div.' : 'deg.'"
-                                                    :precision="block.TYPE_I === TYPE_I.BY_DIVS ? 0 : 5"></v-number-input>
+                                                    hide-details :precision="block.TYPE_I === TYPE_I.BY_DIVS ? 0 : 5">
+                                                    <template v-slot:append-inner>
+                                                        <span class="custom-suffix">{{block.TYPE_I === TYPE_I.BY_DIVS ?
+                                                            'div.' : ' eV'}}</span>
+                                                    </template>
+                                                </v-number-input>
                                             </td>
                                             <td v-else class="border-thin bg-grey-lighten-5" style="height: 50px;"></td>
                                             <!-- 4. EXPOSURE -->
                                             <td v-if="block.TYPE_I !== TYPE_I.BY_FINAL" class="border-thin"
                                                 style="height: 50px; vertical-align: middle;">
-                                                <v-number-input style="width: 150px; display: block;" class="mx-auto"
+                                                <v-number-input style="width: 128px; display: block;" class="mx-auto"
                                                     density="compact" v-model="block.EXPT" control-variant="stacked"
-                                                    hide-details suffix="sec." :precision="1"></v-number-input>
+                                                    hide-details :precision="1">
+                                                    <template v-slot:append-inner>
+                                                        <span class="custom-suffix">sec.</span>
+                                                    </template>
+                                                </v-number-input>
                                             </td>
                                             <td v-else class="border-thin bg-grey-lighten-5" style="height: 50px;"></td>
                                         </tr>
