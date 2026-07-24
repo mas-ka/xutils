@@ -461,28 +461,41 @@ createApp({
 
         // 右スピードダイアルの[<]がクリックされた
         const splitBlock = (index) => {
+            const E0 = selectedEdgeValue.value
             const currBlock = blocks.value[index]
             const nextBlock = blocks.value[index + 1]
-            if (currBlock.TYPE_I === TYPE_I.BY_STEP) { // このBlockが等間隔だったら
+            if (nextBlock.BEGIN <= E0 || currBlock.BEGIN <= E0) { // どちらかがE0より小さい場合には、kではなくE基準で2分割する
                 const newBEGIN = Number(((nextBlock.BEGIN + currBlock.BEGIN) / 2).toFixed(2))
-                blocks.value.splice(index + 1, 0, { BEGIN: newBEGIN, TYPE_I: TYPE_I.BY_STEP, NUM_I: currBlock.NUM_I, EXPT: currBlock.EXPT, })
-            } else { // このBlockが等分割だったら
-                const currK = eV2k(currBlock.BEGIN, selectedEdgeValue.value)
-                const nextK = eV2k(nextBlock.BEGIN, selectedEdgeValue.value)
-                //const newBEGIN = Number((k2eV((currK + nextK) / 2, selectedEdgeValue.value)).toFixed(2))
-                if (currBlock.NUM_I === 1) { // このBlockの分割数が1だったら
+                if (currBlock.TYPE_I === TYPE_I.BY_STEP) { // このBlockが等間隔だったら
+                    blocks.value.splice(index + 1, 0, { BEGIN: newBEGIN, TYPE_I: TYPE_I.BY_STEP, NUM_I: currBlock.NUM_I, EXPT: currBlock.EXPT, })
+                } else if (currBlock.NUM_I === 1) { // このBlockの等分割で分割数が1だったら
                     // 分割数1のBlockを挿入する
-                    const newBEGIN = Number(((nextBlock.BEGIN + currBlock.BEGIN) / 2).toFixed(2))
                     blocks.value.splice(index + 1, 0, { BEGIN: newBEGIN, TYPE_I: TYPE_I.BY_DIVS, NUM_I: 1, EXPT: currBlock.EXPT, })
                 } else { // このBlockの分割数が1以外だったら
-                    // ちょうどド真ん中のkに相当するEを求める
-                    const newBEGIN = Number((k2eV((currK + nextK) / 2, selectedEdgeValue.value)).toFixed(2))
                     // このBlockの分割数を半分にする(奇数の場合は切り上げ)
                     blocks.value[index].NUM_I = Math.ceil(currBlock.NUM_I / 2)
                     // 分割数を半分にした新しいBlockを追加
                     blocks.value.splice(index + 1, 0, { BEGIN: newBEGIN, TYPE_I: TYPE_I.BY_DIVS, NUM_I: blocks.value[index].NUM_I, EXPT: currBlock.EXPT, })
                 }
+            } else { // どちらもE0より大きい場合には、k基準で2分割する
+                const currK = eV2k(currBlock.BEGIN, E0)
+                const nextK = eV2k(nextBlock.BEGIN, E0)
+                const newBEGIN = Number((k2eV((currK + nextK) / 2, E0)).toFixed(2))
+                if (currBlock.TYPE_I === TYPE_I.BY_STEP) { // このBlockが等間隔だったら
+                    blocks.value.splice(index + 1, 0, { BEGIN: newBEGIN, TYPE_I: TYPE_I.BY_STEP, NUM_I: currBlock.NUM_I, EXPT: currBlock.EXPT, })
+                } else { // このBlockが等分割だったら
+                    if (currBlock.NUM_I === 1) { // このBlockの分割数が1だったら
+                        // 分割数1のBlockを挿入する
+                        blocks.value.splice(index + 1, 0, { BEGIN: newBEGIN, TYPE_I: TYPE_I.BY_DIVS, NUM_I: 1, EXPT: currBlock.EXPT, })
+                    } else { // このBlockの分割数が1以外だったら
+                        // このBlockの分割数を半分にする(奇数の場合は切り上げ)
+                        blocks.value[index].NUM_I = Math.ceil(currBlock.NUM_I / 2)
+                        // 分割数を半分にした新しいBlockを追加
+                        blocks.value.splice(index + 1, 0, { BEGIN: newBEGIN, TYPE_I: TYPE_I.BY_DIVS, NUM_I: blocks.value[index].NUM_I, EXPT: currBlock.EXPT, })
+                    }
+                }
             }
+
         }
 
         // 露光時間のインクリメントスピナーがクリックされた時
