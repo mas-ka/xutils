@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <!-- import font -->
+    <link href="https://fonts.googleapis.com/css?family=Noto+Serif:700|Roboto+Mono" rel="stylesheet">
+    <!-- import Vuetify -->
+    <link href="https://cdn.jsdelivr.net/npm/@mdi/font@5.x/css/materialdesignicons.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/vuetify@3.12.6/dist/vuetify.min.css" rel="stylesheet">
+    <!-- import Vue3 & Vuetify3 from CDN -->
+    <script type="importmap"> { "imports": {
+            "vue": "https://unpkg.com/vue@3/dist/vue.esm-browser.js", 
+            "vuetify": "https://cdn.jsdelivr.net/npm/vuetify@3.12.6/dist/vuetify.esm.js"
+        } } </script>
+    <!-- import Vue3 JS code -->
+    <script type="module" src="p4xms2.js"></script>
+    <!-- load other JS files -->
+    <!-- custom style -->
+    <style>
+        /* 1. インプット要素内のフォントサイズ設定 */
+        .custom-number-input input {
+            font-size: 0.875rem !important;
+            /* 読みやすい標準サイズ */
+        }
+
+        /* 2. 入力欄右側の単位（eV, sec. など）の表示調整 */
+        .custom-suffix {
+            font-size: 0.75rem !important;
+            opacity: 0.7;
+            margin-right: 4px;
+            align-self: center;
+        }
+    </style>
+    <!-- Page Title -->
+    <title>P4XMS(β)</title>
+</head>
+
+<body id="app">
+    <v-app>
+        <v-main class="bg-grey-lighten-4">
+            <v-container class="py-4 ml-0" style="overflow-x: auto;">
+                <v-row justify="start">
+                    <v-col cols="auto">
+                        <v-card class="elevation-4" style="width: 660px; min-width: 660px;">
+                            <!-- Title -->
+                            <v-toolbar id="TITLE" color="primary" height="80" class="position-relative">
+                                <v-toolbar-title class="text-center font-weight-bold">
+                                    <div class="text-h4" style="cursor: default; font-family: 'Noto Serif';">P 4 X M
+                                        S&nbsp;
+                                        <span class="text-body-1">(β)</span>
+                                    </div>
+                                    <div class="text-caption font-weight-regular text-grey-lighten-3"
+                                        style="cursor: default; font-family: 'Noto Serif';">
+                                        - Parameters for XAS Measurement in Step scan -
+                                    </div>
+                                </v-toolbar-title>
+                                <v-btn icon="mdi-license" class="position-absolute"
+                                    style="right: 16px; top: 50%; transform: translateY(-50%);"
+                                    @click="licenseDialog = true"></v-btn>
+                            </v-toolbar>
+                            <!-- Monochrometer settings -->
+                            <v-toolbar id="MONOCHROMETER" class="mb-3" color="blue-lighten-2" density="compact">
+                                <v-toolbar-title class="text-subtitle-1 font-weight-bold text-white"
+                                    style="cursor: default;">
+                                    Monochrometer
+                                </v-toolbar-title>
+                            </v-toolbar>
+                            <v-card-text class="pa-4">
+                                <v-row align="center" class="mb-2" dense="compact">
+                                    <v-col cols="4">
+                                        <v-select label="Crystal Plane" :items="xtals" item-title="name"
+                                            v-model="selectedXtal" return-object variant="outlined" density="compact"
+                                            hide-details @update:model-value="changeXtalPlane"></v-select>
+                                    </v-col>
+                                    <v-col cols="8">
+                                        <!-- 「Other...」選択時はカスタム数値を入力可能、それ以外は読取専用で固定値を表示 -->
+                                        <v-text-field v-if="selectedXtal?.name === 'Other...'"
+                                            label="Lattice Spacing (d)" v-model.number="selectedXtal.d" type="number"
+                                            suffix="Å" variant="outlined" density="compact" hide-details
+                                            step="0.00001"></v-text-field>
+                                        <div v-else
+                                            class="d-flex align-center bg-grey-lighten-3 rounded px-4 py-3 border text-body-2 text-grey-darken-3"
+                                            style="min-height: 40px; max-height: 40px; cursor: default;">
+                                            <span class="text-grey-medium-emphasis mr-2">d =</span>
+                                            <strong>{{ selectedXtal?.d ?? '-' }}</strong> <span
+                                                class="ml-1 text-caption text-grey-medium-emphasis">Å</span>
+                                        </div>
+                                    </v-col>
+                                </v-row>
+                            </v-card-text>
+                            <!-- Elements & Edges -->
+                            <v-toolbar id="ELEMENTS" class="mb-3" color="blue-lighten-2" density="compact">
+                                <v-toolbar-title class="text-subtitle-1 font-weight-bold text-white"
+                                    style="cursor: default;">
+                                    Elements
+                                </v-toolbar-title>
+                            </v-toolbar>
+                            <v-card-text class="pa-4">
+                                <v-row align="center" dense="compact" class="mb-2">
+                                    <v-col cols="2">
+                                        <v-select label="Element" :items="elementNames" v-model="selectedElement"
+                                            variant="outlined" density="comfortable" hide-details></v-select>
+                                    </v-col>
+                                    <v-col cols="2">
+                                        <v-select label="Edge" :items="availableEdges" v-model="selectedEdge"
+                                            variant="outlined" density="comfortable" hide-details>
+                                            <!-- ▼ このスロットを追加して、各選択肢を直接制御します -->
+                                            <template #item="{ props, item }">
+                                                <v-list-item v-bind="props" :disabled="item.raw.disabled"></v-list-item>
+                                            </template>
+                                        </v-select>
+                                    </v-col>
+                                    <v-col cols="8">
+                                        <div class="d-flex flex-column justify-center bg-blue-grey-lighten-5 border rounded px-4 py-2"
+                                            style="min-height: 48px; max-height: 48px; cursor: default;">
+                                            <div class="text-body-2 text-grey-darken-3 font-weight-medium">
+                                                Edge : <span class="text-primary font-weight-bold">{{
+                                                    selectedEdgeValue.toFixed(2) }}</span> eV
+                                            </div>
+                                            <div class="text-caption text-grey-darken-1">
+                                                Bragg Angle: <span class="font-weight-medium">{{
+                                                    formatF(eV2deg(selectedEdgeValue, selectedXtal?.d), 8, 5) }}°</span>
+                                            </div>
+                                        </div>
+                                    </v-col>
+                                </v-row>
+                            </v-card-text>
+                            <!-- Parameters -->
+                            <v-toolbar id="PARAMETERS" class="mb-3" color="blue-lighten-2" density="compact">
+                                <v-toolbar-title class="text-subtitle-1 font-weight-bold text-white"
+                                    style="cursor: default;">
+                                    Parameters
+                                </v-toolbar-title>
+                            </v-toolbar>
+                            <v-card-text class="pa-4">
+                                <!-- Ｋ値入力ダイアログ -->
+                                <v-dialog v-model="isDialogOpen_K" max-width="320px" scroll-strategy="none"
+                                    style="align-items: flex-start; padding-top: 16px;"
+                                    transition="dialog-top-transition">
+                                    <v-card>
+                                        <v-card-title class="bg-grey-darken-3 text-body-1 font-weight-bold pa-3">
+                                            ΔE<sub>0</sub> | k</v-card-title>
+                                        <v-card-text>
+                                            <!-- ダイアログ内の数値入力欄 -->
+                                            <v-number-input v-model.string="dialogInputValue" density="comfortable"
+                                                variant="outlined" :suffix="dialog_Ksuffix" control-variant="stacked"
+                                                :precision="dialog_Kpreci" :step="dialog_Kstep" :min="dialog_Kmin"
+                                                :max="dialog_Kmax" hide-details @keydown.enter="onEnter_K" autofocus>
+                                                <template v-slot:prepend>
+                                                    {{ dialog_Kprefix }}
+                                                </template>
+                                            </v-number-input>
+                                        </v-card-text>
+                                        <v-card-actions>
+                                            <v-spacer></v-spacer>
+                                            <!-- Cancelボタン：何もせず閉じる -->
+                                            <v-btn text="Cancel" variant="text" @click="cancelDialog_K(true)"></v-btn>
+                                            <!-- OKボタン：値をテーブルに反映して閉じる -->
+                                            <v-btn text="OK" variant="tonal" color="primary" :disabled="isOKDisabled_K"
+                                                @click="cancelDialog_K(false)"></v-btn>
+                                        </v-card-actions>
+                                    </v-card>
+                                </v-dialog>
+                                <!-- Ｅ値入力ダイアログ -->
+                                <v-dialog v-model="isDialogOpen_E" max-width="320px" scroll-strategy="none"
+                                    style="align-items: flex-start; padding-top: 16px;"
+                                    transition="dialog-top-transition">
+                                    <v-card>
+                                        <v-card-title
+                                            class="bg-grey-darken-3 text-body-1 font-weight-bold pa-3">Energy</v-card-title>
+                                        <v-card-text>
+                                            <!-- ダイアログ内の数値入力欄 -->
+                                            <v-number-input v-model.string="dialogInputValue" density="comfortable"
+                                                control-variant="stacked" variant="outlined" suffix="eV" :precision="2"
+                                                :step="1.00" :min="dialog_Emin" :max="dialog_Emax" hide-details
+                                                @keydown.enter="onEnter_E" autofocus></v-number-input>
+                                        </v-card-text>
+                                        <v-card-actions>
+                                            <v-spacer></v-spacer>
+                                            <!-- Cancelボタン：何もせず閉じる -->
+                                            <v-btn text="Cancel" variant="text" @click="cancelDialog_E(true)"></v-btn>
+                                            <!-- OKボタン：値をテーブルに反映して閉じる -->
+                                            <v-btn text="OK" variant="tonal" color="primary" :disabled="isOKDisabled_E"
+                                                @click="cancelDialog_E(false)"></v-btn>
+                                        </v-card-actions>
+                                    </v-card>
+                                </v-dialog>
+                                <!-- Ｉ値入力ダイアログ -->
+                                <v-dialog v-model="isDialogOpen_I" max-width="320px" scroll-strategy="none"
+                                    style="align-items: flex-start; padding-top: 16px;"
+                                    transition="dialog-top-transition">
+                                    <v-card>
+                                        <v-card-title
+                                            class="bg-grey-darken-3 text-body-1 font-weight-bold pa-3">Interpolation</v-card-title>
+                                        <v-card-text>
+                                            <!-- Ｉ値の補間方法 -->
+                                            <v-btn-toggle v-model="dialog_Itype" density="compact"
+                                                @update:model-value="onUpdate_Itype(true)" mandatory>
+                                                <v-btn> Step </v-btn>
+                                                <v-btn> Division </v-btn>
+                                            </v-btn-toggle>
+                                            <!-- ダイアログ内の数値入力欄 -->
+                                            <v-number-input v-model.string="dialogInputValue" density="comfortable"
+                                                control-variant="stacked" variant="outlined" :suffix="dialog_Isuffix"
+                                                :precision="dialog_Iprecision" :step="dialog_Istep" :min="dialog_Imin"
+                                                :max="dialog_Imax" hide-details @keydown.enter="onEnter_I"
+                                                autofocus></v-number-input>
+                                        </v-card-text>
+                                        <v-card-actions>
+                                            <v-spacer></v-spacer>
+                                            <!-- Cancelボタン：何もせず閉じる -->
+                                            <v-btn text="Cancel" variant="text" @click="cancelDialog_I(true)"></v-btn>
+                                            <!-- OKボタン：値をテーブルに反映して閉じる -->
+                                            <v-btn text="OK" variant="tonal" color="primary" :disabled="isOKDisabled_I"
+                                                @click="cancelDialog_I(false)"></v-btn>
+                                        </v-card-actions>
+                                    </v-card>
+                                </v-dialog>
+                                <v-row align="center" dense="compact" class="mb-2">
+                                    <v-col cols="12">
+                                        <table class="text-body-2"
+                                            style="border-collapse: collapse; table-layout: fixed;">
+                                            <thead>
+                                                <tr class="bg-blue-darken-1 text-white">
+                                                    <th class="text-caption text-center font-weight-bold pa-3 border-md"
+                                                        style="width: 70px; --v-border-color: white;">BLOCK</th>
+                                                    <th class="text-caption text-center font-weight-bold pa-3 border-md"
+                                                        style="width: 180px; --v-border-color: white;">ENERGY</th>
+                                                    <th class="text-caption text-center font-weight-bold pa-3 border-md"
+                                                        style="width: 128px; --v-border-color: white;">INTERPOLATION
+                                                    </th>
+                                                    <th class="text-caption text-center font-weight-bold pa-3 border-md"
+                                                        style="width: 128px; --v-border-color: white;">EXPOSURE</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr v-for="(block, index) in blocks" :key="index">
+                                                    <!-- 1. BLOCK -->
+                                                    <td class="pa-1 text-right"
+                                                        style="height: 50px; position: relative; overflow: visible;">
+                                                        <div class="d-inline-flex align-center">
+                                                            <v-speed-dial size="small" location="right center"
+                                                                transition="fade-transition" attach>
+                                                                <template v-slot:activator="{ props: activatorProps }">
+                                                                    <v-btn v-bind="activatorProps" icon="mdi-menu"
+                                                                        variant="text" density="composite" size="small"
+                                                                        class="ma-0"></v-btn>
+                                                                </template>
+                                                                <v-btn key="1" icon="mdi-plus-circle"
+                                                                    :disabled="(blocks.length > 12) || (0 < index && index < blocks.length-1)"
+                                                                    @click="addBlock(index)"></v-btn>
+                                                                <v-btn key="2" icon="mdi-minus-circle"
+                                                                    :disabled="(blocks.length <= 2) || (0 < index && index < blocks.length-1)"
+                                                                    @click="removeBlock(index)"></v-btn>
+                                                                <v-btn key="3" icon="mdi-close-circle"
+                                                                    :disabled="index < 1 || blocks.length-1 <= index"
+                                                                    @click="mergeBlocks(index)"></v-btn>
+                                                            </v-speed-dial>
+                                                            <span class="text-body-2 font-weight-bold ml-3">{{ index + 1
+                                                                }}.</span>
+                                                        </div>
+                                                    </td>
+                                                    <!-- 2. ENERGY -->
+                                                    <td class="pt-1 pb-1 pl-3 pr-1">
+                                                        <v-number-input density="compact" v-model="block.BEGIN"
+                                                            control-variant="hidden" hide-details readonly
+                                                            :precision="2" style="width: 240px;"
+                                                            @click.stop="openDialog_E(index, block)">
+                                                            <template v-slot:prepend>
+                                                                <v-btn density="comfortable" rounded="xl"
+                                                                    variant="tonal" style="width: 90px;"
+                                                                    @click.stop="openDialog_K(index, block)">
+                                                                    {{ Number(block.BEGIN) < Number(selectedEdgeValue)
+                                                                        ? '(' + (block.BEGIN -
+                                                                        selectedEdgeValue).toFixed(1) + ')' :
+                                                                        eV2k(Number(block.BEGIN),
+                                                                        Number(selectedEdgeValue)).toFixed(2) }}
+                                                                        </v-btn>
+                                                            </template>
+                                                            <template v-slot:append-inner>
+                                                                <span class="custom-suffix">eV</span>
+                                                            </template>
+                                                        </v-number-input>
+                                                    </td>
+                                                    <!-- 3. INTERPOLATION -->
+                                                    <td v-if="block.TYPE_I !== TYPE_I.BY_FINAL" class="pa-1"
+                                                        style="height: 50px; vertical-align: middle;">
+                                                        <div class="d-inline-flex align-center"
+                                                            style="display: block; position: relative; top: 24px;">
+                                                            <v-speed-dial size="small" location="right center"
+                                                                transition="fade-transition" attach>
+                                                                <template v-slot:activator="{ props: activatorProps }">
+                                                                    <v-btn v-bind="activatorProps" icon="mdi-menu"
+                                                                        variant="text" density="composite" size="small"
+                                                                        class="ma-0"></v-btn>
+                                                                </template>
+                                                                <v-btn key="1" icon="mdi-chevron-left-circle"
+                                                                    :disabled="blocks.length > 12"
+                                                                    @click="splitBlock(index)"></v-btn>
+                                                            </v-speed-dial><span>&nbsp;</span>
+                                                            <v-number-input style="width: 128px; display: block;"
+                                                                class="mx-0" density="compact" v-model="block.NUM_I"
+                                                                control-variant="hidden" hide-details
+                                                                :precision="block.TYPE_I === TYPE_I.BY_DIVS ? 0 : 5"
+                                                                @click.stop="openDialog_I(index, block)">
+                                                                <template v-slot:append-inner>
+                                                                    <span class="custom-suffix">{{block.TYPE_I ===
+                                                                        TYPE_I.BY_DIVS ?
+                                                                        'div.' : ' eV'}}</span>
+                                                                </template>
+                                                            </v-number-input>
+                                                        </div>
+                                                    </td>
+                                                    <td v-else style="display: none;"></td>
+                                                    <!-- 4. EXPOSURE -->
+                                                    <td v-if="block.TYPE_I !== TYPE_I.BY_FINAL"
+                                                        style="height: 50px; vertical-align: middle;">
+                                                        <v-number-input
+                                                            style="width: 128px; display: block; position: relative; top: 24px;"
+                                                            class="mx-auto" density="compact" v-model="block.EXPT"
+                                                            control-variant="stacked" hide-details :precision="1">
+                                                            <template #increment="{ props }">
+                                                                <v-btn v-bind="props"
+                                                                    @click="onClick_Tplus(index)"></v-btn>
+                                                            </template>
+                                                            <template #decrement="{ props }">
+                                                                <v-btn v-bind="props"
+                                                                    @click="onClick_Tminus(index)"></v-btn>
+                                                            </template>
+                                                            <template v-slot:append-inner>
+                                                                <span class="custom-suffix">sec.</span>
+                                                            </template>
+                                                        </v-number-input>
+                                                    </td>
+                                                    <td v-else style="display: none;"></td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </v-col>
+                                </v-row>
+                            </v-card-text>
+                            <!-- File -->
+                            <v-toolbar id="FILE" color="blue-lighten-2" density="compact">
+                                <v-toolbar-title class="text-subtitle-1 font-weight-bold text-white"
+                                    style="cursor: default;">
+                                    File
+                                </v-toolbar-title>
+                            </v-toolbar>
+                            <v-card-text class="pa-4">
+                                <v-row align="center" class="mb-2">
+                                    <v-col cols="1"></v-col>
+                                    <v-col cols="4">
+                                        <v-menu>
+                                            <template v-slot:activator="{ props }">
+                                                <v-btn color="primary" v-bind="props" prepend-icon="mdi-export" block>
+                                                    Save as
+                                                </v-btn>
+                                            </template>
+                                            <v-list>
+                                                <v-list-item title="Agenda (SAGA-LS)"
+                                                    @click="onSaveAsAgenda"></v-list-item>
+                                            </v-list>
+                                        </v-menu>
+                                    </v-col>
+                                    <v-col cols="2"></v-col>
+                                    <v-col cols="4">
+                                        <v-menu>
+                                            <template v-slot:activator="{ props }">
+                                                <v-btn color="primary" v-bind="props" prepend-icon="mdi-import" block>
+                                                    Load from
+                                                </v-btn>
+                                            </template>
+                                            <v-list>
+                                                <v-list-item title="Agenda (SAGA-LS)"
+                                                    @click="onLoadFromAgenda"></v-list-item>
+                                            </v-list>
+                                        </v-menu>
+                                    </v-col>
+                                </v-row>
+                            </v-card-text>
+                        </v-card>
+                    </v-col>
+                </v-row>
+            </v-container>
+        </v-main>
+
+        <!-- License Dialog -->
+        <v-dialog v-model="licenseDialog" max-width="650px">
+            <v-card>
+                <v-card-title class="text-h5 font-weight-bold bg-primary text-white pa-4">
+                    Software Licenses
+                </v-card-title>
+                <v-card-text class="pa-4 bg-grey-lighten-5 text-body-2" style="max-height: 500px; overflow-y: auto;">
+                    <div v-html="licenseContent"></div>
+                </v-card-text>
+                <v-card-actions class="pa-4 bg-grey-lighten-5">
+                    <v-spacer></v-spacer>
+                    <v-btn color="primary" variant="elevated" @click="licenseDialog = false">Close</v-btn>
+                </v-card-actions>
+            </v-card>
+        </v-dialog>
+    </v-app>
+</body>
+
+</html>
