@@ -1,4 +1,4 @@
-import { createApp, ref, computed, watch, onMounted, } from 'vue'
+import { createApp, ref, computed, watch, onMounted, nextTick, } from 'vue'
 import { createVuetify } from 'vuetify'
 
 import { edges, getElementNames, getElementByName } from './elements.js'
@@ -501,6 +501,229 @@ createApp({
             }
         }
 
+        // 与えられたエレメントとエッジから出力するAgenda文字列を生成する
+        const generateAgenda = (element, edge) => {
+            // 使用する値をあらかじめ取得しておく
+            const edgeEnergy = selectedEdgeValue.value
+            const Efinal = blocks.value[blocks.value.length - 1].BEGIN
+            // 出力するAgendaファイルのうち、共通する部分を作っておく
+            var l = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\" ?>\r\n";
+            l += "<parameter>\r\n";
+            l += "  <monochrometer>\r\n";
+            l += "    <d_spacing unit=\"angstrom\">" + formatF(selectedXtal.value.d, 10, 6).trim() + "</d_spacing>\r\n";
+            l += "    <name>" + selectedXtal.value.name.trim().toUpperCase() + "</name>\r\n";
+            l += "  </monochrometer>\r\n";
+            l += "  <element>\r\n";
+            l += "    <symbol>" + selectedElement.value + "</symbol>\r\n";
+            l += "    <edge>" + selectedEdge.value + "</edge>\r\n";
+            l += "  </element>\r\n";
+            // ここから export Agenda の処理を実装
+            l += "  <scan type=\"step\">\r\n";
+            l += "    <edge_energy unit=\"eV\">" + formatF(selectedEdgeValue.value, 10, 2).trim() + "</edge_energy>\r\n";
+            l += "    <agenda final=\"" + formatF(Efinal, 10, 2).trim()
+                + "\" step_for_quick=\".36384\" time_for_quick=\"120\" unit=\"eV\">\r\n";
+            // blockの出力
+            for (let i = 0; i < blocks.value.length - 1; i++) {
+                l += "      <block id=\"" + (i + 1) + "\">\r\n";
+                const block = blocks.value[i]
+                l += "        <ini>" + formatF(block.BEGIN, 10, 2).trim() + "</ini>"
+                if (block.TYPE_I === TYPE_I.BY_STEP) {
+                    l += "<step>" + formatF(block.NUM_I, 10, 5).trim() + "</step>";
+                } else {
+                    l += "<div>" + block.NUM_I + "</div>";
+                }
+                l += "<sec>" + formatF(block.EXPT, 10, 1).trim() + "</sec>\r\n";
+                l += "      </block>\r\n";
+            }
+            l += "    </agenda>\r\n";
+            l += "  </scan>\r\n"
+            l += "</parameter>\r\n";
+            return l
+        }
+
+        const onSaveAsAgenda = () => {
+            // 選択されたエレメント・エッジを引数として、Agenda文字列を生成する
+            const agendaStr = generateAgenda(selectedElement.value, selectedEdge.value)
+
+            // 1. データをBlobオブジェクトに変換
+            const blob = new Blob([agendaStr], { type: 'text/plain;charset=utf-8' })
+            const url = URL.createObjectURL(blob)
+
+            // 2. 画面に見えない <a> タグを作ってクリックを擬似再現
+            const a = document.createElement('a')
+            a.href = url
+            a.download = selectedElement.value + '-' + selectedEdge.value + '_S.agenda' // 保存時のデフォルトファイル名
+
+            document.body.appendChild(a)
+            a.click() // ダイアログ（または即時ダウンロード）がトリガーされる
+
+            // 3. 後片付け
+            document.body.removeChild(a)
+            URL.revokeObjectURL(url)
+        }
+
+        const onLoadFromAgenda = async () => {
+            try {
+                // 1. ファイル選択ダイアログを開く
+                const [fileHandle] = await window.showOpenFilePicker({
+                    types: [
+                        {
+                            description: 'SAGA-LS Agenda Files (*.agenda)',
+                            accept: {
+                                // ブラウザにテキストファイルとして認識させるため text/plain を指定し、
+                                // 拡張子として .agenda のみを受け付けるよう制限します
+                                'text/plain': ['.agenda']
+                            }
+                        }
+                    ],
+                    excludeAcceptAllOption: true, // 「すべてのファイル(*.*)」を選択肢から排除
+                    multiple: false              // 複数ファイルの選択を禁止
+                })
+
+                // 2. ファイルオブジェクトを取得
+                const file = await fileHandle.getFile()
+
+                // 3. テキストファイルとして中身を読み込む
+                const xmlText = await file.text() // XMLテキストを読み込み
+
+                // 4. DOMParserを使ってXML文字列を解析
+                const parser = new DOMParser()
+                const xmlDoc = parser.parseFromString(xmlText, 'text/xml')
+
+                // 5. XMLの解析エラーをチェック
+                const parserError = xmlDoc.querySelector('parsererror')
+                if (parserError) {
+                    throw new Error('XMLのパースに失敗しました。正しいフォーマットか確認してください。')
+                }
+
+                // 6. 各タグのデータを安全に抽出（存在しない場合は空文字やnullを代入）
+                // まっさきにScanタイプの確認をおこなう
+                const scanTypeText = (xmlDoc.querySelector('scan')).getAttribute('type').toLowerCase() || 'unknown'
+                if (scanTypeText !== 'step') {
+                    throw new Error('対応していないスキャンタイプです。Stepスキャンのみ対応しています。')
+                }
+                // 7. monochrometerパラメータの抽出
+                const dValueText = xmlDoc.querySelector('monochrometer > d_spacing')?.textContent || '3.135510'
+                const xtalName = (xmlDoc.querySelector('monochrometer > name')?.textContent || 'SI(111)').toUpperCase()
+                let xtal = xtals.find(x => x.name.toUpperCase() === xtalName)
+                if (!xtal) {
+                    xtal = { name: 'Other...', d: parseFloat(dValueText) }
+                }
+                selectedXtal.value = xtal
+                // 8. elementパラメータの取得
+                selectedElement.value = xmlDoc.querySelector('element > symbol')?.textContent || 'Cu'
+                selectedEdge.value = xmlDoc.querySelector('element > edge')?.textContent || 'K'
+                // edgeエネルギーは設定ファイルから読み込まないでelementパラメータから再構成する。  
+                await nextTick() // elementとedgeを読み込んだ段階で一度描画を待たないと以降で再描画が行われない
+                // 9. scanパラメータの取得
+                const agendaUnit = xmlDoc.querySelector('agenda').getAttribute('unit').toLowerCase() || 'unknown'
+                if (agendaUnit === 'unknown') {
+                    throw new Error('対応していない測定単位です。')
+                }
+                // 10. block数の抽出とblockのid順でのソート処理
+                let blockNodesArray = Array.from(xmlDoc.querySelectorAll('agenda > block'))
+                if (blockNodesArray.length === 0) {
+                    throw new Error('測定ブロック（block）が見つかりません。')
+                }
+                blockNodesArray.sort((a, b) => {
+                    const idA = parseInt(a.getAttribute('id') || '0', 10)
+                    const idB = parseInt(b.getAttribute('id') || '0', 10)
+                    return idA - idB
+                })
+                // 12. block内容の抽出と格納および最終行の処理
+                // 最初に最終エネルギーの確認
+                let finalEnergy = 0;
+                if (blockNodesArray.length < 13) { // 記述されているblock数が13未満の場合
+                    // <agenda final="">が最終エネルギーに対応
+                    finalEnergy = parseFloat(xmlDoc.querySelector('agenda').getAttribute('final') || '-1')
+                } else {
+                    // <block id="13">の<ini>が最終エネルギーに対応
+                    finalEnergy = parseFloat(xmlDoc.querySelector('block[id="13"] > ini')?.textContent || '-1')
+                    // 不要な部分を削除する
+                    blockNodesArray = blockNodesArray.slice(0, 12);
+                }
+                if (finalEnergy < 0) {
+                    throw new Error(`最終エネルギーが定義されていないか不正な値です。`)
+                }
+                if (agendaUnit === 'ev') {
+                    finalEnergy
+                } else if (agendaUnit === 'kev') {
+                    finalEnergy *= 1000.0
+                } else if (agendaUnit === 'd' || agendaUnit === 'deg' || agendaUnit === 'degree') {
+                    finalEnergy = deg2eV(finalEnergy, selectedXtal.value.d)
+                } else {
+                    throw new Error(`対応していない測定単位 "${agendaUnit}" です。`)
+                }
+                blocks.value = [] // まず空にしておく
+                blockNodesArray.forEach((blockNode, index) => {
+                    const iniText = blockNode.querySelector('ini')?.textContent
+                    const stepText = blockNode.querySelector('step')?.textContent
+                    const divText = blockNode.querySelector('div')?.textContent
+                    const secText = blockNode.querySelector('sec')?.textContent
+                    // iniのチェック
+                    if (!iniText) {
+                        throw new Error(`ブロック [ID: ${blockNode.getAttribute('id') || (index + 1)}] の ini が不足しています。`)
+                    }
+                    let iniValue = parseFloat(iniText)
+                    if (isNaN(iniValue) || iniValue < 0) {
+                        throw new Error(`ブロック [ID: ${blockNode.getAttribute('id') || (index + 1)}] の ini が不正な値です。`)
+                    }
+                    if (agendaUnit === 'ev') {
+                        iniValue
+                    } else if (agendaUnit === 'kev') {
+                        iniValue *= 1000.0
+                    } else if (agendaUnit === 'd' || agendaUnit === 'deg' || agendaUnit === 'degree') {
+                        iniValue = deg2eV(iniValue, selectedXtal.value.d)
+                    } else {
+                        throw new Error(`対応していない測定単位 "${agendaUnit}" です。`)
+                    }
+                    // 露光時間のチェック
+                    if (!secText) {
+                        throw new Error(`ブロック [ID: ${blockNode.getAttribute('id') || (index + 1)}] の sec が不足しています。`)
+                    }
+                    let secValue = parseFloat(secText)
+                    if (isNaN(secValue) || secValue < 0.1) {
+                        throw new Error(`ブロック [ID: ${blockNode.getAttribute('id') || (index + 1)}] の sec が不正な値です。`)
+                    }
+                    secValue = (Math.round(secValue * 10) / 10)
+                    // 補間方法のチェック
+                    let typeI = TYPE_I.BY_DIVS  // デフォルトは分割指定
+                    let numI = 1
+                    if (stepText) { // stepタグが存在した場合は(divの存在によらず)stepが優先される
+                        typeI = TYPE_I.BY_STEP
+                        numI = parseFloat(stepText)
+                    } else if (divText) { // stepタグが存在しない場合はdivタグをチェックする
+                        const divValue = parseFloat(divText) // divを一旦浮動小数で受ける
+                        if (!isNaN(divValue) && divValue > 0) { //divValue > 0のときのみdiv指定とみなす
+                            typeI = TYPE_I.BY_DIVS
+                            numI = Math.trunc(divValue)
+                        }
+                    } // stepもdivも存在しなかったらデフォルト値(BY_DIVS=1)で受ける
+                    // blocksへのpush
+                    blocks.value.push({
+                        BEGIN: iniValue,
+                        TYPE_I: typeI,
+                        NUM_I: numI,
+                        EXPT: secValue,
+                    })
+                })
+                // 13. 最終エネルギーの格納
+                blocks.value.push({
+                    BEGIN: finalEnergy,
+                    TYPE_I: TYPE_I.BY_FINAL,
+                    NUM_I: 1,
+                    EXPT: 1.0
+                })
+            } catch (err) {
+                // ユーザーがダイアログをキャンセルした（閉じられた）場合は AbortError が発生します
+                if (err.name === 'AbortError') {
+                    return
+                }
+                // その他のエラー（ファイル破損、権限エラーなど）
+                alert(err.message)
+            }
+        }
+
 
         return {
             formatF, eV2deg, eV2k, TYPE_I,
@@ -520,6 +743,7 @@ createApp({
             dialog_Imin, dialog_Imax, isOKDisabled_I, onEnter_I, dialog_Itype,
             addBlock, removeBlock, mergeBlocks, splitBlock,
             onClick_Tplus, onClick_Tminus,
+            onSaveAsAgenda, onLoadFromAgenda,
         }
     }
 }).use(createVuetify()).mount('#app')
