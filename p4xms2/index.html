@@ -18,55 +18,13 @@
     <!-- load other JS files -->
     <!-- custom style -->
     <style>
-        /* 1. 全体のコントロール高さを制限 */
-        .custom-number-input .v-input__control {
-            --v-input-control-height: 24px;
-            /* 任意の高さ（例: 24px） */
-        }
-
-        /* 2. インプット要素を包む枠（v-field）の内余白と最小高さを削る */
-        .custom-number-input .v-field {
-            --v-field-padding-top: 0px;
-            --v-field-padding-bottom: 0px;
-            --v-field-input-padding-top: 0px;
-            --v-field-input-padding-bottom: 0px;
-            min-height: 24px !important;
-        }
-
-        /* 3. 中身の文字サイズとインプット要素自体の余白調整 */
+        /* 1. インプット要素内のフォントサイズ設定 */
         .custom-number-input input {
-            font-size: 0.75rem !important;
-            padding-top: 0px !important;
-            padding-bottom: 0px !important;
+            font-size: 0.875rem !important;
+            /* 読みやすい標準サイズ */
         }
 
-        .custom-number-input .v-number-input__control {
-            height: 100% !important;
-            min-height: 100% !important;
-        }
-
-        /* 4. 上下のボタンを「きっちり50%ずつ」に等分する */
-        .custom-number-input .v-number-input__control .v-btn {
-            height: 50% !important;
-            min-height: 0 !important;
-            min-width: 24px !important;
-            padding: 0 !important;
-        }
-
-        /* 5. ボタンの中の矢印アイコンがずれるのを防ぐ */
-        .custom-number-input .v-number-input__control .v-btn__content {
-            height: 100% !important;
-            display: flex !important;
-            align-items: center !important;
-            justify-content: center !important;
-        }
-
-        /* 6. 矢印アイコン自体のサイズも少し小さくして収まりを良くする */
-        .custom-number-input .v-number-input__control .v-icon {
-            font-size: 14px !important;
-        }
-
-        /* 7. suffixのフォントサイズとマージン調整 */
+        /* 2. 入力欄右側の単位（eV, sec. など）の表示調整 */
         .custom-suffix {
             font-size: 0.75rem !important;
             opacity: 0.7;
