@@ -80,26 +80,26 @@ createApp({
         // 初期化関数
         const init_parameters = function (E0) {
             blocks.value = [] // 一旦全削除
-            // blocks.value.push( // [0]
-            //     { BEGIN: E0 - 330, TYPE_I: TYPE_I.BY_STEP, NUM_I: 0.2, EXPT: 1.0, }
-            // )
-            // blocks.value.push( // [1]
-            //     { BEGIN: E0 - 30, TYPE_I: TYPE_I.BY_DIVS, NUM_I: 250, EXPT: 2.0, }
-            // )
-            // for (let i = 2; i < 5; i++) { // [2...]
-            //     blocks.value.push(
-            //         { BEGIN: k2eV(2 * i, E0), TYPE_I: TYPE_I.BY_DIVS, NUM_I: 40, EXPT: 4.0, }
-            //     )
-            // }
-            // blocks.value.push( // 最終行
-            //     { BEGIN: k2eV(2 * blocks.value.length, E0), TYPE_I: TYPE_I.BY_FINAL, NUM_I: 1, EXPT: 4.0, }
-            // )
-            blocks.value.push({ BEGIN: E0 - 331, TYPE_I: TYPE_I.BY_DIVS, NUM_I: 10, EXPT: 1.0, })
-            blocks.value.push({ BEGIN: E0 - 31, TYPE_I: TYPE_I.BY_DIVS, NUM_I: 10, EXPT: 1.0, })
-            blocks.value.push({ BEGIN: 9000, TYPE_I: TYPE_I.BY_STEP, NUM_I: 5, EXPT: 1.0, })
-            blocks.value.push({ BEGIN: 9100, TYPE_I: TYPE_I.BY_DIVS, NUM_I: 10, EXPT: 1.0, })
-            blocks.value.push({ BEGIN: 9200, TYPE_I: TYPE_I.BY_DIVS, NUM_I: 100, EXPT: 1.0, })
-            blocks.value.push({ BEGIN: 9300, TYPE_I: TYPE_I.BY_FINAL, NUM_I: 1, EXPT: 1.0, })
+            blocks.value.push( // [0]
+                { BEGIN: E0 - 330, TYPE_I: TYPE_I.BY_DIVS, NUM_I: 50, EXPT: 1.0, }
+            )
+            blocks.value.push( // [1]
+                { BEGIN: E0 - 30, TYPE_I: TYPE_I.BY_DIVS, NUM_I: 250, EXPT: 1.0, }
+            )
+            for (let i = 2; i < 10; i++) { // [2...]
+                blocks.value.push(
+                    { BEGIN: k2eV(2 * i, E0), TYPE_I: TYPE_I.BY_DIVS, NUM_I: 40, EXPT: 1.0, }
+                )
+            }
+            blocks.value.push( // 最終行
+                { BEGIN: k2eV(2 * blocks.value.length, E0), TYPE_I: TYPE_I.BY_FINAL, NUM_I: 1, EXPT: 1.0, }
+            )
+            // blocks.value.push({ BEGIN: E0 - 331, TYPE_I: TYPE_I.BY_DIVS, NUM_I: 10, EXPT: 1.0, })
+            // blocks.value.push({ BEGIN: E0 - 31, TYPE_I: TYPE_I.BY_DIVS, NUM_I: 10, EXPT: 1.0, })
+            // blocks.value.push({ BEGIN: 9000, TYPE_I: TYPE_I.BY_STEP, NUM_I: 5, EXPT: 1.0, })
+            // blocks.value.push({ BEGIN: 9100, TYPE_I: TYPE_I.BY_DIVS, NUM_I: 10, EXPT: 1.0, })
+            // blocks.value.push({ BEGIN: 9200, TYPE_I: TYPE_I.BY_DIVS, NUM_I: 100, EXPT: 1.0, })
+            // blocks.value.push({ BEGIN: 9300, TYPE_I: TYPE_I.BY_FINAL, NUM_I: 1, EXPT: 1.0, })
         }
 
         // 初期値の宣言
@@ -439,6 +439,63 @@ createApp({
             }
         }
 
+        // 左スピードダイアルの[X]がクリックされた
+        const mergeBlocks = (index) => {
+            const prevBlock = blocks.value[index - 1]
+            const currBlock = blocks.value[index]
+            const nextBlock = blocks.value[index + 1]
+            console.log(prevBlock, currBlock)
+            if (prevBlock.TYPE_I === TYPE_I.BY_STEP) { // １つ前のBlockが等間隔だったら
+                // 単純のこのBlockを削除する
+                blocks.value.splice(index, 1)
+            } else { // １つ前のBlockが等分割だったら
+                let divs = currBlock.NUM_I // このBlockの分割数で仮受けする
+                if (currBlock.TYPE_I === TYPE_I.BY_STEP) { // このBlockが等間隔だったら
+                    // このBlockを一時的に等分割に変更し、仮受けした分割数を上書きする
+                    divs = Math.round((nextBlock.BEGIN - currBlock.BEGIN) / currBlock.NUM_I)
+                }
+                prevBlock.NUM_I += divs // １つ前のBlockの分割数を変更する
+                blocks.value.splice(index, 1) // このBlockを削除する
+            }
+        }
+
+        // 右スピードダイアルの[<]がクリックされた
+        const splitBlock = (index) => {
+            const currBlock = blocks.value[index]
+            const nextBlock = blocks.value[index + 1]
+            if (currBlock.TYPE_I === TYPE_I.BY_STEP) { // このBlockが等間隔だったら
+                const newBEGIN = Number(((nextBlock.BEGIN + currBlock.BEGIN) / 2).toFixed(2))
+                blocks.value.splice(index + 1, 0, { BEGIN: newBEGIN, TYPE_I: TYPE_I.BY_STEP, NUM_I: currBlock.NUM_I, EXPT: currBlock.EXPT, })
+            } else { // このBlockが等分割だったら
+                const currK = eV2k(currBlock.BEGIN, selectedEdgeValue.value)
+                const nextK = eV2k(nextBlock.BEGIN, selectedEdgeValue.value)
+                //const newBEGIN = Number((k2eV((currK + nextK) / 2, selectedEdgeValue.value)).toFixed(2))
+                if (currBlock.NUM_I === 1) { // このBlockの分割数が1だったら
+                    // 分割数1のBlockを挿入する
+                    const newBEGIN = Number(((nextBlock.BEGIN + currBlock.BEGIN) / 2).toFixed(2))
+                    blocks.value.splice(index + 1, 0, { BEGIN: newBEGIN, TYPE_I: TYPE_I.BY_DIVS, NUM_I: 1, EXPT: currBlock.EXPT, })
+                } else { // このBlockの分割数が1以外だったら
+                    // ちょうどド真ん中のkに相当するEを求める
+                    const newBEGIN = Number((k2eV((currK + nextK) / 2, selectedEdgeValue.value)).toFixed(2))
+                    // このBlockの分割数を半分にする(奇数の場合は切り上げ)
+                    blocks.value[index].NUM_I = Math.ceil(currBlock.NUM_I / 2)
+                    // 分割数を半分にした新しいBlockを追加
+                    blocks.value.splice(index + 1, 0, { BEGIN: newBEGIN, TYPE_I: TYPE_I.BY_DIVS, NUM_I: blocks.value[index].NUM_I, EXPT: currBlock.EXPT, })
+                }
+            }
+        }
+
+        // 露光時間のインクリメントスピナーがクリックされた時
+        const onClick_Tplus = function (index) {
+            console.log('onClick_Tplus', index)
+            console.log('T', blocks.value[index].EXPT)
+        }
+
+        // 露光時間のデクリメントスピナーがクリックされた時
+        const onClick_Tminus = function (index) {
+            console.log('onClick_Tminus', index)
+        }
+
 
         return {
             formatF, eV2deg, eV2k, TYPE_I,
@@ -456,7 +513,8 @@ createApp({
             isDialogOpen_I, openDialog_I, cancelDialog_I, onUpdate_Itype,
             dialog_Isuffix, dialog_Iprecision, dialog_Istep,
             dialog_Imin, dialog_Imax, isOKDisabled_I, onEnter_I, dialog_Itype,
-            addBlock, removeBlock,
+            addBlock, removeBlock, mergeBlocks, splitBlock,
+            onClick_Tplus, onClick_Tminus,
         }
     }
 }).use(createVuetify()).mount('#app')
