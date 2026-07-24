@@ -487,13 +487,18 @@ createApp({
 
         // 露光時間のインクリメントスピナーがクリックされた時
         const onClick_Tplus = function (index) {
-            console.log('onClick_Tplus', index)
-            console.log('T', blocks.value[index].EXPT)
+            const t = blocks.value[index].EXPT
+            for (let i = index + 1; i < blocks.value.length - 1; i++) {
+                blocks.value[i].EXPT = t
+            }
         }
 
         // 露光時間のデクリメントスピナーがクリックされた時
         const onClick_Tminus = function (index) {
-            console.log('onClick_Tminus', index)
+            const t = blocks.value[index].EXPT
+            for (let i = index + 1; i < blocks.value.length - 1; i++) {
+                blocks.value[i].EXPT = t
+            }
         }
 
 
