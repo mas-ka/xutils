@@ -16,6 +16,7 @@ createApp({
         const editingIndex = ref(null)          // 現在ダイアログで編集している行のインデックス
         const dialogInputValue = ref(0)         // ダイアログ内の入力欄の値
         const isDialogOpen_K = ref(false)       // K値入力ダイアログの開閉フラグ
+        const isInvalid_K = ref(false)          // K値入力ダイアログの無効フラグ
         const dialog_Kprefix = ref('')          // K値入力ダイアログのラベル
         const dialog_Ksuffix = ref('')          // K値入力ダイアログの単位
         const dialog_Kpreci = ref(2)            // K値入力ダイアログの精度
@@ -23,9 +24,11 @@ createApp({
         const dialog_Kmin = ref(0.00)           // K値入力ダイアログの最小値
         const dialog_Kmax = ref(999999.99)      // K値入力ダイアログの最大値
         const isDialogOpen_E = ref(false)       // E値入力ダイアログの開閉フラグ
+        const isInvalid_E = ref(false)          // E値入力ダイアログの無効フラグ
         const dialog_Emin = ref(0.00)           // E値入力ダイアログの最小値
         const dialog_Emax = ref(999999.99)      // E値入力ダイアログの最大値
         const isDialogOpen_I = ref(false)       // I値入力ダイアログの開閉フラグ
+        const isInvalid_I = ref(false)          // I値入力ダイアログの無効フラグ
         const dialog_Imin = ref(1)              // I値入力ダイアログの最小値
         const dialog_Imax = ref(9999999)        // I値入力ダイアログの最大値
         const dialog_Itype = ref(1)             // I値の補間方法 By step or By division
@@ -187,7 +190,7 @@ createApp({
                 : 999999.99 // finalなので上限なし
             dialog_Kmin.value = Number((prevK + 0.01).toFixed(2))
             dialog_Kmax.value = Number((nextK - 0.01).toFixed(2))
-
+            isInvalid_K.value = false
             isDialogOpen_K.value = true
         }
 
@@ -231,9 +234,14 @@ createApp({
             return false
         })
 
+        const onInput_K = (event) => {
+            const rawValue = Number(event.target.value)
+            isInvalid_K.value = (rawValue < dialog_Kmin.value || rawValue > dialog_Kmax.value)
+        }
+
         // Enterキーが押された
         const onEnter_K = () => {
-            if (!isOKDisabled_K.value) {
+            if (!isOKDisabled_K.value && !isInvalid_K.value) {
                 cancelDialog_K(false)
             }
         }
@@ -282,29 +290,32 @@ createApp({
                 : 999999.99 // finalなので上限なし
             dialog_Emin.value = Number((prevE + 0.01).toFixed(2))
             dialog_Emax.value = Number((nextE - 0.01).toFixed(2))
+            isInvalid_E.value = false
             isDialogOpen_E.value = true
         }
 
         const isOKDisabled_E = computed(() => {
             const val = Number(dialogInputValue.value)
-
             // 1. 入力が空（手入力で全部消した時など）や数値ではない場合は無効化
             if (val === null || val === undefined || isNaN(val)) {
                 return true
             }
-
             // 2. 最小値の制限を下回っている、または最大値の制限を上回っている場合は無効化
             if (val < dialog_Emin.value || val > dialog_Emax.value) {
                 return true
             }
-
             // すべての条件をクリアしていればボタンを有効（disabled = false）にする
             return false
         })
 
+        const onInput_E = (event) => {
+            const rawValue = Number(event.target.value)
+            isInvalid_E.value = (rawValue < dialog_Emin.value || rawValue > dialog_Emax.value)
+        }
+
         // Enterキーが押された
         const onEnter_E = () => {
-            if (!isOKDisabled_E.value) {
+            if (!isOKDisabled_E.value && !isInvalid_E.value) {
                 cancelDialog_E(false)
             }
         }
@@ -342,6 +353,7 @@ createApp({
             // I値の補間方法を記憶
             dialog_Itype.value = block.TYPE_I
             onUpdate_Itype(false) // 単位とか上下限を補完
+            isInvalid_I.value = false
             isDialogOpen_I.value = true
         }
 
@@ -384,9 +396,14 @@ createApp({
             }
         }
 
+        const onInput_I = (event) => {
+            const rawValue = Number(event.target.value)
+            isInvalid_I.value = (rawValue < dialog_Imin.value || rawValue > dialog_Imax.value)
+        }
+
         // Enterキーが押された
         const onEnter_I = () => {
-            if (!isOKDisabled_I.value) {
+            if (!isOKDisabled_I.value && !isInvalid_I.value) {
                 cancelDialog_I(false)
             }
         }
@@ -748,12 +765,12 @@ createApp({
             editingIndex, dialogInputValue,
             isDialogOpen_K, openDialog_K, cancelDialog_K,
             dialog_Kprefix, dialog_Ksuffix, dialog_Kpreci, dialog_Kstep,
-            dialog_Kmin, dialog_Kmax, isOKDisabled_K, onEnter_K,
+            dialog_Kmin, dialog_Kmax, isOKDisabled_K, isInvalid_K, onInput_K, onEnter_K,
             isDialogOpen_E, openDialog_E, cancelDialog_E,
-            dialog_Emin, dialog_Emax, isOKDisabled_E, onEnter_E,
+            dialog_Emin, dialog_Emax, isOKDisabled_E, isInvalid_E, onInput_E, onEnter_E,
             isDialogOpen_I, openDialog_I, cancelDialog_I, onUpdate_Itype,
             dialog_Isuffix, dialog_Iprecision, dialog_Istep,
-            dialog_Imin, dialog_Imax, isOKDisabled_I, onEnter_I, dialog_Itype,
+            dialog_Imin, dialog_Imax, isOKDisabled_I, isInvalid_I, onInput_I, onEnter_I, dialog_Itype,
             addBlock, removeBlock, mergeBlocks, splitBlock,
             onClick_Tplus, onClick_Tminus,
             onSaveAsAgenda, onLoadFromAgenda,

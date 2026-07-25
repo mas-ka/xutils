@@ -143,10 +143,11 @@
                                             ΔE<sub>0</sub> | k</v-card-title>
                                         <v-card-text>
                                             <!-- ダイアログ内の数値入力欄 -->
-                                            <v-number-input v-model.string="dialogInputValue" density="comfortable"
+                                            <v-number-input v-model="dialogInputValue" density="comfortable"
                                                 variant="outlined" :suffix="dialog_Ksuffix" control-variant="stacked"
                                                 :precision="dialog_Kpreci" :step="dialog_Kstep" :min="dialog_Kmin"
-                                                :max="dialog_Kmax" hide-details @keydown.enter="onEnter_K" autofocus>
+                                                :max="dialog_Kmax" hide-details @input="onInput_K"
+                                                @keydown.enter="onEnter_K" autofocus>
                                                 <template v-slot:prepend>
                                                     {{ dialog_Kprefix }}
                                                 </template>
@@ -157,7 +158,8 @@
                                             <!-- Cancelボタン：何もせず閉じる -->
                                             <v-btn text="Cancel" variant="flat" @click="cancelDialog_K(true)"></v-btn>
                                             <!-- OKボタン：値をテーブルに反映して閉じる -->
-                                            <v-btn text="OK" variant="flat" color="primary" :disabled="isOKDisabled_K"
+                                            <v-btn text="OK" variant="flat" color="primary"
+                                                :disabled="isInvalid_K || isOKDisabled_K"
                                                 @click="cancelDialog_K(false)"></v-btn>
                                         </v-card-actions>
                                     </v-card>
@@ -171,17 +173,19 @@
                                             class="bg-grey-darken-3 text-body-1 font-weight-bold pa-3">Energy</v-card-title>
                                         <v-card-text>
                                             <!-- ダイアログ内の数値入力欄 -->
-                                            <v-number-input v-model.string="dialogInputValue" density="comfortable"
+                                            <v-number-input v-model="dialogInputValue" density="comfortable"
                                                 control-variant="stacked" variant="outlined" suffix="eV" :precision="2"
                                                 :step="1.00" :min="dialog_Emin" :max="dialog_Emax" hide-details
-                                                @keydown.enter="onEnter_E" autofocus></v-number-input>
+                                                @input="onInput_E" @keydown.enter="onEnter_E"
+                                                autofocus></v-number-input>
                                         </v-card-text>
                                         <v-card-actions>
                                             <v-spacer></v-spacer>
                                             <!-- Cancelボタン：何もせず閉じる -->
                                             <v-btn text="Cancel" variant="flat" @click="cancelDialog_E(true)"></v-btn>
                                             <!-- OKボタン：値をテーブルに反映して閉じる -->
-                                            <v-btn text="OK" variant="flat" color="primary" :disabled="isOKDisabled_E"
+                                            <v-btn text="OK" variant="flat" color="primary"
+                                                :disabled="isInvalid_E || isOKDisabled_E"
                                                 @click="cancelDialog_E(false)"></v-btn>
                                         </v-card-actions>
                                     </v-card>
@@ -201,18 +205,19 @@
                                                 <v-btn> Division </v-btn>
                                             </v-btn-toggle>
                                             <!-- ダイアログ内の数値入力欄 -->
-                                            <v-number-input v-model.string="dialogInputValue" density="comfortable"
+                                            <v-number-input v-model="dialogInputValue" density="comfortable"
                                                 control-variant="stacked" variant="outlined" :suffix="dialog_Isuffix"
                                                 :precision="dialog_Iprecision" :step="dialog_Istep" :min="dialog_Imin"
-                                                :max="dialog_Imax" hide-details @keydown.enter="onEnter_I"
-                                                autofocus></v-number-input>
+                                                :max="dialog_Imax" hide-details @input="onInput_I"
+                                                @keydown.enter="onEnter_I" autofocus></v-number-input>
                                         </v-card-text>
                                         <v-card-actions>
                                             <v-spacer></v-spacer>
                                             <!-- Cancelボタン：何もせず閉じる -->
                                             <v-btn text="Cancel" variant="flat" @click="cancelDialog_I(true)"></v-btn>
                                             <!-- OKボタン：値をテーブルに反映して閉じる -->
-                                            <v-btn text="OK" variant="flat" color="primary" :disabled="isOKDisabled_I"
+                                            <v-btn text="OK" variant="flat" color="primary"
+                                                :disabled="isInvalid_I || isOKDisabled_I"
                                                 @click="cancelDialog_I(false)"></v-btn>
                                         </v-card-actions>
                                     </v-card>
