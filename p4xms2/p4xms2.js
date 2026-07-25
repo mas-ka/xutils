@@ -239,6 +239,18 @@ createApp({
             isInvalid_K.value = (rawValue < dialog_Kmin.value || rawValue > dialog_Kmax.value)
         }
 
+        // スピナー押下や内部確定時に強制的に呼び出されるイベント
+        const onUpdate_K = (value) => {
+            // 1. まず v-model の値を最新の値で強制上書き（フリーズを解除）
+            dialogInputValue.value = value
+            // 2. 現在の `isInvalid_K` も最新の値で更新する
+            if (value === null || value === undefined || value === '' || isNaN(Number(value))) {
+                isInvalid_K.value = true
+            } else {
+                isInvalid_K.value = (Number(value) < dialog_Kmin.value || Number(value) > dialog_Kmax.value)
+            }
+        }
+
         // Enterキーが押された
         const onEnter_K = () => {
             if (!isOKDisabled_K.value && !isInvalid_K.value) {
@@ -311,6 +323,18 @@ createApp({
         const onInput_E = (event) => {
             const rawValue = Number(event.target.value)
             isInvalid_E.value = (rawValue < dialog_Emin.value || rawValue > dialog_Emax.value)
+        }
+
+        // スピナー押下や内部確定時に強制的に呼び出されるイベント
+        const onUpdate_E = (value) => {
+            // 1. まず v-model の値を最新の値で強制上書き（フリーズを解除）
+            dialogInputValue.value = value
+            // 2. 現在の `isInvalid_E` も最新の値で更新する
+            if (value === null || value === undefined || value === '' || isNaN(Number(value))) {
+                isInvalid_E.value = true
+            } else {
+                isInvalid_E.value = (Number(value) < dialog_Emin.value || Number(value) > dialog_Emax.value)
+            }
         }
 
         // Enterキーが押された
@@ -399,6 +423,18 @@ createApp({
         const onInput_I = (event) => {
             const rawValue = Number(event.target.value)
             isInvalid_I.value = (rawValue < dialog_Imin.value || rawValue > dialog_Imax.value)
+        }
+
+        // スピナー押下や内部確定時に強制的に呼び出されるイベント
+        const onUpdate_I = (value) => {
+            // 1. まず v-model の値を最新の値で強制上書き（フリーズを解除）
+            dialogInputValue.value = value
+            // 2. 現在の `isInvalid_I` も最新の値で更新する
+            if (value === null || value === undefined || value === '' || isNaN(Number(value))) {
+                isInvalid_I.value = true
+            } else {
+                isInvalid_I.value = (Number(value) < dialog_Imin.value || Number(value) > dialog_Imax.value)
+            }
         }
 
         // Enterキーが押された
@@ -765,12 +801,12 @@ createApp({
             editingIndex, dialogInputValue,
             isDialogOpen_K, openDialog_K, cancelDialog_K,
             dialog_Kprefix, dialog_Ksuffix, dialog_Kpreci, dialog_Kstep,
-            dialog_Kmin, dialog_Kmax, isOKDisabled_K, isInvalid_K, onInput_K, onEnter_K,
+            dialog_Kmin, dialog_Kmax, isOKDisabled_K, isInvalid_K, onInput_K, onUpdate_K, onEnter_K,
             isDialogOpen_E, openDialog_E, cancelDialog_E,
-            dialog_Emin, dialog_Emax, isOKDisabled_E, isInvalid_E, onInput_E, onEnter_E,
+            dialog_Emin, dialog_Emax, isOKDisabled_E, isInvalid_E, onInput_E, onUpdate_E, onEnter_E,
             isDialogOpen_I, openDialog_I, cancelDialog_I, onUpdate_Itype,
             dialog_Isuffix, dialog_Iprecision, dialog_Istep,
-            dialog_Imin, dialog_Imax, isOKDisabled_I, isInvalid_I, onInput_I, onEnter_I, dialog_Itype,
+            dialog_Imin, dialog_Imax, isOKDisabled_I, isInvalid_I, onInput_I, onUpdate_I, onEnter_I, dialog_Itype,
             addBlock, removeBlock, mergeBlocks, splitBlock,
             onClick_Tplus, onClick_Tminus,
             onSaveAsAgenda, onLoadFromAgenda,
