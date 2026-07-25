@@ -14,6 +14,7 @@ createApp({
         const availableEdges = ref([])
         const blocks = ref([])
         const editingIndex = ref(null)          // 現在ダイアログで編集している行のインデックス
+        const dialogOriginalValue = ref(0)         // ダイアログ内の入力欄の値
         const dialogInputValue = ref(0)         // ダイアログ内の入力欄の値
         const isDialogOpen_K = ref(false)       // K値入力ダイアログの開閉フラグ
         const isInvalid_K = ref(false)          // K値入力ダイアログの無効フラグ
@@ -177,6 +178,7 @@ createApp({
                 dialog_Kpreci.value = 2
                 dialog_Kstep.value = 0.1
             }
+            dialogOriginalValue.value = dialogInputValue.value
 
             const prevK = (index > 0)
                 ? ((blocks.value[index - 1].BEGIN < selectedEdgeValue.value)
@@ -239,6 +241,17 @@ createApp({
             isInvalid_K.value = (rawValue < dialog_Kmin.value || rawValue > dialog_Kmax.value)
         }
 
+        // Ｋ値入力ダイアログのビフォーフォーカスアウト
+        const onBlur_K = async (event) => {
+            // 現在の入力値を取得
+            const rawValue = Number(event.target.value)
+            if (rawValue < dialog_Kmin.value || rawValue > dialog_Kmax.value) {
+                // 範囲外だったので再描画を待ってから保存しておいた元の値に戻す
+                await nextTick()
+                dialogInputValue.value = Number(dialogOriginalValue.value)
+            }
+        }
+
         // スピナー押下や内部確定時に強制的に呼び出されるイベント
         const onUpdate_K = (value) => {
             // 1. まず v-model の値を最新の値で強制上書き（フリーズを解除）
@@ -293,6 +306,7 @@ createApp({
             editingIndex.value = index
             // 直接元のデータを書き換えないよう、現在の値を一時変数にコピー
             dialogInputValue.value = block.BEGIN
+            dialogOriginalValue.value = dialogInputValue.value
 
             const prevE = (index > 0)
                 ? blocks.value[index - 1].BEGIN
@@ -323,6 +337,17 @@ createApp({
         const onInput_E = (event) => {
             const rawValue = Number(event.target.value)
             isInvalid_E.value = (rawValue < dialog_Emin.value || rawValue > dialog_Emax.value)
+        }
+
+        // Ｅ値入力ダイアログのビフォーフォーカスアウト
+        const onBlur_E = async (event) => {
+            // 現在の入力値を取得
+            const rawValue = Number(event.target.value)
+            if (rawValue < dialog_Emin.value || rawValue > dialog_Emax.value) {
+                // 範囲外だったので再描画を待ってから保存しておいた元の値に戻す
+                await nextTick()
+                dialogInputValue.value = Number(dialogOriginalValue.value)
+            }
         }
 
         // スピナー押下や内部確定時に強制的に呼び出されるイベント
@@ -373,6 +398,7 @@ createApp({
             editingIndex.value = index
             // 直接元のデータを書き換えないよう、現在の値を一時変数にコピー
             dialogInputValue.value = block.NUM_I
+            dialogOriginalValue.value = dialogInputValue.value
 
             // I値の補間方法を記憶
             dialog_Itype.value = block.TYPE_I
@@ -423,6 +449,17 @@ createApp({
         const onInput_I = (event) => {
             const rawValue = Number(event.target.value)
             isInvalid_I.value = (rawValue < dialog_Imin.value || rawValue > dialog_Imax.value)
+        }
+
+        // Ｉ値入力ダイアログのビフォーフォーカスアウト
+        const onBlur_I = async (event) => {
+            // 現在の入力値を取得
+            const rawValue = Number(event.target.value)
+            if (rawValue < dialog_Imin.value || rawValue > dialog_Imax.value) {
+                // 範囲外だったので再描画を待ってから保存しておいた元の値に戻す
+                await nextTick()
+                dialogInputValue.value = Number(dialogOriginalValue.value)
+            }
         }
 
         // スピナー押下や内部確定時に強制的に呼び出されるイベント
@@ -798,15 +835,15 @@ createApp({
             elementNames, selectedElement, selectedEdge, edges,
             selectedEdge, selectedEdgeValue, availableEdges,
             blocks,
-            editingIndex, dialogInputValue,
+            editingIndex, dialogOriginalValue, dialogInputValue,
             isDialogOpen_K, openDialog_K, cancelDialog_K,
             dialog_Kprefix, dialog_Ksuffix, dialog_Kpreci, dialog_Kstep,
-            dialog_Kmin, dialog_Kmax, isOKDisabled_K, isInvalid_K, onInput_K, onUpdate_K, onEnter_K,
+            dialog_Kmin, dialog_Kmax, isOKDisabled_K, isInvalid_K, onInput_K, onBlur_K, onUpdate_K, onEnter_K,
             isDialogOpen_E, openDialog_E, cancelDialog_E,
-            dialog_Emin, dialog_Emax, isOKDisabled_E, isInvalid_E, onInput_E, onUpdate_E, onEnter_E,
+            dialog_Emin, dialog_Emax, isOKDisabled_E, isInvalid_E, onInput_E, onBlur_E, onUpdate_E, onEnter_E,
             isDialogOpen_I, openDialog_I, cancelDialog_I, onUpdate_Itype,
             dialog_Isuffix, dialog_Iprecision, dialog_Istep,
-            dialog_Imin, dialog_Imax, isOKDisabled_I, isInvalid_I, onInput_I, onUpdate_I, onEnter_I, dialog_Itype,
+            dialog_Imin, dialog_Imax, isOKDisabled_I, isInvalid_I, onInput_I, onBlur_I, onUpdate_I, onEnter_I, dialog_Itype,
             addBlock, removeBlock, mergeBlocks, splitBlock,
             onClick_Tplus, onClick_Tminus,
             onSaveAsAgenda, onLoadFromAgenda,
