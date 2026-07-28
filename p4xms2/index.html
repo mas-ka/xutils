@@ -269,25 +269,32 @@
                                                     </td>
                                                     <!-- 2. ENERGY -->
                                                     <td class="pt-1 pb-1 pl-3 pr-1">
-                                                        <v-number-input density="compact" v-model="block.BEGIN"
-                                                            control-variant="hidden" hide-details readonly
-                                                            :precision="2" style="width: 240px;"
-                                                            @click.stop="openDialog_E(index, block)">
+                                                        <v-chip v-model="block.BEGIN"
+                                                            class="px-3 text-body-1 justify-space-between"
+                                                            density="default" variant="outlined" rounded="lg"
+                                                            style="width: 220px; cursor: pointer; font-family: 'Roboto Mono';"
+                                                            @click="openDialog_E(index, block)">
+                                                            <span class="ms-auto text-right" style="min-width: 75px;">
+                                                                {{ Number(block.BEGIN).toFixed(2) }}
+                                                            </span>
                                                             <template v-slot:prepend>
-                                                                <v-btn density="comfortable" rounded="xl"
-                                                                    variant="tonal" style="width: 90px;"
+                                                                <v-chip class="mr-2 text-caption justify-center"
+                                                                    density="compact" color="grey-darken-1"
+                                                                    variant="flat"
+                                                                    style="width: 72px; cursor: pointer; font-family: 'Roboto Mono';"
                                                                     @click.stop="openDialog_K(index, block)">
                                                                     {{ Number(block.BEGIN) < Number(selectedEdgeValue)
-                                                                        ? '(' + (block.BEGIN -
-                                                                        selectedEdgeValue).toFixed(1) + ')' :
+                                                                        ? '(' + (Number(block.BEGIN) -
+                                                                        Number(selectedEdgeValue)).toFixed(1) + ')' :
                                                                         eV2k(Number(block.BEGIN),
-                                                                        Number(selectedEdgeValue)).toFixed(2) }}
-                                                                        </v-btn>
+                                                                        Number(selectedEdgeValue)).toFixed(2)
+                                                                        }}</v-chip>
                                                             </template>
-                                                            <template v-slot:append-inner>
-                                                                <span class="custom-suffix">eV</span>
+                                                            <template v-slot:append>
+                                                                <span class="ml-2 text-caption"
+                                                                    style="margin-top: 3px;">eV</span>
                                                             </template>
-                                                        </v-number-input>
+                                                        </v-chip>
                                                     </td>
                                                     <!-- 3. INTERPOLATION -->
                                                     <td v-if="block.TYPE_I !== TYPE_I.BY_FINAL" class="pa-1"
@@ -305,17 +312,18 @@
                                                                     :disabled="blocks.length > 12"
                                                                     @click="splitBlock(index)"></v-btn>
                                                             </v-speed-dial><span>&nbsp;</span>
-                                                            <v-number-input style="width: 128px; display: block;"
-                                                                class="mx-0" density="compact" v-model="block.NUM_I"
-                                                                control-variant="hidden" hide-details
-                                                                :precision="block.TYPE_I === TYPE_I.BY_DIVS ? 0 : 5"
-                                                                @click.stop="openDialog_I(index, block)">
-                                                                <template v-slot:append-inner>
-                                                                    <span class="custom-suffix">{{block.TYPE_I ===
-                                                                        TYPE_I.BY_DIVS ?
-                                                                        'div.' : ' eV'}}</span>
+                                                            <v-chip class="px-3 text-body-1 justify-space-between"
+                                                                density="default" variant="outlined" rounded="lg"
+                                                                style="width: 120px; cursor: default; font-family: 'Roboto Mono';"
+                                                                @click="openDialog_I(index, block)">
+                                                                {{Number(block.NUM_I).toFixed((block.TYPE_I ===
+                                                                TYPE_I.BY_DIVS) ? 0 : 5)}}
+                                                                <template v-slot:append>
+                                                                    <span class="ml-2 text-caption"
+                                                                        style="margin-top: 3px;">{{(block.TYPE_I ===
+                                                                        TYPE_I.BY_DIVS) ? 'div.' : 'eV'}}</span>
                                                                 </template>
-                                                            </v-number-input>
+                                                            </v-chip>
                                                         </div>
                                                     </td>
                                                     <td v-else style="display: none;"></td>
@@ -345,6 +353,13 @@
                                         </table>
                                     </v-col>
                                 </v-row>
+                                <v-chip class="px-3 text-body-1" density="default" variant="outlined" rounded="lg"
+                                    style="cursor: default; font-family: 'Roboto Mono';">
+                                    250
+                                    <template v-slot:append>
+                                        <span class="ml-2 text-caption" style="margin-top: 3px;">div.</span>
+                                    </template>
+                                </v-chip>
                             </v-card-text>
                             <!-- File -->
                             <v-toolbar id="FILE" color="blue-lighten-2" density="compact">
