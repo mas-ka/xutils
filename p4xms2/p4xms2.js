@@ -590,6 +590,7 @@ createApp({
 
         // 露光時間のインクリメントスピナーがクリックされた時
         const onClick_Tplus = function (index) {
+            blocks.value[index].EXPT = Number(blocks.value[index].EXPT) + 1.0
             const t = blocks.value[index].EXPT
             for (let i = index + 1; i < blocks.value.length - 1; i++) {
                 blocks.value[i].EXPT = t
@@ -598,6 +599,7 @@ createApp({
 
         // 露光時間のデクリメントスピナーがクリックされた時
         const onClick_Tminus = function (index) {
+            blocks.value[index].EXPT = Number(blocks.value[index].EXPT) - 1.0
             const t = blocks.value[index].EXPT
             for (let i = index + 1; i < blocks.value.length - 1; i++) {
                 blocks.value[i].EXPT = t
