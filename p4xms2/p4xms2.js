@@ -13,6 +13,7 @@ createApp({
         const selectedEdge = ref(null)
         const availableEdges = ref([])
         const blocks = ref([])
+        const activeBlockMenuIndex = ref(null)       // Blockメニューが開いている行のインデックス
         const editingIndex = ref(null)          // 現在ダイアログで編集している行のインデックス
         const dialogOriginalValue = ref(0)         // ダイアログ内の入力欄の値
         const dialogInputValue = ref(0)         // ダイアログ内の入力欄の値
@@ -36,6 +37,8 @@ createApp({
         const dialog_Isuffix = ref('eV')
         const dialog_Iprecision = ref(0)
         const dialog_Istep = ref(1)
+        const isDialogOpen_T = ref(false)       // Ｔ値入力ダイアログの開閉フラグ
+        const isInvalid_T = ref(false)          // Ｔ値入力ダイアログの無効フラグ
 
         // ローカルの宣言
         const EL = 12398.4264684
@@ -158,6 +161,11 @@ createApp({
         watch(selectedEdge, (newVal) => {
             init_parameters(selectedEdgeValue.value)
         }, { immediate: true, deep: true })
+
+        // Block メニューを開閉する
+        const toggleBlockMenu = (index) => {
+            activeBlockMenuIndex.value = activeBlockMenuIndex.value === index ? null : index
+        }
 
         // Ｋ値入力ダイアログを開く
         const openDialog_K = (index, block) => {
@@ -494,6 +502,77 @@ createApp({
             isDialogOpen_I.value = false
         }
 
+        // Ｔ値入力ダイアログを開く
+        const openDialog_T = (index, block) => {
+            editingIndex.value = index
+            // 直接元のデータを書き換えないよう、現在の値を一時変数にコピー
+            dialogInputValue.value = block.EXPT
+            dialogOriginalValue.value = dialogInputValue.value
+            isInvalid_T.value = false
+            isDialogOpen_T.value = true
+        }
+
+        const isOKDisabled_T = computed(() => {
+            const val = Number(dialogInputValue.value)
+            // 1. 入力が空（手入力で全部消した時など）や数値ではない場合は無効化
+            if (val === null || val === undefined || isNaN(val)) {
+                return true
+            }
+            // 2. 最小値の制限を下回っている場合は無効化
+            if (val < 0.1) {
+                return true
+            }
+            // すべての条件をクリアしていればボタンを有効（disabled = false）にする
+            return false
+        })
+
+        const onInput_T = (event) => {
+            const rawValue = Number(event.target.value)
+            isInvalid_T.value = (rawValue < 0.1)
+        }
+
+        // Ｅ値入力ダイアログのビフォーフォーカスアウト
+        const onBlur_T = async (event) => {
+            // 現在の入力値を取得
+            const rawValue = Number(event.target.value)
+            if (rawValue < 0.1) {
+                // 範囲外だったので再描画を待ってから保存しておいた元の値に戻す
+                await nextTick()
+                dialogInputValue.value = Number(dialogOriginalValue.value)
+            }
+        }
+
+        // スピナー押下や内部確定時に強制的に呼び出されるイベント
+        const onUpdate_T = (value) => {
+            // 1. まず v-model の値を最新の値で強制上書き（フリーズを解除）
+            dialogInputValue.value = value
+            // 2. 現在の `isInvalid_E` も最新の値で更新する
+            if (value === null || value === undefined || value === '' || isNaN(Number(value))) {
+                isInvalid_T.value = true
+            } else {
+                isInvalid_T.value = (Number(value) < 0.1)
+            }
+        }
+
+        // Enterキーが押された
+        const onEnter_T = () => {
+            if (!isOKDisabled_T.value && !isInvalid_T.value) {
+                cancelDialog_T(false)
+            }
+        }
+
+        // Ｔ値入力ダイアログを閉じる（キャンセルもしくはOK）
+        const cancelDialog_T = (isCanceled) => {
+            if (isCanceled) { // キャンセルされた
+                editingIndex.value = null
+            } else { // OKされた
+                if (editingIndex.value !== null) {
+                    blocks.value[editingIndex.value].EXPT = Number(dialogInputValue.value)
+                }
+            }
+            isDialogOpen_T.value = false
+        }
+
         // 左スピードダイアルの[+]がクリックされた
         const addBlock = (index) => {
             if (index === 0) { // 先頭への追加
@@ -590,6 +669,7 @@ createApp({
 
         // 露光時間のインクリメントスピナーがクリックされた時
         const onClick_Tplus = function (index) {
+            blocks.value[index].EXPT = Number(blocks.value[index].EXPT) + 1.0
             const t = blocks.value[index].EXPT
             for (let i = index + 1; i < blocks.value.length - 1; i++) {
                 blocks.value[i].EXPT = t
@@ -598,6 +678,7 @@ createApp({
 
         // 露光時間のデクリメントスピナーがクリックされた時
         const onClick_Tminus = function (index) {
+            blocks.value[index].EXPT = Number(blocks.value[index].EXPT) - 1.0
             const t = blocks.value[index].EXPT
             for (let i = index + 1; i < blocks.value.length - 1; i++) {
                 blocks.value[i].EXPT = t
@@ -834,7 +915,7 @@ createApp({
             xtals, selectedXtal, changeXtalPlane,
             elementNames, selectedElement, selectedEdge, edges,
             selectedEdge, selectedEdgeValue, availableEdges,
-            blocks,
+            blocks, activeBlockMenuIndex, toggleBlockMenu,
             editingIndex, dialogOriginalValue, dialogInputValue,
             isDialogOpen_K, openDialog_K, cancelDialog_K,
             dialog_Kprefix, dialog_Ksuffix, dialog_Kpreci, dialog_Kstep,
@@ -844,6 +925,8 @@ createApp({
             isDialogOpen_I, openDialog_I, cancelDialog_I, onUpdate_Itype,
             dialog_Isuffix, dialog_Iprecision, dialog_Istep,
             dialog_Imin, dialog_Imax, isOKDisabled_I, isInvalid_I, onInput_I, onBlur_I, onUpdate_I, onEnter_I, dialog_Itype,
+            isDialogOpen_T, openDialog_T, cancelDialog_T,
+            isOKDisabled_T, isInvalid_T, onInput_T, onBlur_T, onUpdate_T, onEnter_T,
             addBlock, removeBlock, mergeBlocks, splitBlock,
             onClick_Tplus, onClick_Tminus,
             onSaveAsAgenda, onLoadFromAgenda,

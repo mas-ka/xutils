@@ -223,6 +223,32 @@
                                         </v-card-actions>
                                     </v-card>
                                 </v-dialog>
+                                <!-- Ｔ値入力ダイアログ -->
+                                <v-dialog v-model="isDialogOpen_T" max-width="320px" scroll-strategy="none"
+                                    style="align-items: flex-start; padding-top: 16px;"
+                                    transition="dialog-top-transition">
+                                    <v-card>
+                                        <v-card-title
+                                            class="bg-grey-darken-3 text-body-1 font-weight-bold pa-3">Exposure</v-card-title>
+                                        <v-card-text>
+                                            <!-- ダイアログ内の数値入力欄 -->
+                                            <v-number-input v-model="dialogInputValue" density="comfortable"
+                                                control-variant="stacked" variant="outlined" suffix="sec."
+                                                :precision="1" :step="0.1" :min="0.1" hide-details @input="onInput_T"
+                                                @blur="onBlur_T" @update:model-value="onUpdate_T"
+                                                @keydown.enter="onEnter_T" autofocus></v-number-input>
+                                        </v-card-text>
+                                        <v-card-actions>
+                                            <v-spacer></v-spacer>
+                                            <!-- Cancelボタン：何もせず閉じる -->
+                                            <v-btn text="Cancel" variant="flat" @click="cancelDialog_T(true)"></v-btn>
+                                            <!-- OKボタン：値をテーブルに反映して閉じる -->
+                                            <v-btn text="OK" variant="flat" color="primary"
+                                                :disabled="isInvalid_T || isOKDisabled_T"
+                                                @click="cancelDialog_T(false)"></v-btn>
+                                        </v-card-actions>
+                                    </v-card>
+                                </v-dialog>
                                 <v-row align="center" dense="compact" class="mb-2">
                                     <v-col cols="12">
                                         <table class="text-body-2"
@@ -230,7 +256,7 @@
                                             <thead>
                                                 <tr class="bg-blue-darken-1 text-white">
                                                     <th class="text-caption text-center font-weight-bold pa-3 border-md"
-                                                        style="width: 70px; --v-border-color: white;">BLOCK</th>
+                                                        style="width: 72px; --v-border-color: white;">BLOCK</th>
                                                     <th class="text-caption text-center font-weight-bold pa-3 border-md"
                                                         style="width: 180px; --v-border-color: white;">ENERGY</th>
                                                     <th class="text-caption text-center font-weight-bold pa-3 border-md"
@@ -243,57 +269,68 @@
                                             <tbody>
                                                 <tr v-for="(block, index) in blocks" :key="index">
                                                     <!-- 1. BLOCK -->
-                                                    <td class="pa-1 text-right"
-                                                        style="height: 50px; position: relative; overflow: visible;">
-                                                        <div class="d-inline-flex align-center">
-                                                            <v-speed-dial size="small" location="right center"
-                                                                transition="fade-transition" attach>
-                                                                <template v-slot:activator="{ props: activatorProps }">
-                                                                    <v-btn v-bind="activatorProps" icon="mdi-menu"
-                                                                        variant="text" density="composite" size="small"
-                                                                        class="ma-0"></v-btn>
-                                                                </template>
-                                                                <v-btn key="1" icon="mdi-plus-circle"
-                                                                    :disabled="(blocks.length > 12) || (0 < index && index < blocks.length-1)"
-                                                                    @click="addBlock(index)"></v-btn>
-                                                                <v-btn key="2" icon="mdi-minus-circle"
-                                                                    :disabled="(blocks.length <= 2) || (0 < index && index < blocks.length-1)"
-                                                                    @click="removeBlock(index)"></v-btn>
-                                                                <v-btn key="3" icon="mdi-close-circle"
-                                                                    :disabled="index < 1 || blocks.length-1 <= index"
-                                                                    @click="mergeBlocks(index)"></v-btn>
-                                                            </v-speed-dial>
-                                                            <span class="text-body-2 font-weight-bold ml-3">{{ index + 1
-                                                                }}.</span>
-                                                        </div>
+                                                    <td class="pa-0 text-center"
+                                                        style="position: relative; overflow: visible; width: 70px;">
+                                                        <v-speed-dial size="small" location="right center"
+                                                            transition="fade-transition" attach>
+                                                            <template v-slot:activator="{ props: activatorProps }">
+                                                                <v-chip v-bind="activatorProps" variant="flat"
+                                                                    color="transparent" rounded="lg"
+                                                                    class="ma-0 px-1 text-body-2 font-weight-bold"
+                                                                    style="min-width: 60px; width: 60px; height: 32px; justify-content: space-between; overflow: hidden;">
+                                                                    <template v-slot:prepend>
+                                                                        <v-icon icon="mdi-menu" class="mr-1"
+                                                                            style="font-size: 20px;"></v-icon>
+                                                                    </template>
+                                                                    <span class="text-no-wrap">{{ index + 1 }}.</span>
+                                                                </v-chip>
+                                                            </template>
+                                                            <v-btn key="1" icon="mdi-plus-circle"
+                                                                :disabled="(blocks.length > 12) || (0 < index && index < blocks.length-1)"
+                                                                @click="addBlock(index)"></v-btn>
+                                                            <v-btn key="2" icon="mdi-minus-circle"
+                                                                :disabled="(blocks.length <= 2) || (0 < index && index < blocks.length-1)"
+                                                                @click="removeBlock(index)"></v-btn>
+                                                            <v-btn key="3" icon="mdi-close-circle"
+                                                                :disabled="index < 1 || blocks.length-1 <= index"
+                                                                @click="mergeBlocks(index)"></v-btn>
+                                                        </v-speed-dial>
                                                     </td>
                                                     <!-- 2. ENERGY -->
-                                                    <td class="pt-1 pb-1 pl-3 pr-1">
-                                                        <v-number-input density="compact" v-model="block.BEGIN"
-                                                            control-variant="hidden" hide-details readonly
-                                                            :precision="2" style="width: 240px;"
-                                                            @click.stop="openDialog_E(index, block)">
+                                                    <td class="pa-1">
+                                                        <v-chip v-model="block.BEGIN"
+                                                            class="px-3 text-body-1 justify-space-between"
+                                                            density="default" variant="flat" color="grey-lighten-3"
+                                                            rounded="lg"
+                                                            style="width: 220px; cursor: pointer; font-family: 'Roboto Mono';"
+                                                            @click="openDialog_E(index, block)">
+                                                            <span class="ms-auto text-right" style="min-width: 75px;">
+                                                                {{ Number(block.BEGIN).toFixed(2) }}
+                                                            </span>
                                                             <template v-slot:prepend>
-                                                                <v-btn density="comfortable" rounded="xl"
-                                                                    variant="tonal" style="width: 90px;"
+                                                                <v-chip class="mr-2 text-caption justify-center"
+                                                                    density="compact" color="grey-darken-1"
+                                                                    variant="flat"
+                                                                    style="width: 72px; cursor: pointer; font-family: 'Roboto Mono';"
                                                                     @click.stop="openDialog_K(index, block)">
                                                                     {{ Number(block.BEGIN) < Number(selectedEdgeValue)
-                                                                        ? '(' + (block.BEGIN -
-                                                                        selectedEdgeValue).toFixed(1) + ')' :
+                                                                        ? '(' + (Number(block.BEGIN) -
+                                                                        Number(selectedEdgeValue)).toFixed(1) + ')' :
                                                                         eV2k(Number(block.BEGIN),
-                                                                        Number(selectedEdgeValue)).toFixed(2) }}
-                                                                        </v-btn>
+                                                                        Number(selectedEdgeValue)).toFixed(2)
+                                                                        }}</v-chip>
                                                             </template>
-                                                            <template v-slot:append-inner>
-                                                                <span class="custom-suffix">eV</span>
+                                                            <template v-slot:append>
+                                                                <span class="ml-2 text-caption"
+                                                                    style="margin-top: 3px;">eV</span>
                                                             </template>
-                                                        </v-number-input>
+                                                        </v-chip>
                                                     </td>
                                                     <!-- 3. INTERPOLATION -->
                                                     <td v-if="block.TYPE_I !== TYPE_I.BY_FINAL" class="pa-1"
-                                                        style="height: 50px; vertical-align: middle;">
+                                                        style="height: 40px; vertical-align: middle;">
                                                         <div class="d-inline-flex align-center"
-                                                            style="display: block; position: relative; top: 24px;">
+                                                            style="display: block; position: relative; top: 20px;">
                                                             <v-speed-dial size="small" location="right center"
                                                                 transition="fade-transition" attach>
                                                                 <template v-slot:activator="{ props: activatorProps }">
@@ -305,39 +342,50 @@
                                                                     :disabled="blocks.length > 12"
                                                                     @click="splitBlock(index)"></v-btn>
                                                             </v-speed-dial><span>&nbsp;</span>
-                                                            <v-number-input style="width: 128px; display: block;"
-                                                                class="mx-0" density="compact" v-model="block.NUM_I"
-                                                                control-variant="hidden" hide-details
-                                                                :precision="block.TYPE_I === TYPE_I.BY_DIVS ? 0 : 5"
-                                                                @click.stop="openDialog_I(index, block)">
-                                                                <template v-slot:append-inner>
-                                                                    <span class="custom-suffix">{{block.TYPE_I ===
-                                                                        TYPE_I.BY_DIVS ?
-                                                                        'div.' : ' eV'}}</span>
+                                                            <v-chip class="px-3 text-body-1 justify-space-between"
+                                                                density="default" variant="flat" color="grey-lighten-3"
+                                                                rounded="lg"
+                                                                style="width: 120px; cursor: pointer; font-family: 'Roboto Mono';"
+                                                                @click="openDialog_I(index, block)">
+                                                                {{Number(block.NUM_I).toFixed((block.TYPE_I ===
+                                                                TYPE_I.BY_DIVS) ? 0 : 5)}}
+                                                                <template v-slot:append>
+                                                                    <span class="ml-2 text-caption"
+                                                                        style="margin-top: 3px;">{{(block.TYPE_I ===
+                                                                        TYPE_I.BY_DIVS) ? 'div.' : 'eV'}}</span>
                                                                 </template>
-                                                            </v-number-input>
+                                                            </v-chip>
                                                         </div>
                                                     </td>
                                                     <td v-else style="display: none;"></td>
                                                     <!-- 4. EXPOSURE -->
                                                     <td v-if="block.TYPE_I !== TYPE_I.BY_FINAL"
-                                                        style="height: 50px; vertical-align: middle;">
-                                                        <v-number-input
-                                                            style="width: 128px; display: block; position: relative; top: 24px;"
-                                                            class="mx-auto" density="compact" v-model="block.EXPT"
-                                                            control-variant="stacked" hide-details :precision="1">
-                                                            <template #increment="{ props }">
-                                                                <v-btn v-bind="props"
-                                                                    @click="onClick_Tplus(index)"></v-btn>
+                                                        style="height: 40px; vertical-align: middle;">
+                                                        <v-chip class="px-3 text-body-1" density="default"
+                                                            variant="flat" color="grey-lighten-3" rounded="lg"
+                                                            @click="openDialog_T(index, block)"
+                                                            style="width: 154px; cursor: pointer; font-family: 'Roboto Mono'; position: relative; top: 20px;">
+                                                            <span class="ms-auto text-right" style="min-width: 48px;">
+                                                                {{ Number(block.EXPT).toFixed(1) }}
+                                                            </span>
+                                                            <template v-slot:append>
+                                                                <div class="d-flex align-center mx-1">
+                                                                    <span class="text-caption mr-0"
+                                                                        style="margin-top: 3px; min-width: 28px; text-align: left;">sec.</span>
+                                                                    <v-btn icon="mdi-minus-circle" variant="text"
+                                                                        density="compact" class="px-0 mx-0"
+                                                                        :disabled="block.EXPT<=1.0"
+                                                                        style="transform: translateY(1px);"
+                                                                        @click.stop="onClick_Tminus(index)">
+                                                                    </v-btn>
+                                                                    <v-btn icon="mdi-plus-circle" variant="text"
+                                                                        density="compact" class="px-0 mx-0"
+                                                                        style="transform: translateY(1px);"
+                                                                        @click.stop="onClick_Tplus(index)">
+                                                                    </v-btn>
+                                                                </div>
                                                             </template>
-                                                            <template #decrement="{ props }">
-                                                                <v-btn v-bind="props"
-                                                                    @click="onClick_Tminus(index)"></v-btn>
-                                                            </template>
-                                                            <template v-slot:append-inner>
-                                                                <span class="custom-suffix">sec.</span>
-                                                            </template>
-                                                        </v-number-input>
+                                                        </v-chip>
                                                     </td>
                                                     <td v-else style="display: none;"></td>
                                                 </tr>
