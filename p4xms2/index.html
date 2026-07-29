@@ -256,7 +256,7 @@
                                             <thead>
                                                 <tr class="bg-blue-darken-1 text-white">
                                                     <th class="text-caption text-center font-weight-bold pa-3 border-md"
-                                                        style="width: 70px; --v-border-color: white;">BLOCK</th>
+                                                        style="width: 72px; --v-border-color: white;">BLOCK</th>
                                                     <th class="text-caption text-center font-weight-bold pa-3 border-md"
                                                         style="width: 180px; --v-border-color: white;">ENERGY</th>
                                                     <th class="text-caption text-center font-weight-bold pa-3 border-md"
@@ -269,9 +269,9 @@
                                             <tbody>
                                                 <tr v-for="(block, index) in blocks" :key="index">
                                                     <!-- 1. BLOCK -->
-                                                    <td class="pa-1 text-right"
+                                                    <td class="pa-2 text-right"
                                                         style="position: relative; overflow: visible;">
-                                                        <div class="d-inline-flex align-center">
+                                                        <div class="d-flex w-100 align-center justify-space-between">
                                                             <v-speed-dial size="small" location="right center"
                                                                 transition="fade-transition" attach>
                                                                 <template v-slot:activator="{ props: activatorProps }">
@@ -297,7 +297,8 @@
                                                     <td class="pa-1">
                                                         <v-chip v-model="block.BEGIN"
                                                             class="px-3 text-body-1 justify-space-between"
-                                                            density="default" variant="outlined" rounded="lg"
+                                                            density="default" variant="flat" color="grey-lighten-3"
+                                                            rounded="lg"
                                                             style="width: 220px; cursor: pointer; font-family: 'Roboto Mono';"
                                                             @click="openDialog_E(index, block)">
                                                             <span class="ms-auto text-right" style="min-width: 75px;">
@@ -339,7 +340,8 @@
                                                                     @click="splitBlock(index)"></v-btn>
                                                             </v-speed-dial><span>&nbsp;</span>
                                                             <v-chip class="px-3 text-body-1 justify-space-between"
-                                                                density="default" variant="outlined" rounded="lg"
+                                                                density="default" variant="flat" color="grey-lighten-3"
+                                                                rounded="lg"
                                                                 style="width: 120px; cursor: pointer; font-family: 'Roboto Mono';"
                                                                 @click="openDialog_I(index, block)">
                                                                 {{Number(block.NUM_I).toFixed((block.TYPE_I ===
@@ -357,7 +359,7 @@
                                                     <td v-if="block.TYPE_I !== TYPE_I.BY_FINAL"
                                                         style="height: 40px; vertical-align: middle;">
                                                         <v-chip class="px-3 text-body-1" density="default"
-                                                            variant="outlined" rounded="lg"
+                                                            variant="flat" color="grey-lighten-3" rounded="lg"
                                                             @click="openDialog_T(index, block)"
                                                             style="width: 154px; cursor: pointer; font-family: 'Roboto Mono'; position: relative; top: 20px;">
                                                             <span class="ms-auto text-right" style="min-width: 48px;">
