@@ -269,29 +269,32 @@
                                             <tbody>
                                                 <tr v-for="(block, index) in blocks" :key="index">
                                                     <!-- 1. BLOCK -->
-                                                    <td class="pa-2 text-right"
-                                                        style="position: relative; overflow: visible;">
-                                                        <div class="d-flex w-100 align-center justify-space-between">
-                                                            <v-speed-dial size="small" location="right center"
-                                                                transition="fade-transition" attach>
-                                                                <template v-slot:activator="{ props: activatorProps }">
-                                                                    <v-btn v-bind="activatorProps" icon="mdi-menu"
-                                                                        variant="text" density="composite" size="small"
-                                                                        class="ma-0"></v-btn>
-                                                                </template>
-                                                                <v-btn key="1" icon="mdi-plus-circle"
-                                                                    :disabled="(blocks.length > 12) || (0 < index && index < blocks.length-1)"
-                                                                    @click="addBlock(index)"></v-btn>
-                                                                <v-btn key="2" icon="mdi-minus-circle"
-                                                                    :disabled="(blocks.length <= 2) || (0 < index && index < blocks.length-1)"
-                                                                    @click="removeBlock(index)"></v-btn>
-                                                                <v-btn key="3" icon="mdi-close-circle"
-                                                                    :disabled="index < 1 || blocks.length-1 <= index"
-                                                                    @click="mergeBlocks(index)"></v-btn>
-                                                            </v-speed-dial>
-                                                            <span class="text-body-2 font-weight-bold ml-3">{{ index + 1
-                                                                }}.</span>
-                                                        </div>
+                                                    <td class="pa-0 text-center"
+                                                        style="position: relative; overflow: visible; width: 70px;">
+                                                        <v-speed-dial size="small" location="right center"
+                                                            transition="fade-transition" attach>
+                                                            <template v-slot:activator="{ props: activatorProps }">
+                                                                <v-chip v-bind="activatorProps" variant="flat"
+                                                                    color="transparent" rounded="lg"
+                                                                    class="ma-0 px-1 text-body-2 font-weight-bold"
+                                                                    style="min-width: 60px; width: 60px; height: 32px; justify-content: space-between; overflow: hidden;">
+                                                                    <template v-slot:prepend>
+                                                                        <v-icon icon="mdi-menu" class="mr-1"
+                                                                            style="font-size: 20px;"></v-icon>
+                                                                    </template>
+                                                                    <span class="text-no-wrap">{{ index + 1 }}.</span>
+                                                                </v-chip>
+                                                            </template>
+                                                            <v-btn key="1" icon="mdi-plus-circle"
+                                                                :disabled="(blocks.length > 12) || (0 < index && index < blocks.length-1)"
+                                                                @click="addBlock(index)"></v-btn>
+                                                            <v-btn key="2" icon="mdi-minus-circle"
+                                                                :disabled="(blocks.length <= 2) || (0 < index && index < blocks.length-1)"
+                                                                @click="removeBlock(index)"></v-btn>
+                                                            <v-btn key="3" icon="mdi-close-circle"
+                                                                :disabled="index < 1 || blocks.length-1 <= index"
+                                                                @click="mergeBlocks(index)"></v-btn>
+                                                        </v-speed-dial>
                                                     </td>
                                                     <!-- 2. ENERGY -->
                                                     <td class="pa-1">

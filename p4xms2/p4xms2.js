@@ -13,6 +13,7 @@ createApp({
         const selectedEdge = ref(null)
         const availableEdges = ref([])
         const blocks = ref([])
+        const activeBlockMenuIndex = ref(null)       // Blockメニューが開いている行のインデックス
         const editingIndex = ref(null)          // 現在ダイアログで編集している行のインデックス
         const dialogOriginalValue = ref(0)         // ダイアログ内の入力欄の値
         const dialogInputValue = ref(0)         // ダイアログ内の入力欄の値
@@ -160,6 +161,11 @@ createApp({
         watch(selectedEdge, (newVal) => {
             init_parameters(selectedEdgeValue.value)
         }, { immediate: true, deep: true })
+
+        // Block メニューを開閉する
+        const toggleBlockMenu = (index) => {
+            activeBlockMenuIndex.value = activeBlockMenuIndex.value === index ? null : index
+        }
 
         // Ｋ値入力ダイアログを開く
         const openDialog_K = (index, block) => {
@@ -909,7 +915,7 @@ createApp({
             xtals, selectedXtal, changeXtalPlane,
             elementNames, selectedElement, selectedEdge, edges,
             selectedEdge, selectedEdgeValue, availableEdges,
-            blocks,
+            blocks, activeBlockMenuIndex, toggleBlockMenu,
             editingIndex, dialogOriginalValue, dialogInputValue,
             isDialogOpen_K, openDialog_K, cancelDialog_K,
             dialog_Kprefix, dialog_Ksuffix, dialog_Kpreci, dialog_Kstep,
