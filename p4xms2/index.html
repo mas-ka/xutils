@@ -223,6 +223,32 @@
                                         </v-card-actions>
                                     </v-card>
                                 </v-dialog>
+                                <!-- Ｔ値入力ダイアログ -->
+                                <v-dialog v-model="isDialogOpen_T" max-width="320px" scroll-strategy="none"
+                                    style="align-items: flex-start; padding-top: 16px;"
+                                    transition="dialog-top-transition">
+                                    <v-card>
+                                        <v-card-title
+                                            class="bg-grey-darken-3 text-body-1 font-weight-bold pa-3">Exposure</v-card-title>
+                                        <v-card-text>
+                                            <!-- ダイアログ内の数値入力欄 -->
+                                            <v-number-input v-model="dialogInputValue" density="comfortable"
+                                                control-variant="stacked" variant="outlined" suffix="sec."
+                                                :precision="1" :step="0.1" :min="0.1" hide-details @input="onInput_T"
+                                                @blur="onBlur_T" @update:model-value="onUpdate_T"
+                                                @keydown.enter="onEnter_T" autofocus></v-number-input>
+                                        </v-card-text>
+                                        <v-card-actions>
+                                            <v-spacer></v-spacer>
+                                            <!-- Cancelボタン：何もせず閉じる -->
+                                            <v-btn text="Cancel" variant="flat" @click="cancelDialog_T(true)"></v-btn>
+                                            <!-- OKボタン：値をテーブルに反映して閉じる -->
+                                            <v-btn text="OK" variant="flat" color="primary"
+                                                :disabled="isInvalid_T || isOKDisabled_T"
+                                                @click="cancelDialog_T(false)"></v-btn>
+                                        </v-card-actions>
+                                    </v-card>
+                                </v-dialog>
                                 <v-row align="center" dense="compact" class="mb-2">
                                     <v-col cols="12">
                                         <table class="text-body-2"
@@ -268,7 +294,7 @@
                                                         </div>
                                                     </td>
                                                     <!-- 2. ENERGY -->
-                                                    <td class="pt-1 pb-1 pl-3 pr-1">
+                                                    <td class="pa-1">
                                                         <v-chip v-model="block.BEGIN"
                                                             class="px-3 text-body-1 justify-space-between"
                                                             density="default" variant="outlined" rounded="lg"
@@ -332,6 +358,7 @@
                                                         style="height: 40px; vertical-align: middle;">
                                                         <v-chip class="px-3 text-body-1" density="default"
                                                             variant="outlined" rounded="lg"
+                                                            @click="openDialog_T(index, block)"
                                                             style="width: 154px; cursor: pointer; font-family: 'Roboto Mono'; position: relative; top: 20px;">
                                                             <span class="ms-auto text-right" style="min-width: 48px;">
                                                                 {{ Number(block.EXPT).toFixed(1) }}
