@@ -1,0 +1,58 @@
+import { createApp, ref, computed, watch, onMounted, nextTick, } from 'vue'
+import { createVuetify } from 'vuetify'
+
+createApp({
+    setup() {
+        // refの宣言
+        const licenseDialog = ref(false)
+        const licenseContent = ref('')
+        const lambda = ref('1.5498')        // 初期波長は1.5498Å(=8keV)
+        const Unit_lambda = ref('Å')         // 単位
+
+        const xrayValue = computed({
+            get() {
+                if (!lambda.value) return ''
+                if (Unit_lambda.value === 'eV') {
+                    const ev = 12398.4264684 / Number(lambda.value)
+                    return Number(ev.toFixed(2))
+                }
+                return Number(Number(lambda.value).toFixed(4))
+            },
+            set(val) {
+                if (!val) {
+                    lambda.value = ''
+                    return
+                }
+                if (Unit_lambda.value === 'eV') {
+                    lambda.value = String(12398.4264684 / Number(val))
+                } else {
+                    lambda.value = String(val)
+                }
+            }
+        })
+
+        // ローカルの宣言
+
+        // ユーティリティ関数
+
+        // 初期化関数
+
+        // 初期値の宣言
+        onMounted(async () => {
+            try {
+                const res = await fetch('license.html')
+                licenseContent.value = await res.text()
+            } catch (e) {
+                console.error('Failed to load license.html', e)
+            }
+        })
+
+
+
+        return {
+            licenseDialog, licenseContent,
+            lambda, Unit_lambda, xrayValue,
+
+        }
+    }
+}).use(createVuetify()).mount('#app')

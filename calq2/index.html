@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <!-- import font -->
+    <link href="https://fonts.googleapis.com/css?family=Noto+Serif:700|Roboto+Mono" rel="stylesheet">
+    <!-- import Vuetify -->
+    <link href="https://cdn.jsdelivr.net/npm/@mdi/font@5.x/css/materialdesignicons.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/vuetify@3.12.6/dist/vuetify.min.css" rel="stylesheet">
+    <!-- import Vue3 & Vuetify3 from CDN -->
+    <script type="importmap"> { "imports": {
+            "vue": "https://unpkg.com/vue@3/dist/vue.esm-browser.js", 
+            "vuetify": "https://cdn.jsdelivr.net/npm/vuetify@3.12.6/dist/vuetify.esm.js"
+        } } </script>
+    <!-- import Vue3 JS code -->
+    <script type="module" src="calq2.js"></script>
+    <!-- load other JS files -->
+    <!-- custom style -->
+    <!-- Page Title -->
+    <title>Calq(β)</title>
+</head>
+
+<body id="app">
+    <v-app>
+        <v-main class="bg-grey-lighten-4">
+            <v-container class="py-4 ml-0" style="overflow-x: auto;">
+                <v-row justify="start">
+                    <v-col cols="auto">
+                        <v-card class="elevation-4" style="width: 800px; min-width: 800px;">
+                            <!-- Title -->
+                            <v-toolbar id="TITLE" color="primary" height="80" class="position-relative">
+                                <v-toolbar-title class="text-center font-weight-bold">
+                                    <div class="text-h4" style="cursor: default; font-family: 'Noto Serif';">C A L
+                                        Q&nbsp;
+                                        <span class="text-body-1">(β)</span>
+                                    </div>
+                                    <div class="text-caption font-weight-regular text-grey-lighten-3"
+                                        style="cursor: default; font-family: 'Noto Serif';">
+                                        - Q-range calculator for SAXS measurement -
+                                    </div>
+                                </v-toolbar-title>
+                                <v-btn icon="mdi-license" class="position-absolute"
+                                    style="right: 16px; top: 50%; transform: translateY(-50%);"
+                                    @click="licenseDialog = true"></v-btn>
+                            </v-toolbar>
+                            <!-- X-ray settings -->
+                            <v-toolbar id="X-RAY" class="mb-3" color="blue-lighten-2" density="compact">
+                                <v-toolbar-title class="text-subtitle-1 font-weight-bold text-white"
+                                    style="cursor: default;">
+                                    X-ray
+                                </v-toolbar-title>
+                            </v-toolbar>
+                            <v-card-text class="pa-4">
+                                <v-row align="center" class="mb-2" dense="compact">
+                                    <v-col cols="4">
+                                        <v-text-field v-model="xrayValue"
+                                            :label="Unit_lambda === 'Å' ? 'wavelength' : 'Energy'" type="number"
+                                            variant="outlined" density="compact" hide-details="auto"></v-text-field>
+                                    </v-col>
+                                    <v-col cols="2">
+                                        <v-select v-model="Unit_lambda" :items="['Å', 'eV']" variant="outlined"
+                                            density="compact" hide-details="auto"></v-select>
+                                    </v-col>
+                                </v-row>
+                                <span>{{ lambda }}</span>
+                            </v-card-text>
+                        </v-card>
+                    </v-col>
+                </v-row>
+            </v-container>
+        </v-main>
+
+        <!-- License Dialog -->
+        <v-dialog v-model="licenseDialog" max-width="650px">
+            <v-card>
+                <v-card-title class="text-h5 font-weight-bold bg-primary text-white pa-4">
+                    Software Licenses
+                </v-card-title>
+                <v-card-text class="pa-4 bg-grey-lighten-5 text-body-2" style="max-height: 500px; overflow-y: auto;">
+                    <div v-html="licenseContent"></div>
+                </v-card-text>
+                <v-card-actions class="pa-4 bg-grey-lighten-5">
+                    <v-spacer></v-spacer>
+                    <v-btn color="primary" variant="elevated" @click="licenseDialog = false">Close</v-btn>
+                </v-card-actions>
+            </v-card>
+        </v-dialog>
+    </v-app>
+</body>
+
+</html>
