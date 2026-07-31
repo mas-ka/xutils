@@ -17,6 +17,18 @@
     <script type="module" src="calq2.js"></script>
     <!-- load other JS files -->
     <!-- custom style -->
+    <style>
+        /* type="number"のスピナー（上下矢印）を非表示にする */
+        input[type="number"]::-webkit-outer-spin-button,
+        input[type="number"]::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
+        input[type="number"] {
+            -moz-appearance: textfield;
+        }
+    </style>
     <!-- Page Title -->
     <title>Calq(β)</title>
 </head>
@@ -56,14 +68,42 @@
                                     <v-col cols="4">
                                         <v-text-field v-model="xrayValue"
                                             :label="Unit_lambda === 'Å' ? 'wavelength' : 'Energy'" type="number"
-                                            variant="outlined" density="compact" hide-details="auto"></v-text-field>
-                                    </v-col>
-                                    <v-col cols="2">
-                                        <v-select v-model="Unit_lambda" :items="['Å', 'eV']" variant="outlined"
-                                            density="compact" hide-details="auto"></v-select>
+                                            variant="outlined" density="compact" hide-details="auto">
+                                            <template v-slot:append-inner>
+                                                <v-menu>
+                                                    <template v-slot:activator="{ props }">
+                                                        <v-btn v-bind="props" variant="text" density="compact"
+                                                            class="px-2 text-none text-body-2" min-width="0"
+                                                            :ripple="false">
+                                                            {{ Unit_lambda }} <v-icon icon="mdi-menu-down"></v-icon>
+                                                        </v-btn>
+                                                    </template>
+                                                    <v-list density="compact">
+                                                        <v-list-item v-for="item in ['Å', 'eV']" :key="item"
+                                                            @click="Unit_lambda = item">
+                                                            <v-list-item-title>{{ item }}</v-list-item-title>
+                                                        </v-list-item>
+                                                    </v-list>
+                                                </v-menu>
+                                            </template>
+                                        </v-text-field>
                                     </v-col>
                                 </v-row>
-                                <span>{{ lambda }}</span>
+                            </v-card-text>
+                            <!-- Detector settings -->
+                            <v-toolbar id="DETECTOR" class="mb-3" color="blue-lighten-2" density="compact">
+                                <v-toolbar-title class="text-subtitle-1 font-weight-bold text-white"
+                                    style="cursor: default;">
+                                    Detector
+                                </v-toolbar-title>
+                            </v-toolbar>
+                            <v-card-text class="pa-4">
+                                <v-row align="center" class="mb-2" dense="compact">
+                                    <v-col cols="4">
+                                        <v-text-field v-model="radius" label="Radius" type="number" suffix="mm"
+                                            variant="outlined" density="compact" hide-details="auto"></v-text-field>
+                                    </v-col>
+                                </v-row>
                             </v-card-text>
                         </v-card>
                     </v-col>

@@ -7,7 +7,8 @@ createApp({
         const licenseDialog = ref(false)
         const licenseContent = ref('')
         const lambda = ref('1.5498')        // 初期波長は1.5498Å(=8keV)
-        const Unit_lambda = ref('Å')         // 単位
+        const Unit_lambda = ref('Å')        // 単位
+        const radius = ref(80.0)          // 検出器の測定領域半径[mm]
 
         const xrayValue = computed({
             get() {
@@ -52,7 +53,7 @@ createApp({
         return {
             licenseDialog, licenseContent,
             lambda, Unit_lambda, xrayValue,
-
+            radius,
         }
     }
 }).use(createVuetify()).mount('#app')
