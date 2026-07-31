@@ -116,7 +116,12 @@
                                 <table border="1" cellspacing="0" style="border:2px solid #333">
                                     <tbody>
                                         <tr>
-                                            <td colspan="2" rowspan="2" class="text-center">Mode</td>
+                                            <td colspan="2" rowspan="2" class="text-center pa-4">
+                                                <v-select v-model="Mode" label="Mode" :items="Modes" item-title="name"
+                                                    item-value="value" return-object variant="outlined"
+                                                    density="compact" hide-details="auto">
+                                                </v-select>
+                                            </td>
                                             <td :colspan="BSdiameters.length"
                                                 class="pa-1 text-center bg-blue-lighten-1">Beam
                                                 stop diameter [mm]</td>
@@ -138,13 +143,14 @@
                                                         style="text-align: center; width: 80px">
                                                 </td>
                                                 <template v-for="(bs) in BSdiameters">
-                                                    <td>{{length}},{{bs}}</td>
+                                                    <td>{{ Mode.value }}, {{ length }}, {{ bs }}</td>
                                                 </template>
                                             </tr>
                                         </template>
                                     </tbody>
                                 </table>
                             </v-card-text>
+                            {{ Mode }}
                         </v-card>
                     </v-col>
                 </v-row>
