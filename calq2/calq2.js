@@ -9,6 +9,8 @@ createApp({
         const lambda = ref('1.5498')        // 初期波長は1.5498Å(=8keV)
         const Unit_lambda = ref('Å')        // 単位
         const radius = ref(80.0)          // 検出器の測定領域半径[mm]
+        const lengths = ref([250, 500, 750, 1000, 1500, 2000, 2500, 3000, 3500, 4000, 4500, 5000])  // パス長[mm]の配列
+        const BSdiameters = ref([2, 3, 5, 8])   // ビームストップ直径[mm]の配列
 
         const xrayValue = computed({
             get() {
@@ -53,7 +55,7 @@ createApp({
         return {
             licenseDialog, licenseContent,
             lambda, Unit_lambda, xrayValue,
-            radius,
+            radius, lengths, BSdiameters,
         }
     }
 }).use(createVuetify()).mount('#app')

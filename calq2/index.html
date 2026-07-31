@@ -18,14 +18,14 @@
     <!-- load other JS files -->
     <!-- custom style -->
     <style>
-        /* type="number"のスピナー（上下矢印）を非表示にする */
-        input[type="number"]::-webkit-outer-spin-button,
-        input[type="number"]::-webkit-inner-spin-button {
+        /* v-text-fieldのtype="number"のスピナーのみ非表示にする */
+        .v-text-field input[type="number"]::-webkit-outer-spin-button,
+        .v-text-field input[type="number"]::-webkit-inner-spin-button {
             -webkit-appearance: none;
             margin: 0;
         }
 
-        input[type="number"] {
+        .v-text-field input[type="number"] {
             -moz-appearance: textfield;
         }
     </style>
@@ -104,6 +104,46 @@
                                             variant="outlined" density="compact" hide-details="auto"></v-text-field>
                                     </v-col>
                                 </v-row>
+                            </v-card-text>
+                            <!-- Result -->
+                            <v-toolbar id="RESULT" class="mb-3" color="green-lighten-2" density="compact">
+                                <v-toolbar-title class="text-subtitle-1 font-weight-bold text-white"
+                                    style="cursor: default;">
+                                    Result
+                                </v-toolbar-title>
+                            </v-toolbar>
+                            <v-card-text class="pa-4">
+                                <table border="1" cellspacing="0" style="border:2px solid #333">
+                                    <tbody>
+                                        <tr>
+                                            <td colspan="2" rowspan="2" class="text-center">Mode</td>
+                                            <td :colspan="BSdiameters.length"
+                                                class="pa-1 text-center bg-blue-lighten-1">Beam
+                                                stop diameter [mm]</td>
+                                        </tr>
+                                        <tr>
+                                            <td v-for="(bs, index) in BSdiameters" :key="'header-'+index"
+                                                class="pa-1 text-center bg-blue-lighten-5">
+                                                <input v-model="BSdiameters[index]" type="number"
+                                                    style="text-align:center;width:120px">
+                                            </td>
+                                        </tr>
+                                        <template v-for="(length, index) in lengths">
+                                            <tr>
+                                                <td v-if="index === 0" :rowspan="lengths.length"
+                                                    class="pa-2 text-center bg-blue-lighten-1">Path
+                                                    length<br />[mm]</td>
+                                                <td class="pa-1 bg-blue-lighten-5">
+                                                    <input v-model="lengths[index]" type="number"
+                                                        style="text-align: center; width: 80px">
+                                                </td>
+                                                <template v-for="(bs) in BSdiameters">
+                                                    <td>{{length}},{{bs}}</td>
+                                                </template>
+                                            </tr>
+                                        </template>
+                                    </tbody>
+                                </table>
                             </v-card-text>
                         </v-card>
                     </v-col>
