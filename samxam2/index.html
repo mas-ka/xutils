@@ -60,98 +60,119 @@
                                 </v-toolbar-title>
                             </v-toolbar>
                             <v-card-text class="pa-4">
-                                <v-row align="center" class="mb-2" dense="compact">
-                                    <v-col cols="4" v-if="sampleType === TYPE_SAMPLE.FOIL"><!-- FOIL -->
-                                        <v-number-input v-model="Foil_R" label="Density" suffix=" g/cm³"
-                                            density="compact" variant="outlined" control-variant="hidden" precision="2"
-                                            hide-details>
-                                        </v-number-input>
-                                    </v-col>
-                                    <v-col cols="2" v-if="sampleType === TYPE_SAMPLE.PELLETE"><!-- PELLETE -->
-                                        <v-select v-model="Pellet_Medium" label="Medium" :items="TYPE_MEDIUM_PELLETE"
-                                            item-title="Type" item-value="Id" density="compact" variant="outlined"
-                                            density="compact" @update:model-value="onSelect_Medium" hide-details>
-                                        </v-select>
-                                    </v-col>
-                                    <v-col cols="3"
-                                        v-if="sampleType === TYPE_SAMPLE.PELLETE && Pellet_Medium === 1"><!-- BN -->
-                                        <v-select v-model="Pellet_Def" :items="TYPE_DEF_PELLETE" item-title="Type"
-                                            item-value="Id" density="compact" variant="outlined" density="compact"
-                                            hide-details>
-                                        </v-select>
-                                    </v-col>
-                                    <span
-                                        v-if="sampleType === TYPE_SAMPLE.PELLETE && Pellet_Medium === 1">&nbsp;=&nbsp;</span>
-                                    <v-col cols="2"
-                                        v-if="sampleType === TYPE_SAMPLE.PELLETE && Pellet_Medium === 1"><!-- Thickness -->
-                                        <v-number-input v-model="Pellet_T" :suffix="Pellet_Def==0?'mm':'mg'"
-                                            density="compact" variant="outlined" control-variant="hidden"
-                                            hide-details></v-number-input>
-                                    </v-col>
-                                    <span
-                                        v-if="sampleType === TYPE_SAMPLE.PELLETE && Pellet_Medium === 1 && Pellet_Def === 0">&nbsp;(
-                                        {{(3.1416*(Pellet_D/2)*(Pellet_D/2)*Pellet_T*2.20907).toFixed(2)}}
-                                        mg )</span>
-                                    <v-col cols="3"
-                                        v-if="sampleType === TYPE_SAMPLE.PELLETE && Pellet_Medium === 2"><!-- PELLETE Other... -->
-                                        <v-number-input v-model="Pellet_T" label="Weight" suffix="mg" density="compact"
-                                            variant="outlined" control-variant="hidden" hide-details></v-number-input>
-                                    </v-col>
-                                </v-row>
-                                <v-row align="center" class="mb-2" dense="compact"
-                                    v-if="sampleType === TYPE_SAMPLE.PELLETE && Pellet_Medium === 2">
-                                    <v-col>
-                                        <table border="1" cellspacing="0" style="border:2px solid #333">
-                                            <thead>
-                                                <tr>
-                                                    <th class="text-body-2 text-white font-weight-bold px-4 bg-blue-lighten-3"
-                                                        style="width: 160px;">
-                                                        Element</th>
-                                                    <th class="text-body-2 text-white font-weight-bold px-4 bg-blue-lighten-3"
-                                                        style="width: 160px;">
-                                                        Atom</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                <template v-for="(Z, i) in Pellet_Medium_Z">
-                                                    <tr align="center">
-                                                        <td>
-                                                            <select v-model="Pellet_Medium_Z[i]"
-                                                                @change="onChange_Medium_Z(i)"
-                                                                style="width: 60px; cursor: pointer; appearance: auto;">
-                                                                <template v-for="E in ElementNamesZ">
-                                                                    <option :value="E.Z">{{ E.Name }}</option>
-                                                                </template>
-                                                            </select>
-                                                        </td>
-                                                        <td>
-                                                            <input type="number" v-model="Pellet_Medium_Ratio[i]"
-                                                                step="1" min="1" class="px-2 text-right"
-                                                                style="width: 80px; cursor: pointer; appearance: auto;">
-                                                        </td>
-                                                    </tr>
-                                                </template>
-                                                <tr align="center"><!-- 最終行 -->
-                                                    <td>
-                                                        <select v-model="Pellet_Medium_Z_last"
-                                                            @change="onChange_Medium_Z_last"
-                                                            style="width: 60px; cursor: pointer; appearance: auto;">
-                                                            <template v-for="E in ElementNamesZ">
-                                                                <option :value="E.Z">{{ E.Name }}</option>
-                                                            </template>
-                                                        </select>
-                                                    </td>
-                                                    <td>
-                                                        <input type="number" v-model="Pellet_Medium_Ratio_last" step="1"
-                                                            min="1" class="px-2 text-right" disabled="true"
-                                                            style="width: 80px; cursor: default; appearance: auto;">
-                                                    </td>
-                                                </tr>
-                                            </tbody>
-                                        </table>
-                                    </v-col>
-                                </v-row>
-                                {{ Pellet_Medium_Z }} {{ Pellet_Medium_Ratio }}
+                                <template v-if="sampleType === TYPE_SAMPLE.FOIL"><!-- FOIL -->
+                                    <v-row align="center" class="mb-2" dense="compact">
+                                        <v-col cols="3">
+                                            <v-number-input v-model="Foil_R" label="Density" suffix=" g/cm³"
+                                                density="compact" variant="outlined" control-variant="stacked"
+                                                precision="2" hide-details>
+                                            </v-number-input>
+                                        </v-col>
+                                    </v-row>
+                                </template>
+                                <template v-else-if="sampleType === TYPE_SAMPLE.PELLETE"><!-- PELLETE -->
+                                    <v-row align="center" class="mb-2" dense="compact">
+                                        <v-col cols="2"><!-- Diameter -->
+                                            <v-number-input v-model="Pellet_D" label="Diameter" suffix="mm"
+                                                density="compact" variant="outlined" control-variant="stacked"
+                                                :precision="0" :min="1" hide-details>
+                                            </v-number-input>
+                                        </v-col>
+                                        <span>&nbsp;/&nbsp;</span>
+                                        <v-col cols="2"><!-- Medium Selector -->
+                                            <v-select v-model="Pellet_Medium" label="Medium"
+                                                :items="TYPE_MEDIUM_PELLETE" item-title="Type" item-value="Id"
+                                                density="compact" variant="outlined" density="compact"
+                                                @update:model-value="onSelect_Medium" hide-details>
+                                            </v-select>
+                                        </v-col>
+                                        <!-- if Medium == 0 then display none -->
+                                        <template v-if="Pellet_Medium === 1"><!-- BN -->
+                                            <v-col cols="3"><!-- Medium Definition Selector -->
+                                                <v-select v-model="Pellet_Def" :items="TYPE_DEF_PELLETE"
+                                                    item-title="Type" item-value="Id" density="compact"
+                                                    variant="outlined" density="compact" hide-details>
+                                                </v-select>
+                                            </v-col>
+                                            <span>&nbsp;=&nbsp;</span>
+                                            <template v-if="Pellet_Def === 0"><!-- Thickness -->
+                                                <v-col cols="2">
+                                                    <v-number-input v-model="Pellet_T" label="Thickness" suffix="mm"
+                                                        density="compact" variant="outlined" control-variant="stacked"
+                                                        :precision="1" :step="0.1" :min="0.1" :max="9.9" hide-details>
+                                                    </v-number-input>
+                                                </v-col>
+                                                <span>&nbsp;(
+                                                    {{(3.1416*(Pellet_D/2)*(Pellet_D/2)*Pellet_T*2.20907).toFixed(2)}}
+                                                    mg )</span>
+                                            </template>
+                                            <template v-else-if="Pellet_Def === 1"><!-- Weight -->
+                                                <v-col cols="2">
+                                                    <v-number-input v-model="Pellet_T" label="Weight" suffix="mg"
+                                                        density="compact" variant="outlined" control-variant="hidden"
+                                                        precision="2" hide-details>
+                                                    </v-number-input>
+                                                </v-col>
+                                            </template>
+                                        </template>
+                                    </v-row>
+                                    <template v-if="Pellet_Medium === 2"><!-- Others -->
+                                        <v-row align="center" class="mb-2" dense="compact"><!-- Other Medium Table -->
+                                            <v-col>
+                                                <table border="1" cellspacing="0" style="border:2px solid #333">
+                                                    <thead>
+                                                        <tr>
+                                                            <th class="text-body-2 text-white font-weight-bold px-4 bg-blue-lighten-3"
+                                                                style="width: 160px;">
+                                                                Element</th>
+                                                            <th class="text-body-2 text-white font-weight-bold px-4 bg-blue-lighten-3"
+                                                                style="width: 160px;">
+                                                                Atom</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        <template v-for="(Z, i) in Pellet_Medium_Z">
+                                                            <tr align="center">
+                                                                <td>
+                                                                    <select v-model="Pellet_Medium_Z[i]"
+                                                                        @change="onChange_Medium_Z(i)"
+                                                                        style="width: 60px; cursor: pointer; appearance: auto;">
+                                                                        <template v-for="E in ElementNamesZ">
+                                                                            <option :value="E.Z">{{ E.Name }}</option>
+                                                                        </template>
+                                                                    </select>
+                                                                </td>
+                                                                <td>
+                                                                    <input type="number"
+                                                                        v-model="Pellet_Medium_Ratio[i]" step="1"
+                                                                        min="1" class="px-2 text-right"
+                                                                        style="width: 80px; cursor: pointer; appearance: auto;">
+                                                                </td>
+                                                            </tr>
+                                                        </template>
+                                                        <tr align="center"><!-- 最終行 -->
+                                                            <td>
+                                                                <select v-model="Pellet_Medium_Z_last"
+                                                                    @change="onChange_Medium_Z_last"
+                                                                    style="width: 60px; cursor: pointer; appearance: auto;">
+                                                                    <template v-for="E in ElementNamesZ">
+                                                                        <option :value="E.Z">{{ E.Name }}</option>
+                                                                    </template>
+                                                                </select>
+                                                            </td>
+                                                            <td>
+                                                                <input type="number" v-model="Pellet_Medium_Ratio_last"
+                                                                    step="1" min="1" class="px-2 text-right"
+                                                                    disabled="true"
+                                                                    style="width: 80px; cursor: default; appearance: auto;">
+                                                            </td>
+                                                        </tr>
+                                                    </tbody>
+                                                </table>
+                                            </v-col>
+                                        </v-row>
+                                    </template>
+                                </template> {{ Pellet_Medium_Z }} {{ Pellet_Medium_Ratio }}
                             </v-card-text>
                         </v-card>
                     </v-col>
