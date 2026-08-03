@@ -1,4 +1,4 @@
-import { createApp, ref, computed, onMounted, nextTick, } from 'vue'
+import { createApp, ref, computed, onMounted, nextTick, watchEffect } from 'vue'
 import { createVuetify } from 'vuetify'
 
 import * as Victoreens from './victoreens.js'
@@ -8,6 +8,8 @@ createApp({
         // refの宣言
         const licenseDialog = ref(false)
         const licenseContent = ref('')
+        const Elements = ref(Victoreens.elements)
+        const ElementNamesZ = ref(Victoreens.getElementNamesZ())
         const sampleType = ref(null)        // 試料形状の種別
         const Foil_R = ref(8.94)            // 試料がフォイルだった場合の密度(g/cm3) ※初期値は銅箔
         const Pellet_D = ref(10)            // 試料がペレットだった場合の直径[mm]
@@ -16,11 +18,15 @@ createApp({
         const Pellet_Medium = ref(null)     // medium = BN
         const Pellet_Medium_Z = ref([5, 7]) // BN
         const Pellet_Medium_Ratio = ref([1, 1])
-        const Pellet_Medium_Weight = ref([0.435535858178888, 0.564464141821112])
-        const Pellet_Medium_Z_last = ref(0) // 最後の要素の原子番号
+        const Pellet_Medium_Weight = ref([]) // mediumの重量分率(※動的に計算される)
+        const Pellet_Medium_Z_last = ref(0)     // 最後の要素の原子番号
         const Pellet_Medium_Ratio_last = ref(0) // 最後の要素の比率
-        const Elements = ref(Victoreens.elements)
-        const ElementNamesZ = ref(Victoreens.getElementNamesZ())
+        const Pellet_Sample_Z = ref([29])       // 試料の原子番号
+        const Pellet_Sample_Ratio = ref([1])    // 試料の原子比
+        const Pellet_Sample_Weight = ref([])    // 試料の重量分率(※動的に計算される)
+        const Pellet_Sample_Z_last = ref(0)     // 最後の要素の原子番号
+        const Pellet_Sample_Ratio_last = ref(0) // 最後の要素の比率
+        const Pellet_Sample_TargetId = ref(0)   // ターゲット元素のインデックス
 
         // ローカルの宣言 & 初期値
         const TYPE_SAMPLE = Object.freeze({
@@ -40,7 +46,7 @@ createApp({
             { Id: 1, Type: "BN" },
             { Id: 2, Type: "Other..." }
         ]
-        Pellet_Medium.value = 2 // 初期値は「BN」
+        Pellet_Medium.value = 1 // 初期値は「BN」
 
         // マウント時にlicense.htmlを読み込む
         onMounted(async () => {
@@ -56,11 +62,17 @@ createApp({
 
         // medium選択時の処理
         const onSelect_Medium = () => {
+            if (Pellet_Medium.value === 0) {
+                // meiumなしを選択した場合
+                Pellet_Medium_Z.value = []
+                Pellet_Medium_Ratio.value = []
+                Pellet_Medium_Z_last.value = 0
+                Pellet_Medium_Ratio_last.value = 0
+            }
             if (Pellet_Medium.value === 1) {
                 // BNを選択した場合にBNに再初期化する
                 Pellet_Medium_Z.value = [5, 7]
                 Pellet_Medium_Ratio.value = [1, 1]
-                Pellet_Medium_Weight.value = [0.435535858178888, 0.564464141821112]
                 Pellet_Medium_Z_last.value = 0
                 Pellet_Medium_Ratio_last.value = 0
             }
@@ -109,6 +121,20 @@ createApp({
             }
         }
 
+        // Pellete_Meduimを監視してPellet_Medium_Weightを更新する
+        watchEffect(() => {
+            let M_total = 0
+            Pellet_Medium_Z.value.forEach((Z, index) => {
+                M_total += Pellet_Medium_Ratio.value[index] * Elements.value[Z].A
+            })
+
+            const weights = []
+            Pellet_Medium_Z.value.forEach((Z, index) => {
+                weights.push((Pellet_Medium_Ratio.value[index] * Elements.value[Z].A) / M_total)
+            })
+            Pellet_Medium_Weight.value = weights
+        })
+
 
         return {
             licenseDialog, licenseContent,
@@ -118,6 +144,8 @@ createApp({
             TYPE_DEF_PELLETE, TYPE_MEDIUM_PELLETE,
             Elements, ElementNamesZ,
             onSelect_Medium, onChange_Medium_Z, onChange_Medium_Z_last,
+            Pellet_Sample_Z, Pellet_Sample_Ratio, Pellet_Sample_Weight,
+            Pellet_Sample_Z_last, Pellet_Sample_Ratio_last, Pellet_Sample_TargetId,
         }
     }
 }).use(createVuetify()).mount('#app')
