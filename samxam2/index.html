@@ -193,7 +193,15 @@
                                                     <th class="text-body-2 text-white font-weight-bold px-4 bg-blue-lighten-3"
                                                         style="width: 100px;">Element</th>
                                                     <th class="text-body-2 text-white font-weight-bold px-4 bg-blue-lighten-3"
-                                                        style="width: 100px;">Atom</th>
+                                                        style="width: 100px;">
+                                                        <select v-model="Pellet_Sample_RatioType" class="text-white"
+                                                            style="width: 60px; cursor: pointer; appearance: auto;">
+                                                            <template v-for="R in TYPE_RATIO">
+                                                                <option :value="R.Id" class="text-black">{{ R.Type }}
+                                                                </option>
+                                                            </template>
+                                                        </select>
+                                                    </th>
                                                 </tr>
                                             </thead>
                                             <tbody>
@@ -223,17 +231,20 @@
                                                                 </template>
                                                             </select>
                                                         </td>
-                                                        <!-- Atom or Mass : Atom % を表示 -->
-                                                        <td>
-
+                                                        <!-- Atom or Mass : 原子数もしくは重量分率を表示 -->
+                                                        <td class="text-center">
+                                                            <input type="number" v-model="Pellet_Sample_Ratio[i]"
+                                                                class="px-2"
+                                                                :style="{width: Pellet_Sample_RatioType == 0 ? '60px': '80px'}"
+                                                                style="cursor: pointer; appearance: auto;"
+                                                                :precision="Pellet_Sample_RatioType == 0 ? 0 : 3"
+                                                                :step="Pellet_Sample_RatioType == 0 ? 1 : 0.001">
                                                         </td>
                                                     </tr>
                                                 </template>
                                                 <tr>
-                                                    <!-- Target : 空欄 -->
-                                                    <td></td>
-                                                    <!-- Element : X -->
-                                                    <td class="text-center">
+                                                    <td></td><!-- Target : 空欄 -->
+                                                    <td class="text-center"><!-- Element : X -->
                                                         <select v-model="Pellet_Sample_Z_last" class="px-2"
                                                             style="width: 60px; cursor: pointer; appearance: auto;"
                                                             @change="onChange_Sample_Z_last()">
@@ -242,8 +253,7 @@
                                                             </template>
                                                         </select>
                                                     </td>
-                                                    <!-- Atom or Mass : 空欄 -->
-                                                    <td></td>
+                                                    <td></td><!-- Atom or Mass : 空欄 -->
                                                 </tr>
                                             </tbody>
                                         </table>
@@ -252,6 +262,8 @@
                                 <span>Pellet_Sample_TargetId : {{ Pellet_Sample_TargetId }}</span><br>
                                 <span>Pellet_Sample_Edge : {{ Pellet_Sample_Edge }}</span><br>
                                 <span>Pellet_Sample_Z : {{ Pellet_Sample_Z }}</span><br>
+                                <span>Pellet_Sample_Ratio : {{ Pellet_Sample_Ratio }}</span><br>
+                                <span>Pellet_Sample_Weight : {{ Pellet_Sample_Weight }}</span><br>
                             </v-card-text>
                         </v-card>
                     </v-col>

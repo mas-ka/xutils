@@ -24,10 +24,11 @@ createApp({
         const Pellet_Sample_TargetId = ref(0)   // 試料中のターゲット元素のインデックス
         const Pellet_Sample_Edge = ref(null)    // 試料の吸収端
         const Pellet_Sample_Z = ref([29, 8])       // 試料の原子番号
-        const Pellet_Sample_Ratio = ref([2, 1])    // 試料の原子比
+        const Pellet_Sample_Ratio = ref([2, 1])    // 試料の原子数もしくは重量分率
         const Pellet_Sample_Weight = ref([])    // 試料の重量分率(※動的に計算される)
         const Pellet_Sample_Z_last = ref(0)     // 最後の要素の原子番号
         const Pellet_Sample_Ratio_last = ref(0) // 最後の要素の比率
+        const Pellet_Sample_RatioType = ref(0)  // 試料組成の種別、0:原子数比, 1:重量分率
 
         // ローカルの宣言 & 初期値
         const TYPE_SAMPLE = Object.freeze({
@@ -56,6 +57,12 @@ createApp({
             { Id: 3, Name: "L3" }
         ]
         Pellet_Sample_Edge.value = 0 // 初期値は「K」
+
+        const TYPE_RATIO = [
+            { Id: 0, Type: "Atom" },
+            { Id: 1, Type: "Mass" }
+        ]
+        Pellet_Sample_RatioType.value = TYPE_RATIO[0].Id // 初期値は「Atom」
 
         // マウント時にlicense.htmlを読み込む
         onMounted(async () => {
@@ -183,6 +190,29 @@ createApp({
             Pellet_Sample_Ratio_last.value = 0
         }
 
+        // Pellete_Sample_Ratioを監視してPellet_Sample_Weightを更新する
+        watchEffect(() => {
+            if (Pellet_Sample_RatioType.value === 0) {// Atom : 原子数
+                let M_total = 0
+                Pellet_Sample_Ratio.value.forEach((ratio, index) => {
+                    M_total += ratio * Elements.value[Pellet_Sample_Z.value[index]].A
+                })
+                const weights = []
+                Pellet_Sample_Ratio.value.forEach((ratio, index) => {
+                    weights.push(ratio * Elements.value[Pellet_Sample_Z.value[index]].A / M_total)
+                })
+                Pellet_Sample_Weight.value = weights
+            } else {// Mass : 重量分率
+                let M_total = 0
+                // Pellet_Sample_Ratio.valueの総和を求める
+                Pellet_Sample_Ratio.value.forEach((ratio) => M_total += ratio)
+                // Pellet_Sample_Weight.valueを計算する
+                const weights = []
+                Pellet_Sample_Ratio.value.forEach((ratio) => weights.push(ratio / M_total))
+                Pellet_Sample_Weight.value = weights
+            }
+        })
+
 
         return {
             licenseDialog, licenseContent,
@@ -193,7 +223,7 @@ createApp({
             Elements, ElementNamesZ,
             onSelect_Medium, onChange_Medium_Z, onChange_Medium_Z_last,
             Pellet_Sample_TargetId, Pellet_Sample_Edge, Pellet_Sample_Z, Pellet_Sample_Ratio, Pellet_Sample_Weight,
-            Pellet_Sample_Z_last, Pellet_Sample_Ratio_last, TYPE_EDGE,
+            Pellet_Sample_Z_last, Pellet_Sample_Ratio_last, TYPE_EDGE, Pellet_Sample_RatioType, TYPE_RATIO,
             onChange_Sample_Z, onChange_Sample_Z_last,
         }
     }
