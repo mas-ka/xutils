@@ -38,7 +38,7 @@
                                     </div>
                                     <div class="text-caption font-weight-regular text-grey-lighten-3"
                                         style="cursor: default; font-family: 'Noto Serif';">
-                                        - Sample to detector calculator - (GISAXS analysis)
+                                        - Sample preparation for XAS measurement -
                                     </div>
                                 </v-toolbar-title>
                                 <v-btn icon="mdi-license" class="position-absolute"
@@ -79,7 +79,7 @@
                                             </v-number-input>
                                         </v-col>
                                         <span>&nbsp;/&nbsp;</span>
-                                        <v-col cols="2"><!-- Medium Selector -->
+                                        <v-col :cols="Pellet_Medium==2?3:2"><!-- Medium Selector -->
                                             <v-select v-model="Pellet_Medium" label="Medium"
                                                 :items="TYPE_MEDIUM_PELLETE" item-title="Type" item-value="Id"
                                                 density="compact" variant="outlined" density="compact"
@@ -116,6 +116,7 @@
                                             </template>
                                         </template>
                                         <template v-else-if="Pellet_Medium === 2"><!-- Others -->
+                                            <span>&nbsp;Weight&nbsp;=&nbsp;</span>
                                             <v-col cols="3">
                                                 <v-number-input v-model="Pellet_T" suffix="mg" density="compact"
                                                     variant="outlined" control-variant="stacked" :precision="1"
@@ -363,8 +364,12 @@
                         </v-card>
                     </v-col>
                 </v-row>
-                <span>"Mass attenuation coefficients" of each element were derived from the data available here and
-                    here.</span>
+                <P class="ma-2 text-body-2">&diams; &quot;Mass attenuation coefficients &quot; of each element were
+                    derived from the data available
+                    <a href="http://www.sasakiken.net/abcoeff/abcoeff2.html" target="_blank">here</a> and
+                    <a href="http://www.sciencedirect.com/science/article/pii/S0092640X83710132"
+                        target="_blank">here</a>.
+                </p>
             </v-container>
         </v-main>
 
