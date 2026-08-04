@@ -182,7 +182,7 @@
                                 </v-toolbar-title>
                             </v-toolbar>
                             <v-card-text class="pa-4">
-                                <v-row align="center" class="mb-2" dense="compact">
+                                <v-row align="top" class="mb-2" dense="compact">
                                     <!-- Components Table -->
                                     <v-col cols="6">
                                         <table border="1" cellspacing="0" style="border:2px solid #333">
@@ -254,6 +254,91 @@
                                                         </select>
                                                     </td>
                                                     <td></td><!-- Atom or Mass : 空欄 -->
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </v-col>
+                                    <!-- Results Table -->
+                                    <v-col cols="6">
+                                        <table border="1" cellspacing="0" style="border:2px solid #333">
+                                            <thead>
+                                                <tr>
+                                                    <th class="text-body-2 text-white font-weight-bold px-4 bg-green-lighten-3"
+                                                        style="width: 60px;">μt<sub>H</sub></th>
+                                                    <th class="text-body-2 text-white font-weight-bold px-4 bg-green-lighten-3"
+                                                        style="width: 60px;">μt<sub>L</sub></th>
+                                                    <th class="text-body-2 text-white font-weight-bold px-4 bg-green-lighten-3"
+                                                        style="width: 60px;">Δμt</th>
+                                                    <th class="text-body-2 text-white font-weight-bold px-4 bg-green-lighten-3"
+                                                        style="width: 120px;">Weight</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr><!-- μtH=4.0 -->
+                                                    <td class="px-3 py-1 text-right" style="font-weight: bold;">
+                                                        {{MuT_H_4.toFixed(3)}}
+                                                    </td>
+                                                    <td class="px-3 py-1 text-right" style="font-weight: normal;">
+                                                        {{MuT_L_4.toFixed(3)}}
+                                                    </td>
+                                                    <td class="px-3 py-1 text-right" style="font-weight: normal;">
+                                                        {{dMuT_4.toFixed(3)}}
+                                                    </td>
+                                                    <td class="px-3 py-1 text-right" style="font-weight: normal;">
+                                                        {{Res_4.toFixed(3)}}
+                                                        <span class="text-caption">mg</span>
+                                                    </td>
+                                                </tr>
+                                                <tr><!-- μtH=2.5 -->
+                                                    <td class="px-3 py-1 text-right" style="font-weight: bold;">
+                                                        {{MuT_H_2.toFixed(3)}}
+                                                    </td>
+                                                    <td class="px-3 py-1 text-right" style="font-weight: normal;">
+                                                        {{MuT_L_2.toFixed(3)}}
+                                                    </td>
+                                                    <td class="px-3 py-1 text-right" style="font-weight: normal;">
+                                                        {{dMuT_2.toFixed(3)}}
+                                                    </td>
+                                                    <td class="px-3 py-1 text-right" style="font-weight: normal;">
+                                                        {{Res_2.toFixed(3)}}
+                                                        <span class="text-caption">mg</span>
+                                                    </td>
+                                                </tr>
+                                                <tr><!-- Δμt=1.0 -->
+                                                    <td class="px-3 py-1 text-right" style="font-weight: normal;">
+                                                        {{MuT_H_1.toFixed(3)}}
+                                                    </td>
+                                                    <td class="px-3 py-1 text-right" style="font-weight: normal;">
+                                                        {{MuT_L_1.toFixed(3)}}
+                                                    </td>
+                                                    <td class="px-3 py-1 text-right" style="font-weight: bold;">
+                                                        {{dMuT_1.toFixed(3)}}
+                                                    </td>
+                                                    <td class="px-3 py-1 text-right" style="font-weight: normal;">
+                                                        {{Res_1.toFixed(3)}}
+                                                        <span class="text-caption">mg</span>
+                                                    </td>
+                                                </tr>
+                                                <tr><!-- Weight -->
+                                                    <td class="px-3 py-1 text-right"
+                                                        style="font-weight: normal; border-top: 3px double #b9b9b9;">
+                                                        {{MuT_H_o.toFixed(3)}}
+                                                    </td>
+                                                    <td class="px-3 py-1 text-right"
+                                                        style="font-weight: normal; border-top: 3px double #b9b9b9;">
+                                                        {{MuT_L_o.toFixed(3)}}
+                                                    </td>
+                                                    <td class="px-3 py-1 text-right"
+                                                        style="font-weight: normal; border-top: 3px double #b9b9b9;">
+                                                        {{dMuT_o.toFixed(3)}}
+                                                    </td>
+                                                    <td class="px-3 py-1 text-right d-inline-flex align-center"
+                                                        style="font-weight: bold; border-top: 3px double #b9b9b9;">
+                                                        <input type="number" v-model="Res_o"
+                                                            style="width: 80px; text-align: right; cursor: pointer; appearance: auto;"
+                                                            :precision="3" :step="0.001">
+                                                        <span class="text-caption"> mg</span>
+                                                    </td>
                                                 </tr>
                                             </tbody>
                                         </table>

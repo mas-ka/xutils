@@ -29,6 +29,22 @@ createApp({
         const Pellet_Sample_Z_last = ref(0)     // 最後の要素の原子番号
         const Pellet_Sample_Ratio_last = ref(0) // 最後の要素の比率
         const Pellet_Sample_RatioType = ref(0)  // 試料組成の種別、0:原子数比, 1:重量分率
+        const MuT_H_4 = ref(4.000)              // μtH=4
+        const MuT_L_4 = ref(1.286)              // μtH=4の時のμtL=1.286
+        const dMuT_4 = ref(2.714)               // μtH=4の時のΔμt=2.714
+        const Res_4 = ref(8.47)                 // μtH=4の時のWeight=8.47
+        const MuT_H_2 = ref(2.500)              // μtH=2.5
+        const MuT_L_2 = ref(1.098)              // μtH=2.5の時のμtL=1.098
+        const dMuT_2 = ref(1.402)               // μtH=2.5の時のΔμt=1.402
+        const Res_2 = ref(4.38)                 // μtH=2.5の時のWeight=4.38
+        const MuT_H_1 = ref(2.041)              // Δμt=1.0の時のμtH=2.041
+        const MuT_L_1 = ref(1.041)              // Δμt=1.0の時のμtL=1.041
+        const dMuT_1 = ref(1.000)               // Δμt=1.0
+        const Res_1 = ref(3.12)                 // Δμt=1.0の時のWeight=3.12
+        const MuT_H_o = ref(1.263)              // Weight=1mgの時のμtH=1.263
+        const MuT_L_o = ref(0.943)              // Weight=1mgの時のμtL=0.943
+        const dMuT_o = ref(0.320)               // Weight=1mgの時のΔμt=0.320
+        const Res_o = ref(1.00)                 // Weight=1mg
 
         // ローカルの宣言 & 初期値
         const TYPE_SAMPLE = Object.freeze({
@@ -225,6 +241,10 @@ createApp({
             Pellet_Sample_TargetId, Pellet_Sample_Edge, Pellet_Sample_Z, Pellet_Sample_Ratio, Pellet_Sample_Weight,
             Pellet_Sample_Z_last, Pellet_Sample_Ratio_last, TYPE_EDGE, Pellet_Sample_RatioType, TYPE_RATIO,
             onChange_Sample_Z, onChange_Sample_Z_last,
+            MuT_H_4, MuT_L_4, dMuT_4, Res_4,
+            MuT_H_2, MuT_L_2, dMuT_2, Res_2,
+            MuT_H_1, MuT_L_1, dMuT_1, Res_1,
+            MuT_H_o, MuT_L_o, dMuT_o, Res_o,
         }
     }
 }).use(createVuetify()).mount('#app')
