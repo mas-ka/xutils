@@ -189,16 +189,69 @@
                                             <thead>
                                                 <tr>
                                                     <th class="text-body-2 text-white font-weight-bold px-4 bg-blue-lighten-3"
-                                                        style="width: 120px;">Target</th>
+                                                        style="width: 100px;">Target</th>
                                                     <th class="text-body-2 text-white font-weight-bold px-4 bg-blue-lighten-3"
-                                                        style="width: 80px;">Element</th>
+                                                        style="width: 100px;">Element</th>
                                                     <th class="text-body-2 text-white font-weight-bold px-4 bg-blue-lighten-3"
-                                                        style="width: 80px;">Atom</th>
+                                                        style="width: 100px;">Atom</th>
                                                 </tr>
                                             </thead>
+                                            <tbody>
+                                                <template v-for="(Z, i) in Pellet_Sample_Z"><!-- 試料組成の行 -->
+                                                    <tr>
+                                                        <!-- Target : TargetIdのラジオボタンとEdgeの選択を表示 -->
+                                                        <td class="d-flex align-center px-4"
+                                                            style="width: 100px; height: 100%; min-height: 32px;">
+                                                            <input type="radio" name="TARGET" :value="i"
+                                                                v-model="Pellet_Sample_TargetId"
+                                                                style="margin: 0; padding: 0; cursor: pointer;">
+                                                            <select v-show="Pellet_Sample_TargetId == i"
+                                                                v-model="Pellet_Sample_Edge" class="px-2"
+                                                                style="width: 50px; cursor: pointer; appearance: auto;">
+                                                                <template v-for="E in TYPE_EDGE">
+                                                                    <option :value="E.Id">{{ E.Name }}</option>
+                                                                </template>
+                                                            </select>
+                                                        </td>
+                                                        <!-- Element : ElementNamesZのプルダウンを表示 -->
+                                                        <td class="text-center">
+                                                            <select v-model="Pellet_Sample_Z[i]" class="px-2"
+                                                                style="width: 60px; cursor: pointer; appearance: auto;"
+                                                                @change="onChange_Sample_Z(i)">
+                                                                <template v-for="E in ElementNamesZ">
+                                                                    <option :value="E.Z">{{ E.Name }}</option>
+                                                                </template>
+                                                            </select>
+                                                        </td>
+                                                        <!-- Atom or Mass : Atom % を表示 -->
+                                                        <td>
+
+                                                        </td>
+                                                    </tr>
+                                                </template>
+                                                <tr>
+                                                    <!-- Target : 空欄 -->
+                                                    <td></td>
+                                                    <!-- Element : X -->
+                                                    <td class="text-center">
+                                                        <select v-model="Pellet_Sample_Z_last" class="px-2"
+                                                            style="width: 60px; cursor: pointer; appearance: auto;"
+                                                            @change="onChange_Sample_Z_last()">
+                                                            <template v-for="E in ElementNamesZ">
+                                                                <option :value="E.Z">{{ E.Name }}</option>
+                                                            </template>
+                                                        </select>
+                                                    </td>
+                                                    <!-- Atom or Mass : 空欄 -->
+                                                    <td></td>
+                                                </tr>
+                                            </tbody>
                                         </table>
                                     </v-col>
                                 </v-row>
+                                <span>Pellet_Sample_TargetId : {{ Pellet_Sample_TargetId }}</span><br>
+                                <span>Pellet_Sample_Edge : {{ Pellet_Sample_Edge }}</span><br>
+                                <span>Pellet_Sample_Z : {{ Pellet_Sample_Z }}</span><br>
                             </v-card-text>
                         </v-card>
                     </v-col>

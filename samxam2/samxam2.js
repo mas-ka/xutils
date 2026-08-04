@@ -21,12 +21,13 @@ createApp({
         const Pellet_Medium_Weight = ref([]) // mediumの重量分率(※動的に計算される)
         const Pellet_Medium_Z_last = ref(0)     // 最後の要素の原子番号
         const Pellet_Medium_Ratio_last = ref(0) // 最後の要素の比率
-        const Pellet_Sample_Z = ref([29])       // 試料の原子番号
-        const Pellet_Sample_Ratio = ref([1])    // 試料の原子比
+        const Pellet_Sample_TargetId = ref(0)   // 試料中のターゲット元素のインデックス
+        const Pellet_Sample_Edge = ref(null)    // 試料の吸収端
+        const Pellet_Sample_Z = ref([29, 8])       // 試料の原子番号
+        const Pellet_Sample_Ratio = ref([2, 1])    // 試料の原子比
         const Pellet_Sample_Weight = ref([])    // 試料の重量分率(※動的に計算される)
         const Pellet_Sample_Z_last = ref(0)     // 最後の要素の原子番号
         const Pellet_Sample_Ratio_last = ref(0) // 最後の要素の比率
-        const Pellet_Sample_TargetId = ref(0)   // ターゲット元素のインデックス
 
         // ローカルの宣言 & 初期値
         const TYPE_SAMPLE = Object.freeze({
@@ -47,6 +48,14 @@ createApp({
             { Id: 2, Type: "Other..." }
         ]
         Pellet_Medium.value = 1 // 初期値は「BN」
+
+        const TYPE_EDGE = [
+            { Id: 0, Name: "K" },
+            { Id: 1, Name: "L1" },
+            { Id: 2, Name: "L2" },
+            { Id: 3, Name: "L3" }
+        ]
+        Pellet_Sample_Edge.value = 0 // 初期値は「K」
 
         // マウント時にlicense.htmlを読み込む
         onMounted(async () => {
@@ -135,6 +144,45 @@ createApp({
             Pellet_Medium_Weight.value = weights
         })
 
+        // sampleのtableの各行の元素が変更された場合
+        const onChange_Sample_Z = (index) => {
+            if (Pellet_Sample_Z.value[index] == 0) {
+                // ゼロが選択されたのでその元素を削除する
+                Pellet_Sample_Z.value.splice(index, 1)
+                Pellet_Sample_Ratio.value.splice(index, 1)
+                if (index < Pellet_Sample_TargetId.value) {
+                    // 削除した元素がターゲットより前だったらターゲットのインデックスをシフトさせる
+                    Pellet_Sample_TargetId.value -= 1
+                } else if (index === Pellet_Sample_TargetId.value) {
+                    // 削除した元素がターゲットだった場合
+                    if (index > 0) { // ゼロ番目以外ならインデックスを１つ減らす
+                        Pellet_Sample_TargetId.value -= 1
+                    } else { // ゼロ番目ならゼロのままにしておく
+                        Pellet_Sample_TargetId.value = 0
+                    }
+                }
+                //Pellet_Sample_Weight.value.splice(index, 1)
+            } // ゼロ以外なら元素の変更なので、特に何もすることはない
+        }
+
+        // sampleのtableの最終行に元素が追加された場合
+        const onChange_Sample_Z_last = async () => {
+            if (Pellet_Sample_Z_last.value === 0) {
+                // 最終行でゼロが選ばれたのでその元素を削除する
+                Pellet_Sample_Z.value.pop()
+                Pellet_Sample_Ratio.value.pop()
+                //Pellet_Sample_Weight.value.pop()
+            } else {
+                // 最終行に元素が追加されたので、配列を1つ伸長する
+                Pellet_Sample_Z.value.push(Pellet_Sample_Z_last.value)
+                Pellet_Sample_Ratio.value.push(1)
+                //Pellet_Sample_Weight.value.push(0)
+            }
+            await nextTick()
+            Pellet_Sample_Z_last.value = 0
+            Pellet_Sample_Ratio_last.value = 0
+        }
+
 
         return {
             licenseDialog, licenseContent,
@@ -144,8 +192,9 @@ createApp({
             TYPE_DEF_PELLETE, TYPE_MEDIUM_PELLETE,
             Elements, ElementNamesZ,
             onSelect_Medium, onChange_Medium_Z, onChange_Medium_Z_last,
-            Pellet_Sample_Z, Pellet_Sample_Ratio, Pellet_Sample_Weight,
-            Pellet_Sample_Z_last, Pellet_Sample_Ratio_last, Pellet_Sample_TargetId,
+            Pellet_Sample_TargetId, Pellet_Sample_Edge, Pellet_Sample_Z, Pellet_Sample_Ratio, Pellet_Sample_Weight,
+            Pellet_Sample_Z_last, Pellet_Sample_Ratio_last, TYPE_EDGE,
+            onChange_Sample_Z, onChange_Sample_Z_last,
         }
     }
 }).use(createVuetify()).mount('#app')
