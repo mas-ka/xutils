@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <!-- import font -->
+    <link href="https://fonts.googleapis.com/css?family=Noto+Serif:700|Roboto+Mono" rel="stylesheet">
+    <!-- import Vuetify -->
+    <link href="https://cdn.jsdelivr.net/npm/@mdi/font@5.x/css/materialdesignicons.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/vuetify@3.12.6/dist/vuetify.min.css" rel="stylesheet">
+    <!-- import Vue3 & Vuetify3 from CDN -->
+    <script type="importmap"> { "imports": {
+            "vue": "https://unpkg.com/vue@3/dist/vue.esm-browser.js", 
+            "vuetify": "https://cdn.jsdelivr.net/npm/vuetify@3.12.6/dist/vuetify.esm.js"
+        } } </script>
+    <!-- import sprintf-js from CDN -->
+    <!-- <script src="https://cdn.jsdelivr.net/npm/sprintf-js@1.1.3/dist/sprintf.min.js"></script> -->
+    <!-- import Vue3 JS code -->
+    <script type="module" src="samxam2.js"></script>
+    <!-- load other JS files -->
+    <!-- custom style -->
+    <!-- Page Title -->
+    <title>SAMXAM</title>
+</head>
+
+<body id="app">
+    <v-app>
+        <v-main class="bg-grey-lighten-4">
+            <v-container class="py-4 ml-0" style="overflow-x: auto;">
+                <v-row justify="start">
+                    <v-col cols="auto">
+                        <v-card class="elevation-4" style="width: 800px; min-width: 800px;">
+                            <!-- Title -->
+                            <v-toolbar id="TITLE" color="primary" height="80" class="position-relative">
+                                <v-toolbar-title class="text-center font-weight-bold">
+                                    <div class="text-h4" style="cursor: default; font-family: 'Noto Serif';">S A M X A M
+                                    </div>
+                                    <div class="text-caption font-weight-regular text-grey-lighten-3"
+                                        style="cursor: default; font-family: 'Noto Serif';">
+                                        - Sample preparation for XAS measurement -
+                                    </div>
+                                </v-toolbar-title>
+                                <v-btn icon="mdi-license" class="position-absolute"
+                                    style="right: 16px; top: 50%; transform: translateY(-50%);"
+                                    @click="licenseDialog = true"></v-btn>
+                            </v-toolbar>
+                            <!-- Sample settings -->
+                            <v-toolbar id="X-RAY" class="mb-3" color="blue-lighten-2" density="compact">
+                                <v-toolbar-title class="text-subtitle-1 font-weight-bold text-white"
+                                    style="cursor: default;">
+                                    <span>Sample (</span>
+                                    <select v-model="sampleType"
+                                        class="bg-blue-lighten-2 text-white rounded mx-1 px-2 py-0"
+                                        style="outline: none; cursor: pointer; appearance: auto;">
+                                        <option class="bg-white" :value="TYPE_SAMPLE.FOIL">Foil</option>
+                                        <option class="bg-white" :value="TYPE_SAMPLE.PELLETE">Pellete</option>
+                                    </select>
+                                    <span> )</span>
+                                </v-toolbar-title>
+                            </v-toolbar>
+                            <v-card-text class="pa-4">
+                                <template v-if="sampleType === TYPE_SAMPLE.FOIL"><!-- FOIL -->
+                                    <v-row align="center" class="mb-2" dense="compact">
+                                        <v-col cols="3">
+                                            <v-number-input v-model="Foil_R" label="Density" suffix=" g/cm³"
+                                                density="compact" variant="outlined" control-variant="stacked"
+                                                precision="3" hide-details>
+                                            </v-number-input>
+                                        </v-col>
+                                    </v-row>
+                                </template>
+                                <template v-else-if="sampleType === TYPE_SAMPLE.PELLETE"><!-- PELLETE -->
+                                    <v-row align="center" class="mb-2" dense="compact">
+                                        <v-col cols="2"><!-- Diameter -->
+                                            <v-number-input v-model="Pellet_D" label="Diameter" suffix="mm"
+                                                density="compact" variant="outlined" control-variant="stacked"
+                                                :precision="0" :min="1" hide-details>
+                                            </v-number-input>
+                                        </v-col>
+                                        <span>&nbsp;/&nbsp;</span>
+                                        <v-col :cols="Pellet_Medium==2?3:2"><!-- Medium Selector -->
+                                            <v-select v-model="Pellet_Medium" label="Medium"
+                                                :items="TYPE_MEDIUM_PELLETE" item-title="Type" item-value="Id"
+                                                density="compact" variant="outlined" density="compact"
+                                                @update:model-value="onSelect_Medium" hide-details>
+                                            </v-select>
+                                        </v-col>
+                                        <!-- if Medium == 0 then display none -->
+                                        <template v-if="Pellet_Medium === 1"><!-- BN -->
+                                            <v-col cols="3"><!-- Medium Definition Selector -->
+                                                <v-select v-model="Pellet_Def" :items="TYPE_DEF_PELLETE"
+                                                    item-title="Type" item-value="Id" density="compact"
+                                                    variant="outlined" density="compact" hide-details>
+                                                </v-select>
+                                            </v-col>
+                                            <span>&nbsp;=&nbsp;</span>
+                                            <template v-if="Pellet_Def === 0"><!-- Thickness -->
+                                                <v-col cols="2">
+                                                    <v-number-input v-model="Pellet_T" suffix="mm" density="compact"
+                                                        variant="outlined" control-variant="stacked" :precision="1"
+                                                        :step="0.1" :min="0.1" :max="9.9" hide-details>
+                                                    </v-number-input>
+                                                </v-col>
+                                                <div class="d-flex align-center bg-grey-lighten-3 rounded px-4 py-3 text-body-2 text-grey-darken-3"
+                                                    style="min-height: 40px; max-height: 40px; cursor: default;">
+                                                    <span class="text-primary font-weight-bold">&nbsp;
+                                                        {{(3.1416*(Pellet_D/2)*(Pellet_D/2)*Pellet_T*2.20907).toFixed(2)}}</span>
+                                                    <span class="text-grey-darken-3 text-caption">&nbsp;mg</span>
+                                                </div>
+                                            </template>
+                                            <template v-else-if="Pellet_Def === 1"><!-- Weight -->
+                                                <v-col cols="3">
+                                                    <v-number-input v-model="Pellet_T" suffix="mg" density="compact"
+                                                        variant="outlined" control-variant="stacked" :precision="1"
+                                                        :step="0.1" :min="0.1" hide-details>
+                                                    </v-number-input>
+                                                </v-col>
+                                            </template>
+                                        </template>
+                                        <template v-else-if="Pellet_Medium === 2"><!-- Others -->
+                                            <span>&nbsp;Weight&nbsp;=&nbsp;</span>
+                                            <v-col cols="3">
+                                                <v-number-input v-model="Pellet_T" suffix="mg" density="compact"
+                                                    variant="outlined" control-variant="stacked" :precision="1"
+                                                    :step="0.1" :min="0.1" hide-details>
+                                                </v-number-input>
+                                            </v-col>
+                                        </template>
+                                    </v-row>
+                                    <template v-if="Pellet_Medium === 2"><!-- Others -->
+                                        <v-row align="center" class="mb-2" dense="compact"><!-- Other Medium Table -->
+                                            <v-col>
+                                                <table border="1" cellspacing="0" style="border:2px solid #333">
+                                                    <thead>
+                                                        <tr>
+                                                            <th class="text-body-2 text-white font-weight-bold px-4 bg-blue-lighten-3"
+                                                                style="width: 160px;">
+                                                                Element</th>
+                                                            <th class="text-body-2 text-white font-weight-bold px-4 bg-blue-lighten-3"
+                                                                style="width: 160px;">
+                                                                Atom</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        <template v-for="(Z, i) in Pellet_Medium_Z">
+                                                            <tr align="center">
+                                                                <td>
+                                                                    <select v-model="Pellet_Medium_Z[i]"
+                                                                        @change="onChange_Medium_Z(i)"
+                                                                        style="width: 60px; cursor: pointer; appearance: auto;">
+                                                                        <template v-for="E in ElementNamesZ">
+                                                                            <option :value="E.Z">{{ E.Name }}</option>
+                                                                        </template>
+                                                                    </select>
+                                                                </td>
+                                                                <td>
+                                                                    <input type="number"
+                                                                        v-model="Pellet_Medium_Ratio[i]" step="1"
+                                                                        min="1" class="px-2 text-right"
+                                                                        style="width: 80px; cursor: pointer; appearance: auto;">
+                                                                </td>
+                                                            </tr>
+                                                        </template>
+                                                        <tr align="center"><!-- 最終行 -->
+                                                            <td>
+                                                                <select v-model="Pellet_Medium_Z_last"
+                                                                    @change="onChange_Medium_Z_last"
+                                                                    style="width: 60px; cursor: pointer; appearance: auto;">
+                                                                    <template v-for="E in ElementNamesZ">
+                                                                        <option :value="E.Z">{{ E.Name }}</option>
+                                                                    </template>
+                                                                </select>
+                                                            </td>
+                                                            <td>
+                                                                <input type="number" v-model="Pellet_Medium_Ratio_last"
+                                                                    step="1" min="1" class="px-2 text-right"
+                                                                    disabled="true"
+                                                                    style="width: 80px; cursor: default; appearance: auto;">
+                                                            </td>
+                                                        </tr>
+                                                    </tbody>
+                                                </table>
+                                            </v-col>
+                                        </v-row>
+                                    </template>
+                                </template>
+                            </v-card-text>
+                            <!-- Components & Results -->
+                            <v-row align="top" class="d-flex mb-2" dense="compact">
+                                <!-- Components -->
+                                <v-col cols="5">
+                                    <v-toolbar id="COMPONENTS" class="mb-3" color="blue-lighten-2" density="compact">
+                                        <v-toolbar-title class="text-subtitle-1 font-weight-bold text-white"
+                                            style="cursor: default;">
+                                            <span>Components</span>
+                                        </v-toolbar-title>
+                                    </v-toolbar>
+                                    <v-card-text class="d-flex justify-center pa-4">
+                                        <table border="1" cellspacing="0" style="border:2px solid #333">
+                                            <thead>
+                                                <tr>
+                                                    <th class="text-body-2 text-white font-weight-bold px-4 py-1 bg-blue-lighten-1"
+                                                        style="width: 100px;">Target
+                                                    </th>
+                                                    <th class="text-body-2 text-white font-weight-bold px-4 bg-blue-lighten-1"
+                                                        style="width: 100px;">Element</th>
+                                                    <th class="text-body-2 text-white font-weight-bold px-4 bg-blue-lighten-1"
+                                                        style="width: 100px;">
+                                                        <select v-model="Pellet_Sample_RatioType" class="text-white"
+                                                            style="width: 60px; cursor: pointer; appearance: auto;">
+                                                            <template v-for="R in TYPE_RATIO">
+                                                                <option :value="R.Id" class="text-black">{{ R.Type }}
+                                                                </option>
+                                                            </template>
+                                                        </select>
+                                                    </th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <template v-for="(Z, i) in Pellet_Sample_Z"><!-- 試料組成の行 -->
+                                                    <tr>
+                                                        <!-- Target : TargetIdのラジオボタンとEdgeの選択を表示 -->
+                                                        <td class="d-flex align-center px-4"
+                                                            style="width: 100px; height: 100%; min-height: 32px;">
+                                                            <input type="radio" name="TARGET" :value="i"
+                                                                v-model="Pellet_Sample_TargetId"
+                                                                style="margin: 0; padding: 0; cursor: pointer;">
+                                                            <select v-show="Pellet_Sample_TargetId == i"
+                                                                v-model="Pellet_Sample_Edge" class="px-2"
+                                                                style="width: 50px; cursor: pointer; appearance: auto;">
+                                                                <template v-for="E in TYPE_EDGE">
+                                                                    <option :value="E.Id">{{ E.Name }}</option>
+                                                                </template>
+                                                            </select>
+                                                        </td>
+                                                        <!-- Element : ElementNamesZのプルダウンを表示 -->
+                                                        <td class="text-center">
+                                                            <select v-model="Pellet_Sample_Z[i]" class="px-2"
+                                                                style="width: 60px; cursor: pointer; appearance: auto;"
+                                                                @change="onChange_Sample_Z(i)">
+                                                                <template v-for="E in ElementNamesZ">
+                                                                    <option :value="E.Z">{{ E.Name }}</option>
+                                                                </template>
+                                                            </select>
+                                                        </td>
+                                                        <!-- Atom or Mass : 原子数もしくは重量分率を表示 -->
+                                                        <td class="text-center">
+                                                            <input type="number" v-model="Pellet_Sample_Ratio[i]"
+                                                                class="px-2"
+                                                                :style="{width: Pellet_Sample_RatioType == 0 ? '60px': '80px'}"
+                                                                style="cursor: pointer; appearance: auto;"
+                                                                :precision="Pellet_Sample_RatioType == 0 ? 0 : 3"
+                                                                :step="Pellet_Sample_RatioType == 0 ? 1 : 0.001">
+                                                        </td>
+                                                    </tr>
+                                                </template>
+                                                <tr>
+                                                    <td></td><!-- Target : 空欄 -->
+                                                    <td class="text-center"><!-- Element : X -->
+                                                        <select v-model="Pellet_Sample_Z_last" class="px-2"
+                                                            style="width: 60px; cursor: pointer; appearance: auto;"
+                                                            @change="onChange_Sample_Z_last()">
+                                                            <template v-for="E in ElementNamesZ">
+                                                                <option :value="E.Z">{{ E.Name }}</option>
+                                                            </template>
+                                                        </select>
+                                                    </td>
+                                                    <td></td><!-- Atom or Mass : 空欄 -->
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </v-card-text>
+                                </v-col>
+                                <!-- Results -->
+                                <v-col cols="7">
+                                    <v-toolbar id="RESULTS" class="mb-3" color="teal-lighten-2" density="compact">
+                                        <v-toolbar-title class="text-subtitle-1 font-weight-bold text-white"
+                                            style="cursor: default;">
+                                            <span>Results</span>
+                                        </v-toolbar-title>
+                                    </v-toolbar>
+                                    <v-card-text class="d-flex justify-center pa-4">
+                                        <table border="1" cellspacing="0" style="border:2px solid #333">
+                                            <thead>
+                                                <tr>
+                                                    <th class="text-body-2 text-white font-weight-bold px-4 py-1 bg-teal-lighten-2"
+                                                        style="width: 60px;">μt<sub>H</sub></th>
+                                                    <th class="text-body-2 text-white font-weight-bold px-4 bg-teal-lighten-2"
+                                                        style="width: 60px;">μt<sub>L</sub></th>
+                                                    <th class="text-body-2 text-white font-weight-bold px-4 bg-teal-lighten-2"
+                                                        style="width: 60px;">Δμt</th>
+                                                    <th class="text-body-2 text-white font-weight-bold px-4 bg-teal-lighten-2"
+                                                        style="width: 120px;">
+                                                        {{(sampleType===TYPE_SAMPLE.FOIL)?'Thickness':'Weight'}}</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr><!-- μtH=4.0 -->
+                                                    <td class="px-3 py-1 text-right" style="font-weight: bold;">
+                                                        {{MuT_H_4.toFixed(3)}}
+                                                    </td>
+                                                    <td class="px-3 py-1 text-right" style="font-weight: normal;">
+                                                        {{MuT_L_4.toFixed(3)}}
+                                                    </td>
+                                                    <td class="px-3 py-1 text-right" style="font-weight: normal;">
+                                                        {{dMuT_4.toFixed(3)}}
+                                                    </td>
+                                                    <td class="px-3 py-1 text-right" style="font-weight: normal;">
+                                                        {{Res_4.toFixed(3)}}
+                                                        <span
+                                                            class="text-caption">{{(sampleType===TYPE_SAMPLE.FOIL)?'μm':'mg'}}</span>
+                                                    </td>
+                                                </tr>
+                                                <tr><!-- μtH=2.5 -->
+                                                    <td class="px-3 py-1 text-right" style="font-weight: bold;">
+                                                        {{MuT_H_2.toFixed(3)}}
+                                                    </td>
+                                                    <td class="px-3 py-1 text-right" style="font-weight: normal;">
+                                                        {{MuT_L_2.toFixed(3)}}
+                                                    </td>
+                                                    <td class="px-3 py-1 text-right" style="font-weight: normal;">
+                                                        {{dMuT_2.toFixed(3)}}
+                                                    </td>
+                                                    <td class="px-3 py-1 text-right" style="font-weight: normal;">
+                                                        {{Res_2.toFixed(3)}}
+                                                        <span
+                                                            class="text-caption">{{(sampleType===TYPE_SAMPLE.FOIL)?'μm':'mg'}}</span>
+                                                    </td>
+                                                </tr>
+                                                <tr><!-- Δμt=1.0 -->
+                                                    <td class="px-3 py-1 text-right" style="font-weight: normal;">
+                                                        {{MuT_H_1.toFixed(3)}}
+                                                    </td>
+                                                    <td class="px-3 py-1 text-right" style="font-weight: normal;">
+                                                        {{MuT_L_1.toFixed(3)}}
+                                                    </td>
+                                                    <td class="px-3 py-1 text-right" style="font-weight: bold;">
+                                                        {{dMuT_1.toFixed(3)}}
+                                                    </td>
+                                                    <td class="px-3 py-1 text-right" style="font-weight: normal;">
+                                                        {{Res_1.toFixed(3)}}
+                                                        <span
+                                                            class="text-caption">{{(sampleType===TYPE_SAMPLE.FOIL)?'μm':'mg'}}</span>
+                                                    </td>
+                                                </tr>
+                                                <tr><!-- Weight -->
+                                                    <td class="px-3 py-1 text-right"
+                                                        style="font-weight: normal; border-top: 3px double #b9b9b9;">
+                                                        {{MuT_H_o.toFixed(3)}}
+                                                    </td>
+                                                    <td class="px-3 py-1 text-right"
+                                                        style="font-weight: normal; border-top: 3px double #b9b9b9;">
+                                                        {{MuT_L_o.toFixed(3)}}
+                                                    </td>
+                                                    <td class="px-3 py-1 text-right"
+                                                        style="font-weight: normal; border-top: 3px double #b9b9b9;">
+                                                        {{dMuT_o.toFixed(3)}}
+                                                    </td>
+                                                    <td class="px-3 py-1 text-right d-inline-flex align-center"
+                                                        style="font-weight: bold; border-top: 3px double #b9b9b9;">
+                                                        <input type="number" v-model="Res_o"
+                                                            style="width: 80px; text-align: right; cursor: pointer; appearance: auto;"
+                                                            :precision="3" :step="0.001">
+                                                        <span
+                                                            class="text-caption">{{(sampleType===TYPE_SAMPLE.FOIL)?'μm':'mg'}}</span>
+                                                    </td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </v-card-text>
+                                </v-col>
+                            </v-row>
+                        </v-card>
+                    </v-col>
+                </v-row>
+                <P class="ma-2 text-body-2">&diams; &quot;Mass attenuation coefficients &quot; of each element were
+                    derived from the data available
+                    <a href="http://www.sasakiken.net/abcoeff/abcoeff2.html" target="_blank">here</a> and
+                    <a href="http://www.sciencedirect.com/science/article/pii/S0092640X83710132"
+                        target="_blank">here</a>.
+                </p>
+            </v-container>
+        </v-main>
+
+        <!-- License Dialog -->
+        <v-dialog v-model="licenseDialog" max-width="650px">
+            <v-card>
+                <v-card-title class="text-h5 font-weight-bold bg-primary text-white pa-4">
+                    Software Licenses
+                </v-card-title>
+                <v-card-text class="pa-4 bg-grey-lighten-5 text-body-2" style="max-height: 500px; overflow-y: auto;">
+                    <div v-html="licenseContent"></div>
+                </v-card-text>
+                <v-card-actions class="pa-4 bg-grey-lighten-5">
+                    <v-spacer></v-spacer>
+                    <v-btn color="primary" variant="elevated" @click="licenseDialog = false">Close</v-btn>
+                </v-card-actions>
+            </v-card>
+        </v-dialog>
+    </v-app>
+</body>
+
+</html>
