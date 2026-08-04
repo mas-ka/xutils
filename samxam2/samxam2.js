@@ -1,4 +1,4 @@
-import { createApp, ref, computed, onMounted, nextTick, watchEffect } from 'vue'
+import { createApp, ref, onMounted, nextTick, watchEffect } from 'vue'
 import { createVuetify } from 'vuetify'
 
 import * as Victoreens from './victoreens.js'

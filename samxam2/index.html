@@ -14,7 +14,7 @@
             "vuetify": "https://cdn.jsdelivr.net/npm/vuetify@3.12.6/dist/vuetify.esm.js"
         } } </script>
     <!-- import sprintf-js from CDN -->
-    <script src="https://cdn.jsdelivr.net/npm/sprintf-js@1.1.3/dist/sprintf.min.js"></script>
+    <!-- <script src="https://cdn.jsdelivr.net/npm/sprintf-js@1.1.3/dist/sprintf.min.js"></script> -->
     <!-- import Vue3 JS code -->
     <script type="module" src="samxam2.js"></script>
     <!-- load other JS files -->
@@ -102,9 +102,12 @@
                                                         :step="0.1" :min="0.1" :max="9.9" hide-details>
                                                     </v-number-input>
                                                 </v-col>
-                                                <span>&nbsp;(
-                                                    {{(3.1416*(Pellet_D/2)*(Pellet_D/2)*Pellet_T*2.20907).toFixed(2)}}
-                                                    mg )</span>
+                                                <div class="d-flex align-center bg-grey-lighten-3 rounded px-4 py-3 text-body-2 text-grey-darken-3"
+                                                    style="min-height: 40px; max-height: 40px; cursor: default;">
+                                                    <span class="text-primary font-weight-bold">&nbsp;
+                                                        {{(3.1416*(Pellet_D/2)*(Pellet_D/2)*Pellet_T*2.20907).toFixed(2)}}</span>
+                                                    <span class="text-grey-darken-3 text-caption">&nbsp;mg</span>
+                                                </div>
                                             </template>
                                             <template v-else-if="Pellet_Def === 1"><!-- Weight -->
                                                 <v-col cols="3">
@@ -184,16 +187,16 @@
                                 </template>
                             </v-card-text>
                             <!-- Components & Results -->
-                            <v-toolbar id="X-RAY" class="mb-3" color="blue-lighten-2" density="compact">
-                                <v-toolbar-title class="text-subtitle-1 font-weight-bold text-white"
-                                    style="cursor: default;">
-                                    <span>Components &amp; Results</span>
-                                </v-toolbar-title>
-                            </v-toolbar>
-                            <v-card-text class="pa-4">
-                                <v-row align="top" class="mb-2" dense="compact">
-                                    <!-- Components Table -->
-                                    <v-col cols="6">
+                            <v-row align="top" class="d-flex mb-2" dense="compact">
+                                <!-- Components -->
+                                <v-col cols="5">
+                                    <v-toolbar id="COMPONENTS" class="mb-3" color="blue-lighten-2" density="compact">
+                                        <v-toolbar-title class="text-subtitle-1 font-weight-bold text-white"
+                                            style="cursor: default;">
+                                            <span>Components</span>
+                                        </v-toolbar-title>
+                                    </v-toolbar>
+                                    <v-card-text class="d-flex justify-center pa-4">
                                         <table border="1" cellspacing="0" style="border:2px solid #333">
                                             <thead>
                                                 <tr>
@@ -267,10 +270,17 @@
                                                 </tr>
                                             </tbody>
                                         </table>
-                                    </v-col>
-                                    <v-spacer></v-spacer>
-                                    <!-- Results Table -->
-                                    <v-col cols="6">
+                                    </v-card-text>
+                                </v-col>
+                                <!-- Results -->
+                                <v-col cols="7">
+                                    <v-toolbar id="RESULTS" class="mb-3" color="teal-lighten-2" density="compact">
+                                        <v-toolbar-title class="text-subtitle-1 font-weight-bold text-white"
+                                            style="cursor: default;">
+                                            <span>Results</span>
+                                        </v-toolbar-title>
+                                    </v-toolbar>
+                                    <v-card-text class="d-flex justify-center pa-4">
                                         <table border="1" cellspacing="0" style="border:2px solid #333">
                                             <thead>
                                                 <tr>
@@ -358,9 +368,9 @@
                                                 </tr>
                                             </tbody>
                                         </table>
-                                    </v-col>
-                                </v-row>
-                            </v-card-text>
+                                    </v-card-text>
+                                </v-col>
+                            </v-row>
                         </v-card>
                     </v-col>
                 </v-row>
