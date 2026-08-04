@@ -170,8 +170,8 @@ createApp({
 
         // sampleのtableの各行の元素が変更された場合
         const onChange_Sample_Z = (index) => {
-            if (Pellet_Sample_Z.value[index] == 0) {
-                // ゼロが選択されたのでその元素を削除する
+            if (Pellet_Sample_Z.value[index] == 0) { // ある行の元素がゼロ番目のものに変更された
+                // ゼロ番目が選択されたのでその元素を削除する
                 Pellet_Sample_Z.value.splice(index, 1)
                 Pellet_Sample_Ratio.value.splice(index, 1)
                 if (index < Pellet_Sample_TargetId.value) {
@@ -185,8 +185,11 @@ createApp({
                         Pellet_Sample_TargetId.value = 0
                     }
                 }
-                //Pellet_Sample_Weight.value.splice(index, 1)
-            } // ゼロ以外なら元素の変更なので、特に何もすることはない
+            } else if (index === Pellet_Sample_TargetId.value) {// ターゲット元素が変更された場合
+                if (sampleType.value == TYPE_SAMPLE.FOIL) { // Foil
+                    Foil_R.value = Victoreens.getRhoByZ(Pellet_Sample_Z.value[index])
+                }
+            }
         }
 
         // sampleのtableの最終行に元素が追加された場合
@@ -195,12 +198,10 @@ createApp({
                 // 最終行でゼロが選ばれたのでその元素を削除する
                 Pellet_Sample_Z.value.pop()
                 Pellet_Sample_Ratio.value.pop()
-                //Pellet_Sample_Weight.value.pop()
             } else {
                 // 最終行に元素が追加されたので、配列を1つ伸長する
                 Pellet_Sample_Z.value.push(Pellet_Sample_Z_last.value)
                 Pellet_Sample_Ratio.value.push(1)
-                //Pellet_Sample_Weight.value.push(0)
             }
             await nextTick()
             Pellet_Sample_Z_last.value = 0
@@ -251,8 +252,8 @@ createApp({
 
         // 指定重量でのμt_H,μt_Lを求める
         const calcAllMuTByGram = function (g) {
-            let BothMoR = Victoreens.getBothMoR(Pellet_Sample_Z.value[Pellet_Sample_TargetId.value], Pellet_Sample_Edge.value); // ターゲット元素の指定吸収端前後の質量吸収係数を求める
-            let PRR = Math.PI * Math.pow(Pellet_D.value / 20.0, 2); // πr^2 [cm^2]
+            let BothMoR = Victoreens.getBothMoR(Pellet_Sample_Z.value[Pellet_Sample_TargetId.value], Pellet_Sample_Edge.value) // ターゲット元素の指定吸収端前後の質量吸収係数を求める
+            let PRR = Math.PI * Math.pow(Pellet_D.value / 20.0, 2) // πr^2 [cm^2]
             let MoR = 0.0
             Pellet_Sample_Weight.value.forEach((w, i) => {
                 if (i != Pellet_Sample_TargetId.value) {
@@ -260,10 +261,45 @@ createApp({
                 }
             })
             let MoRG_M = calcPelletMediumMoRG()
-            let MuT_H = (g * (MoR + BothMoR[0] * Pellet_Sample_Weight.value[Pellet_Sample_TargetId.value]) + MoRG_M) / PRR;
-            let MuT_L = (g * (MoR + BothMoR[1] * Pellet_Sample_Weight.value[Pellet_Sample_TargetId.value]) + MoRG_M) / PRR;
-            return [MuT_H, MuT_L];
+            let MuT_H = (g * (MoR + BothMoR[0] * Pellet_Sample_Weight.value[Pellet_Sample_TargetId.value]) + MoRG_M) / PRR
+            let MuT_L = (g * (MoR + BothMoR[1] * Pellet_Sample_Weight.value[Pellet_Sample_TargetId.value]) + MoRG_M) / PRR
+            return [MuT_H, MuT_L]
         }
+
+        // Δμtが指定値となるフォイル厚さ[cm]を求める
+        const calcCMByDeltaMuT = function (d) {
+            // ターゲット元素の指定吸収端前後の質量吸収係数を求める
+            let BothMoR = Victoreens.getBothMoR(Pellet_Sample_Z.value[Pellet_Sample_TargetId.value], Pellet_Sample_Edge.value)
+            return d / (Foil_R.value * (BothMoR[0] - BothMoR[1]) * Pellet_Sample_Weight.value[Pellet_Sample_TargetId.value])
+        }
+
+        // μt_Hが指定値となるフォイル厚さ[cm]を求める
+        const calcCMByMuTH = function (H) {
+            let MoRw = 0.0
+            Pellet_Sample_Weight.value.forEach((w, i) => {
+                if (i != Pellet_Sample_TargetId.value) {
+                    MoRw += Victoreens.getMoR(Pellet_Sample_Z.value[i], Lambda.value) * w
+                }
+            })
+            MoRw += Victoreens.getBothMoR(Pellet_Sample_Z.value[Pellet_Sample_TargetId.value], Pellet_Sample_Edge.value)[0] * Pellet_Sample_Weight.value[Pellet_Sample_TargetId.value]
+            return H / MoRw / Foil_R.value
+        }
+
+        // 指定厚さでのμt_H,μt_Lを求める
+        const calcAllMuTByCM = function (t) {
+            // ターゲット元素の指定吸収端前後の質量吸収係数を求める
+            let BothMoR = Victoreens.getBothMoR(Pellet_Sample_Z.value[Pellet_Sample_TargetId.value], Pellet_Sample_Edge.value)
+            let MoRw = 0.0
+            Pellet_Sample_Weight.value.forEach((w, i) => {
+                if (i != Pellet_Sample_TargetId.value) {
+                    MoRw += Victoreens.getMoR(Pellet_Sample_Z.value[i], Lambda.value) * w
+                }
+            })
+            let MuT_H = t * Foil_R.value * (MoRw + BothMoR[0] * Pellet_Sample_Weight.value[Pellet_Sample_TargetId.value])
+            let MuT_L = t * Foil_R.value * (MoRw + BothMoR[1] * Pellet_Sample_Weight.value[Pellet_Sample_TargetId.value])
+            return [MuT_H, MuT_L]
+        }
+
 
         // Pellete_Sample_Ratioを監視してPellet_Sample_Weightを更新し、さらにResultsも更新する
         watchEffect(() => {
@@ -288,13 +324,29 @@ createApp({
                 Pellet_Sample_Weight.value = weights
             }
             // Resultsを更新
+            // ターゲット元素のエッジ波長を再設定
+            Lambda.value = Victoreens.getLambdaOfEdge(Pellet_Sample_Z.value[Pellet_Sample_TargetId.value], Pellet_Sample_Edge.value)
             if (sampleType.value === TYPE_SAMPLE.FOIL) { // フォイルの場合
-
+                let t = 0.0
+                let r = []
+                // Δμt=1となる厚さを求め、そこからμt_H,μt_Lを求める
+                t = calcCMByDeltaMuT(1.0)
+                r = calcAllMuTByCM(t)
+                MuT_H_1.value = r[0]; MuT_L_1.value = r[1]; Res_1.value = t * 10000;
+                // μt_H=4となる厚さを求め、そこからμt_H,μt_Lを求める
+                t = calcCMByMuTH(4.0)
+                r = calcAllMuTByCM(t)
+                MuT_H_4.value = r[0]; MuT_L_4.value = r[1]; dMuT_4.value = r[0] - r[1]; Res_4.value = t * 10000;
+                // μt_H=2.5となる厚さを求め、そこからμt_H,μt_Lを求める
+                t = calcCMByMuTH(2.5)
+                r = calcAllMuTByCM(t)
+                MuT_H_2.value = r[0]; MuT_L_2.value = r[1]; dMuT_2.value = r[0] - r[1]; Res_2.value = t * 10000;
+                // Res_oからμt_H,μt_Lを求める
+                r = calcAllMuTByCM(Res_o.value / 10000.0)
+                MuT_H_o.value = r[0]; MuT_L_o.value = r[1]; dMuT_o.value = r[0] - r[1]
             } else { // ペレットの場合
                 let g = 0.0
                 let r = []
-                // エッジ波長を再設定
-                Lambda.value = Victoreens.getLambdaOfEdge(Pellet_Sample_Z.value[Pellet_Sample_TargetId.value], Pellet_Sample_Edge.value);
                 // Δμt=1となるグラムを求め、そこからμt_H,μt_Lを求める
                 g = calcGramByDeltaMuT(1.0);
                 r = calcAllMuTByGram(g);

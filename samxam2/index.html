@@ -29,7 +29,7 @@
             <v-container class="py-4 ml-0" style="overflow-x: auto;">
                 <v-row justify="start">
                     <v-col cols="auto">
-                        <v-card class="elevation-4" style="width: 820px; min-width: 820px;">
+                        <v-card class="elevation-4" style="width: 800px; min-width: 800px;">
                             <!-- Title -->
                             <v-toolbar id="TITLE" color="primary" height="80" class="position-relative">
                                 <v-toolbar-title class="text-center font-weight-bold">
@@ -65,7 +65,7 @@
                                         <v-col cols="3">
                                             <v-number-input v-model="Foil_R" label="Density" suffix=" g/cm³"
                                                 density="compact" variant="outlined" control-variant="stacked"
-                                                precision="2" hide-details>
+                                                precision="3" hide-details>
                                             </v-number-input>
                                         </v-col>
                                     </v-row>
@@ -192,7 +192,7 @@
                             <v-card-text class="pa-4">
                                 <v-row align="top" class="mb-2" dense="compact">
                                     <!-- Components Table -->
-                                    <v-col cols="5">
+                                    <v-col cols="6">
                                         <table border="1" cellspacing="0" style="border:2px solid #333">
                                             <thead>
                                                 <tr>
@@ -267,6 +267,7 @@
                                             </tbody>
                                         </table>
                                     </v-col>
+                                    <v-spacer></v-spacer>
                                     <!-- Results Table -->
                                     <v-col cols="6">
                                         <table border="1" cellspacing="0" style="border:2px solid #333">
@@ -279,7 +280,8 @@
                                                     <th class="text-body-2 text-white font-weight-bold px-4 bg-teal-lighten-2"
                                                         style="width: 60px;">Δμt</th>
                                                     <th class="text-body-2 text-white font-weight-bold px-4 bg-teal-lighten-2"
-                                                        style="width: 120px;">Weight</th>
+                                                        style="width: 120px;">
+                                                        {{(sampleType===TYPE_SAMPLE.FOIL)?'Thickness':'Weight'}}</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
@@ -295,7 +297,8 @@
                                                     </td>
                                                     <td class="px-3 py-1 text-right" style="font-weight: normal;">
                                                         {{Res_4.toFixed(3)}}
-                                                        <span class="text-caption">mg</span>
+                                                        <span
+                                                            class="text-caption">{{(sampleType===TYPE_SAMPLE.FOIL)?'μm':'mg'}}</span>
                                                     </td>
                                                 </tr>
                                                 <tr><!-- μtH=2.5 -->
@@ -310,7 +313,8 @@
                                                     </td>
                                                     <td class="px-3 py-1 text-right" style="font-weight: normal;">
                                                         {{Res_2.toFixed(3)}}
-                                                        <span class="text-caption">mg</span>
+                                                        <span
+                                                            class="text-caption">{{(sampleType===TYPE_SAMPLE.FOIL)?'μm':'mg'}}</span>
                                                     </td>
                                                 </tr>
                                                 <tr><!-- Δμt=1.0 -->
@@ -325,7 +329,8 @@
                                                     </td>
                                                     <td class="px-3 py-1 text-right" style="font-weight: normal;">
                                                         {{Res_1.toFixed(3)}}
-                                                        <span class="text-caption">mg</span>
+                                                        <span
+                                                            class="text-caption">{{(sampleType===TYPE_SAMPLE.FOIL)?'μm':'mg'}}</span>
                                                     </td>
                                                 </tr>
                                                 <tr><!-- Weight -->
@@ -346,22 +351,20 @@
                                                         <input type="number" v-model="Res_o"
                                                             style="width: 80px; text-align: right; cursor: pointer; appearance: auto;"
                                                             :precision="3" :step="0.001">
-                                                        <span class="text-caption"> mg</span>
+                                                        <span
+                                                            class="text-caption">{{(sampleType===TYPE_SAMPLE.FOIL)?'μm':'mg'}}</span>
                                                     </td>
                                                 </tr>
                                             </tbody>
                                         </table>
                                     </v-col>
                                 </v-row>
-                                <span>Pellet_Sample_TargetId : {{ Pellet_Sample_TargetId }}</span><br>
-                                <span>Pellet_Sample_Edge : {{ Pellet_Sample_Edge }}</span><br>
-                                <span>Pellet_Sample_Z : {{ Pellet_Sample_Z }}</span><br>
-                                <span>Pellet_Sample_Ratio : {{ Pellet_Sample_Ratio }}</span><br>
-                                <span>Pellet_Sample_Weight : {{ Pellet_Sample_Weight }}</span><br>
                             </v-card-text>
                         </v-card>
                     </v-col>
                 </v-row>
+                <span>"Mass attenuation coefficients" of each element were derived from the data available here and
+                    here.</span>
             </v-container>
         </v-main>
 
