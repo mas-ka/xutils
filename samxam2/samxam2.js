@@ -10,6 +10,7 @@ createApp({
         const licenseContent = ref('')
         const Elements = ref(Victoreens.elements)
         const ElementNamesZ = ref(Victoreens.getElementNamesZ())
+        const Lambda = ref(1.380840)        // Cu-K [Å]
         const sampleType = ref(null)        // 試料形状の種別
         const Foil_R = ref(8.94)            // 試料がフォイルだった場合の密度(g/cm3) ※初期値は銅箔
         const Pellet_D = ref(10)            // 試料がペレットだった場合の直径[mm]
@@ -23,8 +24,8 @@ createApp({
         const Pellet_Medium_Ratio_last = ref(0) // 最後の要素の比率
         const Pellet_Sample_TargetId = ref(0)   // 試料中のターゲット元素のインデックス
         const Pellet_Sample_Edge = ref(null)    // 試料の吸収端
-        const Pellet_Sample_Z = ref([29, 8])       // 試料の原子番号
-        const Pellet_Sample_Ratio = ref([2, 1])    // 試料の原子数もしくは重量分率
+        const Pellet_Sample_Z = ref([29])       // 試料の原子番号
+        const Pellet_Sample_Ratio = ref([1])    // 試料の原子数もしくは重量分率
         const Pellet_Sample_Weight = ref([])    // 試料の重量分率(※動的に計算される)
         const Pellet_Sample_Z_last = ref(0)     // 最後の要素の原子番号
         const Pellet_Sample_Ratio_last = ref(0) // 最後の要素の比率
@@ -206,8 +207,67 @@ createApp({
             Pellet_Sample_Ratio_last.value = 0
         }
 
-        // Pellete_Sample_Ratioを監視してPellet_Sample_Weightを更新する
+        const calcPelletMediumMoRG = function () {
+            let G // [g]
+            switch (Pellet_Medium.value) {
+                case 0: // No medium
+                    return 0.0;
+                case 1: // BN
+                    if (Pellet_Def.value == 0) { // Thickness
+                        G = Pellet_T.value * 0.1735 // BN 173.5mg/mm
+                    } else { // Weight
+                        G = Pellet_T.value / 1000.0 // mg -> g
+                    }
+                    return G * (Victoreens.getMoR(5, Lambda.value) * 0.435536 + Victoreens.getMoR(7, Lambda.value) * 0.564464)
+                case 2: // Other...
+                    G = Pellet_T.value / 1000.0 // mg -> g
+                    var MoR = 0.0
+                    Pellet_Medium_Z.value.forEach((Z, index) => {
+                        MoR += Victoreens.getMoR(Z, Lambda.value) * Pellet_Medium_Weight.value[index]
+                    })
+                    return G * MoR;
+            }
+        }
+
+        // Δμtが指定値となる重量を求める
+        const calcGramByDeltaMuT = function (d) {
+            // ターゲット元素の指定吸収端前後の質量吸収係数を求める
+            let BothMoR = Victoreens.getBothMoR(Pellet_Sample_Z.value[Pellet_Sample_TargetId.value], Pellet_Sample_Edge.value);
+            return Math.PI * Math.pow(Pellet_D.value / 20.0, 2) * d / (BothMoR[0] - BothMoR[1]) / Pellet_Sample_Weight.value[Pellet_Sample_TargetId.value];
+        }
+
+        // μt_Hが指定値となる重量を求める
+        const calcGramByMuTH = function (H) {
+            let MoRw = 0.0
+            Pellet_Sample_Weight.value.forEach((w, i) => {
+                if (i != Pellet_Sample_TargetId.value) {
+                    MoRw += Victoreens.getMoR(Pellet_Sample_Z.value[i], Lambda.value) * w
+                }
+            })
+            MoRw += Victoreens.getBothMoR(Pellet_Sample_Z.value[Pellet_Sample_TargetId.value], Pellet_Sample_Edge.value)[0] * Pellet_Sample_Weight.value[Pellet_Sample_TargetId.value];
+            let PRR = Math.PI * Math.pow(Pellet_D.value / 20.0, 2); // πr^2 [cm^2]
+            return (PRR * H - calcPelletMediumMoRG()) / MoRw;
+        }
+
+        // 指定重量でのμt_H,μt_Lを求める
+        const calcAllMuTByGram = function (g) {
+            let BothMoR = Victoreens.getBothMoR(Pellet_Sample_Z.value[Pellet_Sample_TargetId.value], Pellet_Sample_Edge.value); // ターゲット元素の指定吸収端前後の質量吸収係数を求める
+            let PRR = Math.PI * Math.pow(Pellet_D.value / 20.0, 2); // πr^2 [cm^2]
+            let MoR = 0.0
+            Pellet_Sample_Weight.value.forEach((w, i) => {
+                if (i != Pellet_Sample_TargetId.value) {
+                    MoR += Victoreens.getMoR(Pellet_Sample_Z.value[i], Lambda.value) * w
+                }
+            })
+            let MoRG_M = calcPelletMediumMoRG()
+            let MuT_H = (g * (MoR + BothMoR[0] * Pellet_Sample_Weight.value[Pellet_Sample_TargetId.value]) + MoRG_M) / PRR;
+            let MuT_L = (g * (MoR + BothMoR[1] * Pellet_Sample_Weight.value[Pellet_Sample_TargetId.value]) + MoRG_M) / PRR;
+            return [MuT_H, MuT_L];
+        }
+
+        // Pellete_Sample_Ratioを監視してPellet_Sample_Weightを更新し、さらにResultsも更新する
         watchEffect(() => {
+            // Pellet_Sample_Weightを更新
             if (Pellet_Sample_RatioType.value === 0) {// Atom : 原子数
                 let M_total = 0
                 Pellet_Sample_Ratio.value.forEach((ratio, index) => {
@@ -227,12 +287,36 @@ createApp({
                 Pellet_Sample_Ratio.value.forEach((ratio) => weights.push(ratio / M_total))
                 Pellet_Sample_Weight.value = weights
             }
+            // Resultsを更新
+            if (sampleType.value === TYPE_SAMPLE.FOIL) { // フォイルの場合
+
+            } else { // ペレットの場合
+                let g = 0.0
+                let r = []
+                // エッジ波長を再設定
+                Lambda.value = Victoreens.getLambdaOfEdge(Pellet_Sample_Z.value[Pellet_Sample_TargetId.value], Pellet_Sample_Edge.value);
+                // Δμt=1となるグラムを求め、そこからμt_H,μt_Lを求める
+                g = calcGramByDeltaMuT(1.0);
+                r = calcAllMuTByGram(g);
+                MuT_H_1.value = r[0]; MuT_L_1.value = r[1]; Res_1.value = g * 1000;
+                // μt_H=4となるグラムを求め、そこからμt_H,μt_Lを求める
+                g = calcGramByMuTH(4.0);
+                r = calcAllMuTByGram(g);
+                MuT_H_4.value = r[0]; MuT_L_4.value = r[1]; dMuT_4.value = r[0] - r[1]; Res_4.value = g * 1000;
+                // μt_H=2.5となるグラムを求め、そこからμt_H,μt_Lを求める
+                g = calcGramByMuTH(2.5);
+                r = calcAllMuTByGram(g);
+                MuT_H_2.value = r[0]; MuT_L_2.value = r[1]; dMuT_2.value = r[0] - r[1]; Res_2.value = g * 1000;
+                // Res_oからμt_H,μt_Lを求める
+                r = calcAllMuTByGram(Res_o.value / 1000.0);
+                MuT_H_o.value = r[0]; MuT_L_o.value = r[1]; dMuT_o.value = r[0] - r[1];
+            }
         })
 
 
         return {
             licenseDialog, licenseContent,
-            TYPE_SAMPLE, sampleType,
+            TYPE_SAMPLE, sampleType, Lambda,
             Foil_R,
             Pellet_D, Pellet_Def, Pellet_T, Pellet_Medium, Pellet_Medium_Z, Pellet_Medium_Ratio, Pellet_Medium_Weight, Pellet_Medium_Z_last, Pellet_Medium_Ratio_last,
             TYPE_DEF_PELLETE, TYPE_MEDIUM_PELLETE,

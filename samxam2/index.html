@@ -53,8 +53,8 @@
                                     <select v-model="sampleType"
                                         class="bg-blue-lighten-2 text-white rounded mx-1 px-2 py-0"
                                         style="outline: none; cursor: pointer; appearance: auto;">
-                                        <option :value="TYPE_SAMPLE.FOIL">Foil</option>
-                                        <option :value="TYPE_SAMPLE.PELLETE">Pellete</option>
+                                        <option class="bg-white" :value="TYPE_SAMPLE.FOIL">Foil</option>
+                                        <option class="bg-white" :value="TYPE_SAMPLE.PELLETE">Pellete</option>
                                     </select>
                                     <span> )</span>
                                 </v-toolbar-title>
@@ -115,6 +115,14 @@
                                                 </v-col>
                                             </template>
                                         </template>
+                                        <template v-else-if="Pellet_Medium === 2"><!-- Others -->
+                                            <v-col cols="3">
+                                                <v-number-input v-model="Pellet_T" suffix="mg" density="compact"
+                                                    variant="outlined" control-variant="stacked" :precision="1"
+                                                    :step="0.1" :min="0.1" hide-details>
+                                                </v-number-input>
+                                            </v-col>
+                                        </template>
                                     </v-row>
                                     <template v-if="Pellet_Medium === 2"><!-- Others -->
                                         <v-row align="center" class="mb-2" dense="compact"><!-- Other Medium Table -->
@@ -172,7 +180,7 @@
                                             </v-col>
                                         </v-row>
                                     </template>
-                                </template> {{ Pellet_Medium_Z }} {{ Pellet_Medium_Ratio }} {{ Pellet_Medium_Weight }}
+                                </template>
                             </v-card-text>
                             <!-- Components & Results -->
                             <v-toolbar id="X-RAY" class="mb-3" color="blue-lighten-2" density="compact">
@@ -184,15 +192,16 @@
                             <v-card-text class="pa-4">
                                 <v-row align="top" class="mb-2" dense="compact">
                                     <!-- Components Table -->
-                                    <v-col cols="6">
+                                    <v-col cols="5">
                                         <table border="1" cellspacing="0" style="border:2px solid #333">
                                             <thead>
                                                 <tr>
-                                                    <th class="text-body-2 text-white font-weight-bold px-4 bg-blue-lighten-3"
-                                                        style="width: 100px;">Target</th>
-                                                    <th class="text-body-2 text-white font-weight-bold px-4 bg-blue-lighten-3"
+                                                    <th class="text-body-2 text-white font-weight-bold px-4 py-1 bg-blue-lighten-1"
+                                                        style="width: 100px;">Target
+                                                    </th>
+                                                    <th class="text-body-2 text-white font-weight-bold px-4 bg-blue-lighten-1"
                                                         style="width: 100px;">Element</th>
-                                                    <th class="text-body-2 text-white font-weight-bold px-4 bg-blue-lighten-3"
+                                                    <th class="text-body-2 text-white font-weight-bold px-4 bg-blue-lighten-1"
                                                         style="width: 100px;">
                                                         <select v-model="Pellet_Sample_RatioType" class="text-white"
                                                             style="width: 60px; cursor: pointer; appearance: auto;">
@@ -263,13 +272,13 @@
                                         <table border="1" cellspacing="0" style="border:2px solid #333">
                                             <thead>
                                                 <tr>
-                                                    <th class="text-body-2 text-white font-weight-bold px-4 bg-green-lighten-3"
+                                                    <th class="text-body-2 text-white font-weight-bold px-4 py-1 bg-teal-lighten-2"
                                                         style="width: 60px;">μt<sub>H</sub></th>
-                                                    <th class="text-body-2 text-white font-weight-bold px-4 bg-green-lighten-3"
+                                                    <th class="text-body-2 text-white font-weight-bold px-4 bg-teal-lighten-2"
                                                         style="width: 60px;">μt<sub>L</sub></th>
-                                                    <th class="text-body-2 text-white font-weight-bold px-4 bg-green-lighten-3"
+                                                    <th class="text-body-2 text-white font-weight-bold px-4 bg-teal-lighten-2"
                                                         style="width: 60px;">Δμt</th>
-                                                    <th class="text-body-2 text-white font-weight-bold px-4 bg-green-lighten-3"
+                                                    <th class="text-body-2 text-white font-weight-bold px-4 bg-teal-lighten-2"
                                                         style="width: 120px;">Weight</th>
                                                 </tr>
                                             </thead>
