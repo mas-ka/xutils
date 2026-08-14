@@ -26,7 +26,9 @@
             <v-container class="py-4 ml-0" style="overflow-x: auto;">
                 <v-row justify="start">
                     <v-col cols="auto">
-                        <v-card class="elevation-4" style="width: 600px; min-width: 600px;">
+                        <v-card class="elevation-4" style="width: 600px; min-width: 600px;"
+                            @dragover.prevent="isDragging = true" @dragleave.prevent="isDragging = false"
+                            @drop.prevent="onDrop">
                             <!-- Title -->
                             <v-toolbar id="TITLE" color="primary" height="80" class="position-relative">
                                 <v-toolbar-title class="text-center font-weight-bold">
@@ -209,7 +211,8 @@
                                     <v-col cols="4">
                                         <v-menu>
                                             <template v-slot:activator="{ props }">
-                                                <v-btn color="primary" v-bind="props" prepend-icon="mdi-import" block>
+                                                <v-btn :color="isDragging ? 'error' : 'primary'" v-bind="props"
+                                                    prepend-icon="mdi-import" block>
                                                     Load from
                                                 </v-btn>
                                             </template>
@@ -242,6 +245,10 @@
                 </v-card-actions>
             </v-card>
         </v-dialog>
+        <!-- Notification Snackbar (2秒間表示して自動消去) -->
+        <v-snackbar v-model="snackbar" :timeout="2000" color="success" location="top">
+            <div class="text-center font-weight-medium">{{ snackbarText }}</div>
+        </v-snackbar>
     </v-app>
 </body>
 

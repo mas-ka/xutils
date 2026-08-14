@@ -18,7 +18,9 @@ createApp({
         const Kend = ref()
         const Estep = ref()
         const expTime = ref()
-        const exportAgenda_dialog = ref(false)
+        const isDragging = ref(false)           // ファイルドラッグ中のフラグ
+        const snackbar = ref(false)             // 通知スナックバーの表示フラグ
+        const snackbarText = ref('')            // 通知スナックバーのテキスト
 
         onMounted(async () => {
             try {
@@ -202,6 +204,72 @@ createApp({
             URL.revokeObjectURL(url)
         }
 
+        const loadAgendaFromFile = async (file) => {
+            // 3. テキストファイルとして中身を読み込む
+            const xmlText = await file.text() // XMLテキストを読み込み
+
+            // 4. DOMParserを使ってXML文字列を解析
+            const parser = new DOMParser()
+            const xmlDoc = parser.parseFromString(xmlText, 'text/xml')
+
+            // 5. XMLの解析エラーをチェック
+            const parserError = xmlDoc.querySelector('parsererror')
+            if (parserError) {
+                throw new Error('XMLのパースに失敗しました。正しいフォーマットか確認してください。')
+            }
+
+            // 6. 各タグのデータを安全に抽出（存在しない場合は空文字やnullを代入）
+            // まっさきにScanタイプの確認をおこなう
+            const scanTypeText = (xmlDoc.querySelector('scan')).getAttribute('type').toLowerCase() || 'unknown'
+            if (scanTypeText !== 'quick') {
+                throw new Error('対応していないスキャンタイプです。Quickスキャンのみ対応しています。')
+            }
+            // monochrometerパラメータの抽出
+            const dValueText = xmlDoc.querySelector('monochrometer > d_spacing')?.textContent || '3.135510'
+            const xtalName = (xmlDoc.querySelector('monochrometer > name')?.textContent || 'SI(111)').toUpperCase()
+            let xtal = xtals.find(x => x.name.toUpperCase() === xtalName)
+            if (!xtal) {
+                xtal = { name: 'Other...', d: parseFloat(dValueText) }
+            }
+            selectedXtal.value = xtal
+            // elementパラメータの取得
+            selectedElement.value = xmlDoc.querySelector('element > symbol')?.textContent || 'Cu'
+            selectedEdge.value = xmlDoc.querySelector('element > edge')?.textContent || 'K'
+            // edgeエネルギーは設定ファイルから読み込まないでelementパラメータから再構成する。  
+            await nextTick() // elementとedgeを読み込んだ段階で一度描画を待たないと以降で再描画が行われない
+            // scanパラメータの取得
+            const agendaUnit = xmlDoc.querySelector('agenda').getAttribute('unit').toLowerCase() || 'unknown'
+            const iniEnergyText = xmlDoc.querySelector('agenda > block[id="1"] > ini')?.textContent || '8651.00'
+            const finalEnergyText = xmlDoc.querySelector('agenda').getAttribute('final') || '10505.00'
+            const stepForQuickText = xmlDoc.querySelector('agenda').getAttribute('step_for_quick') || '0.36384'
+            if (agendaUnit === 'ev') {
+                Ebegin.value = parseFloat(iniEnergyText)
+                Eend.value = parseFloat(finalEnergyText)
+                Estep.value = parseFloat(stepForQuickText)
+            } else if (agendaUnit === 'kev') {
+                Ebegin.value = parseFloat(iniEnergyText) * 1000.0
+                Eend.value = parseFloat(finalEnergyText) * 1000.0
+                Estep.value = parseFloat(stepForQuickText) * 1000.0
+            } else if (agendaUnit === 'a' || agendaUnit === 'ang' || agendaUnit === 'angstrom') {
+                Ebegin.value = EL / parseFloat(iniEnergyText)
+                Eend.value = EL / parseFloat(finalEnergyText)
+                Estep.value = EL / parseFloat(stepForQuickText)
+            } else if (agendaUnit === 'd' || agendaUnit === 'deg' || agendaUnit === 'degree') {
+                Ebegin.value = deg2eV(parseFloat(iniEnergyText), selectedXtal.value.d)
+                Eend.value = deg2eV(parseFloat(finalEnergyText), selectedXtal.value.d)
+                const degE0 = eV2deg(selectedEdgeValue.value, selectedXtal.value.d)
+                Estep.value = deg2eV(degE0 + parseFloat(stepForQuickText), selectedXtal.value.d) - selectedEdgeValue.value
+            }
+            onChange_Ebegin() // beginDeltaを強制定期に更新
+            onChange_Eend() // Kendを強制定期に更新
+            const timeForQuickText = xmlDoc.querySelector('agenda').getAttribute('time_for_quick') || '120'
+            expTime.value = parseFloat(timeForQuickText)
+
+            // 読み込み完了通知を表示（2秒間）
+            snackbarText.value = `${file.name || 'ファイル'} をロードしました`
+            snackbar.value = true
+        }
+
         const onLoadFromAgenda = async () => {
             try {
                 // 1. ファイル選択ダイアログを開く
@@ -222,72 +290,25 @@ createApp({
 
                 // 2. ファイルオブジェクトを取得
                 const file = await fileHandle.getFile()
-
-                // 3. テキストファイルとして中身を読み込む
-                const xmlText = await file.text() // XMLテキストを読み込み
-
-                // 4. DOMParserを使ってXML文字列を解析
-                const parser = new DOMParser()
-                const xmlDoc = parser.parseFromString(xmlText, 'text/xml')
-
-                // 5. XMLの解析エラーをチェック
-                const parserError = xmlDoc.querySelector('parsererror')
-                if (parserError) {
-                    throw new Error('XMLのパースに失敗しました。正しいフォーマットか確認してください。')
-                }
-
-                // 6. 各タグのデータを安全に抽出（存在しない場合は空文字やnullを代入）
-                // まっさきにScanタイプの確認をおこなう
-                const scanTypeText = (xmlDoc.querySelector('scan')).getAttribute('type').toLowerCase() || 'unknown'
-                if (scanTypeText !== 'quick') {
-                    throw new Error('対応していないスキャンタイプです。Quickスキャンのみ対応しています。')
-                }
-                // monochrometerパラメータの抽出
-                const dValueText = xmlDoc.querySelector('monochrometer > d_spacing')?.textContent || '3.135510'
-                const xtalName = (xmlDoc.querySelector('monochrometer > name')?.textContent || 'SI(111)').toUpperCase()
-                let xtal = xtals.find(x => x.name.toUpperCase() === xtalName)
-                if (!xtal) {
-                    xtal = { name: 'Other...', d: parseFloat(dValueText) }
-                }
-                selectedXtal.value = xtal
-                // elementパラメータの取得
-                selectedElement.value = xmlDoc.querySelector('element > symbol')?.textContent || 'Cu'
-                selectedEdge.value = xmlDoc.querySelector('element > edge')?.textContent || 'K'
-                // edgeエネルギーは設定ファイルから読み込まないでelementパラメータから再構成する。  
-                await nextTick() // elementとedgeを読み込んだ段階で一度描画を待たないと以降で再描画が行われない
-                // scanパラメータの取得
-                const agendaUnit = xmlDoc.querySelector('agenda').getAttribute('unit').toLowerCase() || 'unknown'
-                const iniEnergyText = xmlDoc.querySelector('agenda > block[id="1"] > ini')?.textContent || '8651.00'
-                const finalEnergyText = xmlDoc.querySelector('agenda').getAttribute('final') || '10505.00'
-                const stepForQuickText = xmlDoc.querySelector('agenda').getAttribute('step_for_quick') || '0.36384'
-                if (agendaUnit === 'ev') {
-                    Ebegin.value = parseFloat(iniEnergyText)
-                    Eend.value = parseFloat(finalEnergyText)
-                    Estep.value = parseFloat(stepForQuickText)
-                } else if (agendaUnit === 'kev') {
-                    Ebegin.value = parseFloat(iniEnergyText) * 1000.0
-                    Eend.value = parseFloat(finalEnergyText) * 1000.0
-                    Estep.value = parseFloat(stepForQuickText) * 1000.0
-                } else if (agendaUnit === 'a' || agendaUnit === 'ang' || agendaUnit === 'angstrom') {
-                    Ebegin.value = EL / parseFloat(iniEnergyText)
-                    Eend.value = EL / parseFloat(finalEnergyText)
-                    Estep.value = EL / parseFloat(stepForQuickText)
-                } else if (agendaUnit === 'd' || agendaUnit === 'deg' || agendaUnit === 'degree') {
-                    Ebegin.value = deg2eV(parseFloat(iniEnergyText), selectedXtal.value.d)
-                    Eend.value = deg2eV(parseFloat(finalEnergyText), selectedXtal.value.d)
-                    const degE0 = eV2deg(selectedEdgeValue.value, selectedXtal.value.d)
-                    Estep.value = deg2eV(degE0 + parseFloat(stepForQuickText), selectedXtal.value.d) - selectedEdgeValue.value
-                }
-                onChange_Ebegin() // beginDeltaを強制定期に更新
-                onChange_Eend() // Kendを強制定期に更新
-                const timeForQuickText = xmlDoc.querySelector('agenda').getAttribute('time_for_quick') || '120'
-                expTime.value = parseFloat(timeForQuickText)
+                await loadAgendaFromFile(file)
             } catch (err) {
                 // ユーザーがダイアログをキャンセルした（閉じられた）場合は AbortError が発生します
                 if (err.name === 'AbortError') {
                     return
                 }
                 // その他のエラー（ファイル破損、権限エラーなど）
+                alert(err.message)
+            }
+        }
+
+        // ファイルドロップ時のハンドラ
+        const onDrop = async (event) => {
+            isDragging.value = false
+            const file = event.dataTransfer?.files?.[0]
+            if (!file) return
+            try {
+                await loadAgendaFromFile(file)
+            } catch (err) {
                 alert(err.message)
             }
         }
@@ -310,7 +331,9 @@ createApp({
             onChange_Ebegin, onChange_beginDelta,
             onChange_Eend, onChange_Kend,
             onChange_expTime,
-            onSaveAsAgenda, onLoadFromAgenda,
+            onSaveAsAgenda, onLoadFromAgenda, loadAgendaFromFile,
+            isDragging, onDrop,
+            snackbar, snackbarText,
         }
     }
 }).use(createVuetify()).mount('#app')

@@ -40,6 +40,8 @@ createApp({
         const isDialogOpen_T = ref(false)       // Ｔ値入力ダイアログの開閉フラグ
         const isInvalid_T = ref(false)          // Ｔ値入力ダイアログの無効フラグ
         const isDragging = ref(false)           // ファイルドラッグ中のフラグ
+        const snackbar = ref(false)             // 通知スナックバーの表示フラグ
+        const snackbarText = ref('')            // 通知スナックバーのテキスト
 
         // ローカルの宣言
         const EL = 12398.4264684
@@ -879,6 +881,10 @@ createApp({
                 NUM_I: 1,
                 EXPT: 1.0
             })
+
+            // 読み込み完了通知を表示（2秒間）
+            snackbarText.value = `${file.name || 'ファイル'} をロードしました`
+            snackbar.value = true
         }
 
         const onLoadFromAgenda = async () => {
@@ -948,6 +954,7 @@ createApp({
             onClick_Tplus, onClick_Tminus,
             onSaveAsAgenda, onLoadFromAgenda, loadAgendaFromFile,
             isDragging, onDrop,
+            snackbar, snackbarText,
         }
     }
 }).use(createVuetify()).mount('#app')

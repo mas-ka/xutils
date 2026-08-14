@@ -456,6 +456,10 @@
                 </v-card-actions>
             </v-card>
         </v-dialog>
+        <!-- Notification Snackbar (2秒間表示して自動消去) -->
+        <v-snackbar v-model="snackbar" :timeout="2000" color="success" location="top">
+            <div class="text-center font-weight-medium">{{ snackbarText }}</div>
+        </v-snackbar>
     </v-app>
 </body>
 
