@@ -1,314 +1,339 @@
-var app = angular.module('myApp', ['ngMaterial', 'ngResource', 'ngSanitize']);
+import { createApp, ref, computed, watch, onMounted, nextTick } from 'vue'
+import { createVuetify } from 'vuetify'
 
-app.directive('keepMaxDecimals', function() {
-    return {
-        restrict: 'A',
-        require: 'ngModel',
-        link: function(scope, element, attrs, ngModelCtrl) {
-            var maxDecimals = parseInt(attrs.keepMaxDecimals, 10) || 2;
+import { elements, edges, getElementNames, getElementByName } from './elements.js'
 
-            // 【超重要】JS側のモデル（ng-model）の値が書き換わった時、
-            // 画面（DOM）に出力される直前で常にキャッチして丸める処理
-            ngModelCtrl.$formatters.push(function(value) {
-                if (value === undefined || value === null || isNaN(value)) {
-                    return value;
+createApp({
+    setup() {
+        // refの宣言
+        const licenseDialog = ref(false)
+        const licenseContent = ref('')
+        const selectedXtal = ref(null)
+        const selectedElement = ref(null)
+        const selectedEdge = ref(null)
+        const availableEdges = ref([])
+        const Ebegin = ref()
+        const beginDelta = ref()
+        const Eend = ref()
+        const Kend = ref()
+        const Estep = ref()
+        const expTime = ref()
+        const isDragging = ref(false)           // ファイルドラッグ中のフラグ
+        const snackbar = ref(false)             // 通知スナックバーの表示フラグ
+        const snackbarText = ref('')            // 通知スナックバーのテキスト
+
+        onMounted(async () => {
+            try {
+                const res = await fetch('license.html')
+                licenseContent.value = await res.text()
+            } catch (e) {
+                console.error('Failed to load license.html', e)
+            }
+        })
+
+
+        // ローカルの宣言
+        const EL = 12398.4264684
+        const xtals = [
+            { name: 'Si(111)', d: 3.13551 },
+            { name: 'Si(311)', d: 1.63747 },
+            { name: 'Si(220)', d: 1.92010 },
+            { name: 'Other...', d: 3.13551 }
+        ]
+        const elementNames = getElementNames()
+
+        // ユーティリティ関数
+        const eV2deg = function (e, d) { return Math.toDegrees(Math.asin(EL / (2 * d * e))); }
+        const deg2eV = function (t, d) { return EL / (2 * d * Math.sin(Math.toRadians(t))); }
+        const k2eV = function (k, e0) { return e0 + k * k / 0.262467191; }
+        const eV2k = function (e, e0) { return Math.sqrt(0.262467191 * (e - e0)); }
+        Math.toDegrees = function (radian) {
+            var toDegree = 180 / Math.PI;
+            if (isNaN(radian)) return NaN;
+            return radian * toDegree;
+        }
+        Math.toRadians = function (degree) {
+            return isNaN(degree) ? NaN : degree * Math.PI / 180;
+        }
+        const formatF = function (f, w, d) {
+            var z = Array(d + 1).join("0");
+            var y = "" + f + ((("" + f).indexOf('.') < 0) ? "." + z : z);
+            var t = "." + (y.split('\.'))[1].substr(0, d);
+            if (Math.abs(f) < 1) {
+                return Array(w - (y.split('\.'))[0].length - t.length + 2).join(" ") + (f < 0 ? "-" : "") + t;
+            } else {
+                return Array(w - (y.split('\.'))[0].length - t.length + 1).join(" ") + (y.split('\.'))[0] + t;
+            }
+        }
+        const formatI = function (i, w) {
+            return Array(w - ("" + i).length + 1).join(" ") + i;
+        }
+
+        // 初期値の宣言
+        selectedXtal.value = xtals[0]
+        selectedElement.value = 'Cu'
+        selectedEdge.value = 'K'
+        beginDelta.value = -330.0
+        Kend.value = 20.00
+        Ebegin.value = 8951.00 + beginDelta.value
+        Eend.value = k2eV(Kend.value, 8951.00)
+        expTime.value = 120
+        Estep.value = 0.36384
+
+
+
+        const changeXtalPlane = function () { }
+
+        // 選択された Element の選択された Edge のエネルギー値を返す
+        const selectedEdgeValue = computed(() => {
+            if (!selectedElement.value || !selectedEdge.value) return ''
+            const el = getElementByName(selectedElement.value)
+            return el[selectedEdge.value] ?? ''
+        })
+
+        // 選択された Element で値が 0.00 の Edge は disabled にする
+        // availableEdges を再構築し、現在の selectedEdge が無効なら最初の有効な Edge に切り替える
+        const buildAvailableEdges = function (elementName) {
+            const el = elementName ? getElementByName(elementName) : {}
+            const list = edges.map(edge => ({
+                title: edge,
+                value: edge,
+                disabled: (el[edge] ?? 0) === 0
+            }))
+            availableEdges.value = list
+            // 現在選択中の Edge が disabled になった場合、最初の有効な Edge に切り替える
+            const current = list.find(item => item.value === selectedEdge.value)
+            if (!current || current.disabled) {
+                const first = list.find(item => !item.disabled)
+                selectedEdge.value = first ? first.value : ''
+            }
+        }
+
+        // selectedElement が変化したら Edge リストを再構築する
+        watch(selectedElement, (newVal) => {
+            buildAvailableEdges(newVal)
+            // Parametersの再構築
+            beginDelta.value = -330
+            Kend.value = 20.00
+            Ebegin.value = selectedEdgeValue.value + beginDelta.value
+            Eend.value = k2eV(Kend.value, selectedEdgeValue.value)
+            expTime.value = 120
+            Estep.value = 0.36384
+        }, { immediate: true, deep: true })
+
+        // selectedEdge が変化したら Edge リストを再構築する
+        watch(selectedEdge, (newVal) => {
+            // Parametersの再構築
+            beginDelta.value = -330
+            Kend.value = 20.00
+            Ebegin.value = selectedEdgeValue.value + beginDelta.value
+            Eend.value = k2eV(Kend.value, selectedEdgeValue.value)
+            expTime.value = 120
+            Estep.value = 0.36384
+        }, { immediate: true, deep: true })
+
+        const onChange_Ebegin = () => {
+            beginDelta.value = Ebegin.value - selectedEdgeValue.value
+        }
+
+        const onChange_beginDelta = () => {
+            Ebegin.value = selectedEdgeValue.value + beginDelta.value
+        }
+
+        const onChange_Eend = () => {
+            Kend.value = eV2k(Eend.value, selectedEdgeValue.value)
+        }
+
+        const onChange_Kend = () => {
+            Eend.value = k2eV(Kend.value, selectedEdgeValue.value)
+        }
+
+        const onChange_expTime = () => {
+        }
+
+        // 与えられたエレメントとエッジから出力するAgenda文字列を生成する
+        const generateAgenda = (element, edge) => {
+            // 選択されたエレメントとエッジから、エッジエネルギーを求める。
+            const edgeEnergy = selectedEdgeValue.value
+            // 出力するAgendaファイルのうち、共通する部分を作っておく
+            var l = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\" ?>\r\n";
+            l += "<parameter>\r\n";
+            l += "  <monochrometer>\r\n";
+            l += "    <d_spacing unit=\"angstrom\">" + formatF(selectedXtal.value.d, 10, 6).trim() + "</d_spacing>\r\n";
+            l += "    <name>" + selectedXtal.value.name.trim().toUpperCase() + "</name>\r\n";
+            l += "  </monochrometer>\r\n";
+            l += "  <element>\r\n";
+            l += "    <symbol>" + selectedElement.value + "</symbol>\r\n";
+            l += "    <edge>" + selectedEdge.value + "</edge>\r\n";
+            l += "  </element>\r\n";
+            // ここから export Agenda の処理を実装
+            l += "  <scan type=\"quick\">\r\n";
+            l += "    <edge_energy unit=\"eV\">" + formatF(selectedEdgeValue.value, 10, 2).trim() + "</edge_energy>\r\n";
+            l += "    <agenda final=\"" + formatF(Eend.value, 10, 2).trim()
+                + "\" step_for_quick=\"" + formatF(Estep.value, 10, 5).trim()
+                + "\" time_for_quick=\"" + formatI(expTime.value, 10).trim()
+                + "\" unit=\"eV\">\r\n";
+            // block id="1"のみ出力
+            l += "      <block id=\"1\">\r\n";
+            l += "        <ini>" + formatF(Ebegin.value, 10, 2).trim() + "</ini><div>50</div><sec>1</sec>\r\n";
+            l += "      </block>\r\n";
+            l += "    </agenda>\r\n";
+            l += "  </scan>\r\n"
+            l += "</parameter>\r\n";
+            return l
+        }
+
+        const onSaveAsAgenda = () => {
+            // 選択されたエレメント・エッジを引数として、Agenda文字列を生成する
+            const agendaStr = generateAgenda(selectedElement.value, selectedEdge.value)
+
+            // 1. データをBlobオブジェクトに変換
+            const blob = new Blob([agendaStr], { type: 'text/plain;charset=utf-8' })
+            const url = URL.createObjectURL(blob)
+
+            // 2. 画面に見えない <a> タグを作ってクリックを擬似再現
+            const a = document.createElement('a')
+            a.href = url
+            a.download = selectedElement.value + '-' + selectedEdge.value + '_Q.agenda' // 保存時のデフォルトファイル名
+
+            document.body.appendChild(a)
+            a.click() // ダイアログ（または即時ダウンロード）がトリガーされる
+
+            // 3. 後片付け
+            document.body.removeChild(a)
+            URL.revokeObjectURL(url)
+        }
+
+        const loadAgendaFromFile = async (file) => {
+            // 3. テキストファイルとして中身を読み込む
+            const xmlText = await file.text() // XMLテキストを読み込み
+
+            // 4. DOMParserを使ってXML文字列を解析
+            const parser = new DOMParser()
+            const xmlDoc = parser.parseFromString(xmlText, 'text/xml')
+
+            // 5. XMLの解析エラーをチェック
+            const parserError = xmlDoc.querySelector('parsererror')
+            if (parserError) {
+                throw new Error('XMLのパースに失敗しました。正しいフォーマットか確認してください。')
+            }
+
+            // 6. 各タグのデータを安全に抽出（存在しない場合は空文字やnullを代入）
+            // まっさきにScanタイプの確認をおこなう
+            const scanTypeText = (xmlDoc.querySelector('scan')).getAttribute('type').toLowerCase() || 'unknown'
+            if (scanTypeText !== 'quick') {
+                throw new Error('対応していないスキャンタイプです。Quickスキャンのみ対応しています。')
+            }
+            // monochrometerパラメータの抽出
+            const dValueText = xmlDoc.querySelector('monochrometer > d_spacing')?.textContent || '3.135510'
+            const xtalName = (xmlDoc.querySelector('monochrometer > name')?.textContent || 'SI(111)').toUpperCase()
+            let xtal = xtals.find(x => x.name.toUpperCase() === xtalName)
+            if (!xtal) {
+                xtal = { name: 'Other...', d: parseFloat(dValueText) }
+            }
+            selectedXtal.value = xtal
+            // elementパラメータの取得
+            selectedElement.value = xmlDoc.querySelector('element > symbol')?.textContent || 'Cu'
+            selectedEdge.value = xmlDoc.querySelector('element > edge')?.textContent || 'K'
+            // edgeエネルギーは設定ファイルから読み込まないでelementパラメータから再構成する。  
+            await nextTick() // elementとedgeを読み込んだ段階で一度描画を待たないと以降で再描画が行われない
+            // scanパラメータの取得
+            const agendaUnit = xmlDoc.querySelector('agenda').getAttribute('unit').toLowerCase() || 'unknown'
+            const iniEnergyText = xmlDoc.querySelector('agenda > block[id="1"] > ini')?.textContent || '8651.00'
+            const finalEnergyText = xmlDoc.querySelector('agenda').getAttribute('final') || '10505.00'
+            const stepForQuickText = xmlDoc.querySelector('agenda').getAttribute('step_for_quick') || '0.36384'
+            if (agendaUnit === 'ev') {
+                Ebegin.value = parseFloat(iniEnergyText)
+                Eend.value = parseFloat(finalEnergyText)
+                Estep.value = parseFloat(stepForQuickText)
+            } else if (agendaUnit === 'kev') {
+                Ebegin.value = parseFloat(iniEnergyText) * 1000.0
+                Eend.value = parseFloat(finalEnergyText) * 1000.0
+                Estep.value = parseFloat(stepForQuickText) * 1000.0
+            } else if (agendaUnit === 'a' || agendaUnit === 'ang' || agendaUnit === 'angstrom') {
+                Ebegin.value = EL / parseFloat(iniEnergyText)
+                Eend.value = EL / parseFloat(finalEnergyText)
+                Estep.value = EL / parseFloat(stepForQuickText)
+            } else if (agendaUnit === 'd' || agendaUnit === 'deg' || agendaUnit === 'degree') {
+                Ebegin.value = deg2eV(parseFloat(iniEnergyText), selectedXtal.value.d)
+                Eend.value = deg2eV(parseFloat(finalEnergyText), selectedXtal.value.d)
+                const degE0 = eV2deg(selectedEdgeValue.value, selectedXtal.value.d)
+                Estep.value = deg2eV(degE0 + parseFloat(stepForQuickText), selectedXtal.value.d) - selectedEdgeValue.value
+            }
+            onChange_Ebegin() // beginDeltaを強制定期に更新
+            onChange_Eend() // Kendを強制定期に更新
+            const timeForQuickText = xmlDoc.querySelector('agenda').getAttribute('time_for_quick') || '120'
+            expTime.value = parseFloat(timeForQuickText)
+
+            // 読み込み完了通知を表示（2秒間）
+            snackbarText.value = `${file.name || 'ファイル'} をロードしました`
+            snackbar.value = true
+        }
+
+        const onLoadFromAgenda = async () => {
+            try {
+                // 1. ファイル選択ダイアログを開く
+                const [fileHandle] = await window.showOpenFilePicker({
+                    types: [
+                        {
+                            description: 'SAGA-LS Agenda Files (*.agenda)',
+                            accept: {
+                                // ブラウザにテキストファイルとして認識させるため text/plain を指定し、
+                                // 拡張子として .agenda のみを受け付けるよう制限します
+                                'text/plain': ['.agenda']
+                            }
+                        }
+                    ],
+                    excludeAcceptAllOption: true, // 「すべてのファイル(*.*)」を選択肢から排除
+                    multiple: false              // 複数ファイルの選択を禁止
+                })
+
+                // 2. ファイルオブジェクトを取得
+                const file = await fileHandle.getFile()
+                await loadAgendaFromFile(file)
+            } catch (err) {
+                // ユーザーがダイアログをキャンセルした（閉じられた）場合は AbortError が発生します
+                if (err.name === 'AbortError') {
+                    return
                 }
-
-                // 小数点以下の桁数を確認
-                var str = value.toString();
-                if (str.indexOf('.') !== -1) {
-                    var parts = str.split('.');
-                    if (parts[1].length > maxDecimals) {
-                        // 指定桁（2桁）を超えていたら、表示用だけに四捨五入（または切り捨て）した数値を返す
-                        var multiplier = Math.pow(10, maxDecimals);
-                        return Math.round(value * multiplier) / multiplier;
-                    }
-                }
-                return value;
-            });
+                // その他のエラー（ファイル破損、権限エラーなど）
+                alert(err.message)
+            }
         }
-    };
-});
 
-app.controller('myController', function($resource, $mdDialog, numberFilter){
-    var org = this;
-
-    this.EL = 12398.4264684;
-
-    this.xtals = [
-        {name:'Si(111)', d:3.13551},
-        {name:'Si(311)', d:1.63747},
-        {name:'Si(220)', d:1.92010},
-        {name:'Other...', d:3.13551}
-    ];
-    this.xtal = this.xtals[0];
-    this.isNotIntrinsicPlane = false;
-    this.changeXtalPlane = function() {
-        this.isNotIntrinsicPlane = (this.xtal.name=="Other...");
-        this.applyAbsEnergy();
-    }
-    this.getXtalPlaneName = function() {
-        if (this.isNotIntrinsicPlane) {
-            return "UNKNOWN";
-        } else {
-            return (this.xtal.name).toUpperCase();
+        // ファイルドロップ時のハンドラ
+        const onDrop = async (event) => {
+            isDragging.value = false
+            const file = event.dataTransfer?.files?.[0]
+            if (!file) return
+            try {
+                await loadAgendaFromFile(file)
+            } catch (err) {
+                alert(err.message)
+            }
         }
-    }
 
-    this.ElementNames = getElementNames();
-    this.element_name = "Cu";
-
-    this.EdgeNames = ["K", "L1", "L2", "L3"];
-    this.edge = "K";
-    this.applyEdges = function(name) {
-        this.EdgeNames = [];
-        var element = getElementByName(name);
-        if (element.K > 0) this.EdgeNames.push("K");
-        if (element.L1 > 0) this.EdgeNames.push("L1");
-        if (element.L2 > 0) this.EdgeNames.push("L2");
-        if (element.L3 > 0) this.EdgeNames.push("L3");
-        if (element.M > 0) this.EdgeNames.push("M");
-        else if (this.edge == "M") this.edge = "K";
-        this.applyAbsEnergy();
-        this.createFileName();
-    }
-
-    this.AbsEnergy = 8981.00;
-    this.applyAbsEnergy = function() {
-        var element = getElementByName(this.element_name);
-        this.AbsEnergy = element[this.edge];
-        const e0 = (getElementByName(this.element_name))[this.edge];
-        this.e_begin = e0 - 330;
-        this.k_end = 20.0;
-        this.e_end = this.k2energy(this.k_end, e0);
-        this.step_for_quick = this.calcDeltaE();
-        this.total_points = this.calcTotalPoints();
-        this.degpsec = this.calcDegPSec();
-        this.createFileName();
-    }
-
-    this.fname_param = "Cu-K_Q.param";
-    this.fname_agenda = "Cu-K_Q.agenda";
-    this.createFileName = function() {
-        this.fname_param = this.element_name+"-"+this.edge+"_Q.param";
-        this.fname_agenda = this.element_name+"-"+this.edge+"_Q.agenda";
-    }
-
-    this.energy2theta = function(e) { return Math.toDegrees(Math.asin(this.EL/(2*this.xtal.d*e))); }
-    this.theta2energy = function(t) { return this.EL/(2*this.xtal.d*Math.sin(Math.toRadians(t))); }
-    this.k2energy = function(k, e0) { return e0 + k*k / 0.262467191; }
-    this.energy2k = function(e, e0) { return Math.sqrt(0.262467191 * (e - e0)); }
-    Math.toDegrees = function(radian){
-        var toDegree = 180/Math.PI;
-        if(isNaN(radian)) return NaN;
-        return radian * toDegree;
-    }
-    Math.toRadians = function(degree){
-        return isNaN(degree)?NaN:degree*Math.PI/180;
-    }
-    Math.formatFloat = function(f, s){
-        var z = Array(s+1).join("0");
-        var t = ""+f+(((""+f).indexOf('.')<0)?"."+z:z);
-        return parseFloat((t.split('\.'))[0]+"."+(t.split('\.'))[1].substr(0,s));
-    }
-    String.formatF = function(f, w, d) {
-        var z = Array(d+1).join("0");
-        var y = ""+f+(((""+f).indexOf('.')<0)?"."+z:z);
-        var t = "."+(y.split('\.'))[1].substr(0,d);
-        if (Math.abs(f) < 1) {
-            return Array(w - (y.split('\.'))[0].length - t.length + 2).join(" ")+(f<0?"-":"")+t;
-        } else {
-            return Array(w - (y.split('\.'))[0].length - t.length + 1).join(" ")+(y.split('\.'))[0]+t;
+        return {
+            formatF, eV2deg, eV2k,
+            licenseDialog,
+            licenseContent,
+            xtals,
+            selectedXtal,
+            changeXtalPlane,
+            elementNames,
+            selectedElement, selectedEdge,
+            edges,
+            selectedEdge,
+            selectedEdgeValue,
+            availableEdges,
+            Ebegin, Eend, Estep,
+            beginDelta, Kend, expTime,
+            onChange_Ebegin, onChange_beginDelta,
+            onChange_Eend, onChange_Kend,
+            onChange_expTime,
+            onSaveAsAgenda, onLoadFromAgenda, loadAgendaFromFile,
+            isDragging, onDrop,
+            snackbar, snackbarText,
         }
     }
-    String.formatI = function(i, w) {
-        return Array(w - (""+i).length + 1).join(" ")+i;
-    }
-
-    this.updateE = function () {
-        this.k_end = this.energy2k(this.e_end, this.AbsEnergy);
-        this.checkStep4Q();
-        this.checkDegPSec();
-    }
-
-    this.updateK = function() {
-        this.e_end = this.k2energy(this.k_end, this.AbsEnergy);
-        this.checkStep4Q();
-        this.checkDegPSec();
-    }
-
-    this.calcDeltaE = function() {
-        //const dT = (this.energy2theta(this.AbsEnergy-30) - this.energy2theta(this.k2energy(4, this.AbsEnergy))) / 250.0 ;
-        //return this.theta2energy(this.energy2theta(this.AbsEnergy) - dT) - (this.AbsEnergy);
-        return (this.k2energy(4, this.AbsEnergy) - (this.AbsEnergy - 30)) / 250.0 ; // これはXUIM3での定義(※角度換算はしていない)
-    }
-
-    this.calcTotalPoints = function() {
-        return Math.trunc(
-            (this.energy2theta(this.e_begin) - this.energy2theta(this.e_end))
-            / (this.energy2theta(this.AbsEnergy) - this.energy2theta(this.AbsEnergy + this.step_for_quick))
-            + 1
-        );
-    }
-
-    this.checkStep4Q = function() {
-        this.total_points = this.calcTotalPoints();
-        this.warning_points = (this.total_points > 8190);
-    }
-
-    this.calcDegPSec = function() {
-        return (this.energy2theta(this.e_begin) - this.energy2theta(this.e_end)) / this.time_for_quick;
-    }
-
-    this.checkDegPSec = function() {
-        this.degpsec = this.calcDegPSec();
-        this.warning_dps = (this.degpsec > 0.13888);
-    }
-
-    this.resetParams = function() {
-        this.applyAbsEnergy();
-    }
-
-    // 起動時のパラメータ
-    this.k_end = 20;
-    this.e_begin = 8651.0; this.e_end = 10505.0;
-    this.step_for_quick = this.calcDeltaE();
-    this.total_points = this.calcTotalPoints();
-    this.time_for_quick = 120;
-    this.warning_points = false;
-    this.degpsec = this.calcDegPSec();
-    this.warning_dps = false;
- 
-    this.refresh;
-
-    this.saveTextFile = function(txt, fname, id) {
-        var blob = new Blob([ txt ], { "type" : "text/plain" });
-        if (window.navigator.msSaveBlob) {
-            window.navigator.msSaveBlob(blob, fname);
-            // msSaveOrOpenBlobの場合はファイルを保存せずに開ける
-            window.navigator.msSaveOrOpenBlob(blob, fname);
-        } else document.getElementById(id).href = window.URL.createObjectURL(blob);
-    }
-
-    this.createText4SagaAgenda = function() {
-        var l = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\" ?>\r\n";
-        l += "<parameter>\r\n";
-        l += "  <monochrometer>\r\n";
-        l += "    <d_spacing unit=\"angstrom\">"+String.formatF(this.xtal.d, 10, 6).trim()+"</d_spacing>\r\n";
-        l += "    <name>"+this.getXtalPlaneName().trim()+"</name>\r\n";
-        l += "  </monochrometer>\r\n";
-        l += "  <element>\r\n";
-        l += "    <symbol>"+this.element_name+"</symbol>\r\n";
-        l += "    <edge>"+this.edge+"</edge>\r\n";
-        l += "  </element>\r\n";
-        l += "  <scan type=\"quick\">\r\n";
-        l += "    <edge_energy unit=\"eV\">"+String.formatF(this.AbsEnergy, 10, 2).trim()+"</edge_energy>\r\n";
-        l += "    <agenda final=\""+String.formatF(this.e_end, 10, 2).trim()
-                    +"\" step_for_quick=\""+String.formatF(this.step_for_quick, 10, 5).trim()
-                    +"\" time_for_quick=\""+String.formatI(this.time_for_quick, 10).trim()
-                    +"\" unit=\"eV\">\r\n";
-        // block id="1"のみ出力
-        l += "      <block id=\"1\">\r\n";
-        l += "        <ini>"+String.formatF(this.e_begin, 10, 2).trim()+"</ini>"
-                    + "<div>50</div>"
-                    + "<sec>1</sec>\r\n";
-        l += "      </block>\r\n";
-        l += "    </agenda>\r\n";
-        l += "  </scan>\r\n"
-        l += "</parameter>\r\n";
-        return l;
-    }
-
-    this.downloadAsSagaAgenda = function() {
-        var txt = this.createText4SagaAgenda();
-        this.saveTextFile(txt, this.element_name+"-"+this.edge+"_Q.agenda", "download_agenda");
-    }
-
-    this.fileData = null;
-    this.xmlDoc = null;
-
-    this.openDialogForAgenda = function() { document.getElementById('upload_agenda').click(); }
-    this.importFromAgenda = function(event) {
-        const files = event.target.files; // 選択されたファイルのリスト
-        if (files.length > 0) {
-            const file = files[0];
-            var reader = new FileReader();
-            reader.onload = function(e) {
-                // DOM操作をAngularJSに通知するために $apply を使う
-                // ※$scopeの代わりに $rootScope.$apply() を使用
-                angular.element(document).injector().get('$rootScope').$apply(function() {
-                    this.fileData = e.target.result;
-                    // 読み込んだAgendaファイルをパースしてXMLドキュメントにする
-                    var parser = new DOMParser();
-                    this.xmlDoc = parser.parseFromString(this.fileData, "text/xml");
-                    // AgendaXMLのXPathによるパース
-                    var result = xmlDoc.evaluate('//scan/@type', xmlDoc, null, XPathResult.STRING_TYPE, null);
-                    if (result.stringValue.toUpperCase() == 'STEP') { // StepスキャンのAgendaだったのでアラート出して終了
-                        $mdDialog.show(
-                            $mdDialog.alert()
-                            .title("   A L E R T   ")
-                            .textContent("This agenda file is for STEP !")
-                            .clickOutsideToClose(true)
-                            .ok('OK')
-                        );
-                        document.getElementById('upload_agenda').value = ''; // 読み込み履歴を空にする
-                        return;
-                    } // StepスキャンのAgendaだった
-                    // Monochrometerタグ
-                    var result = xmlDoc.evaluate('//monochrometer/name/text()', xmlDoc, null, XPathResult.STRING_TYPE, null);
-                    if (result.stringValue.toUpperCase() === 'SI(111)')  org.xtal = org.xtals[0];
-                    else if (result.stringValue.toUpperCase() === 'SI(311)')  org.xtal = org.xtals[1];
-                    else if (result.stringValue.toUpperCase() === 'SI(220)')  org.xtal = org.xtals[2];
-                    else {
-                        org.xtal = org.xtals[3];
-                        org.xtal.d = xmlDoc.evaluate('//monochrometer/d_spacing/text()', xmlDoc, null, XPathResult.NUMBER_TYPE, null).numberValue
-                    }
-                    org.changeXtalPlane();
-                    // Elementタグ
-                    var result = xmlDoc.evaluate('//element/symbol/text()', xmlDoc, null, XPathResult.STRING_TYPE, null);
-                    org.element_name = (getElementByName(result.stringValue)).name;
-                    org.applyEdges(org.element_name);
-                    org.edge = xmlDoc.evaluate('//element/edge/text()', xmlDoc, null, XPathResult.STRING_TYPE, null).stringValue.toUpperCase();
-                    // Agendaタグ
-                    // final属性, step_for_quick属性, time_for_quick属性
-                    org.e_end = xmlDoc.evaluate('//agenda/@final', xmlDoc, null, XPathResult.NUMBER_TYPE, null).numberValue;
-                    org.step_for_quick = xmlDoc.evaluate('//agenda/@step_for_quick', xmlDoc, null, XPathResult.NUMBER_TYPE, null).numberValue;
-                    org.time_for_quick = xmlDoc.evaluate('//agenda/@time_for_quick', xmlDoc, null, XPathResult.NUMBER_TYPE, null).numberValue;
-                    // id=1のblockからiniだけ読み込む
-                    org.e_begin = xmlDoc.evaluate('//agenda/block[@id=\"1\"]/ini/text()', xmlDoc, null, XPathResult.NUMBER_TYPE, null).numberValue;
-                    // 他パラメータの補完
-                    org.updateE();
-                    org.checkStep4Q();
-                    org.checkDegPSec();
-                });
-            };
-            reader.readAsText(file);
-        }
-    }
-
-    this.showLicenseDlg = function($event) {
-        $resource('./license.html', {}, {
-            'get': {
-                transformResponse: function(data, headersGetter, status) {
-                    return {content: data};
-        }}}).get(function(d) {
-            $mdDialog.show(
-                $mdDialog.alert()
-                .clickOutsideToClose(true)
-                .htmlContent(d.content)
-                .ok('OK')
-                .targetEvent($event)
-            );
-        });
-    }
-
-});
-app.config(function($mdThemingProvider) {
-    // Configure a dark theme with primary foreground yellow
-    $mdThemingProvider
-    .theme('default')
-    .primaryPalette('blue')
-    .accentPalette('teal')
-    .warnPalette('red')
-    .backgroundPalette('grey');
-});
+}).use(createVuetify()).mount('#app')

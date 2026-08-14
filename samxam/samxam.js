@@ -1,261 +1,386 @@
-var app = angular.module('myApp', ['ngMaterial', 'ngResource', 'ngSanitize']);
-app.controller('myController', function($resource, $mdDialog, numberFilter){
-    // for pulldownMenu
-    this.ElementNamesZ = getElementNamesZ();
-    this.Edges = [{Id: 0, Name:"K"}, {Id: 1, Name:"L1"}, {Id: 2, Name:"L2"}, {Id: 3, Name:"L3"}];
-    this.RatioTypes = [{Id: 0, Type:"Atom"}, {Id: 1, Type:"Mass"}];
-    this.SampleType = [{Id: 0, Type: "Pellet"}, {Id: 1, Type: "Foil"}];
-    this.PelletMediumType = [{Id: 0, Type: "-"}, {Id: 1, Type: "BN"}, {Id: 2, Type: "Other..."}];
-    this.PelletMediumValueType = [{Id: 0, Type: "Thickness"}, {Id: 1, Type: "Weight"}];
+import { createApp, ref, onMounted, nextTick, watchEffect } from 'vue'
+import { createVuetify } from 'vuetify'
 
-    // for Component parameters
-    this.sample = 0; // Pellet
-    this.Lambda = 1.380840; // Cu-K
-    this.ratio = 0; // Atom
-    this.ratio_step = 0.01; // for Atom
-    this.targetId = 0;
-    this.Z = [29,0,0,0,0,0,0,0,0,0];
-    this.Ratio = [1,0,0,0,0,0,0,0,0,0];
-    this.Weight = [1,0,0,0,0,0,0,0,0,0];
+import * as Victoreens from './victoreens.js'
 
-    // for Sample Edge
-    this.edge = 0; // K
+createApp({
+    setup() {
+        // refの宣言
+        const licenseDialog = ref(false)
+        const licenseContent = ref('')
+        const Elements = ref(Victoreens.elements)
+        const ElementNamesZ = ref(Victoreens.getElementNamesZ())
+        const Lambda = ref(1.380840)        // Cu-K [Å]
+        const sampleType = ref(null)        // 試料形状の種別
+        const Foil_R = ref(8.94)            // 試料がフォイルだった場合の密度(g/cm3) ※初期値は銅箔
+        const Pellet_D = ref(10)            // 試料がペレットだった場合の直径[mm]
+        const Pellet_Def = ref(null)        // 試料がペレットだった場合の定義[厚さ || 重量]
+        const Pellet_T = ref(1)             // 試料がペレットだった場合の厚さもしくは重量[mm || mg]
+        const Pellet_Medium = ref(null)     // medium = BN
+        const Pellet_Medium_Z = ref([5, 7]) // BN
+        const Pellet_Medium_Ratio = ref([1, 1])
+        const Pellet_Medium_Weight = ref([]) // mediumの重量分率(※動的に計算される)
+        const Pellet_Medium_Z_last = ref(0)     // 最後の要素の原子番号
+        const Pellet_Medium_Ratio_last = ref(0) // 最後の要素の比率
+        const Pellet_Sample_TargetId = ref(0)   // 試料中のターゲット元素のインデックス
+        const Pellet_Sample_Edge = ref(null)    // 試料の吸収端
+        const Pellet_Sample_Z = ref([29])       // 試料の原子番号
+        const Pellet_Sample_Ratio = ref([1])    // 試料の原子数もしくは重量分率
+        const Pellet_Sample_Weight = ref([])    // 試料の重量分率(※動的に計算される)
+        const Pellet_Sample_Z_last = ref(0)     // 最後の要素の原子番号
+        const Pellet_Sample_Ratio_last = ref(0) // 最後の要素の比率
+        const Pellet_Sample_RatioType = ref(0)  // 試料組成の種別、0:原子数比, 1:重量分率
+        const MuT_H_4 = ref(4.000)              // μtH=4
+        const MuT_L_4 = ref(1.286)              // μtH=4の時のμtL=1.286
+        const dMuT_4 = ref(2.714)               // μtH=4の時のΔμt=2.714
+        const Res_4 = ref(8.47)                 // μtH=4の時のWeight=8.47
+        const MuT_H_2 = ref(2.500)              // μtH=2.5
+        const MuT_L_2 = ref(1.098)              // μtH=2.5の時のμtL=1.098
+        const dMuT_2 = ref(1.402)               // μtH=2.5の時のΔμt=1.402
+        const Res_2 = ref(4.38)                 // μtH=2.5の時のWeight=4.38
+        const MuT_H_1 = ref(2.041)              // Δμt=1.0の時のμtH=2.041
+        const MuT_L_1 = ref(1.041)              // Δμt=1.0の時のμtL=1.041
+        const dMuT_1 = ref(1.000)               // Δμt=1.0
+        const Res_1 = ref(3.12)                 // Δμt=1.0の時のWeight=3.12
+        const MuT_H_o = ref(1.263)              // Weight=1mgの時のμtH=1.263
+        const MuT_L_o = ref(0.943)              // Weight=1mgの時のμtL=0.943
+        const dMuT_o = ref(0.320)               // Weight=1mgの時のΔμt=0.320
+        const Res_o = ref(1.00)                 // Weight=1mg
 
-    // for Sample as Pellet
-    this.Pellet_D = 10; // [mm]
-    this.Pellet_T = 1; // [mm || mg]
-    this.Pellet_Medium = 1; // medium = BN
-    this.Pellet_Medium_unit = 0; //Thickness
-    this.Pellet_Medium_Z = [5,7,0,0,0,0,0,0,0,0]; // BN
-    this.Pellet_Medium_Ratio = [1,1,0,0,0,0,0,0,0,0];
-    this.Pellet_Medium_Weight = [0.435535858178888,0.564464141821112,0,0,0,0,0,0,0,0];
+        // ローカルの宣言 & 初期値
+        const TYPE_SAMPLE = Object.freeze({
+            FOIL: 1,
+            PELLETE: 2,
+        })
+        sampleType.value = TYPE_SAMPLE.PELLETE // 初期値
 
-    // for Sample as Foil
-    this.Foil_R = 8.94; // [g/cm^-3] Rho of Cu (Metal)
+        const TYPE_DEF_PELLETE = [
+            { Id: 0, Type: "Thickness" },
+            { Id: 1, Type: "Weight" }
+        ]
+        Pellet_Def.value = 0 // 初期値は「Thickness」
 
-    // for Result of Pellet & Foil
-    this.MuT_H_4 = 4.000; this.MuT_L_4 = 1.286; this.dMuT_4 = 2.714; this.Res_4 = 8.47;
-    this.MuT_H_2 = 2.500; this.MuT_L_2 = 1.098; this.dMuT_2 = 1.402; this.Res_2 = 4.38;
-    this.MuT_H_1 = 2.041; this.MuT_L_1 = 1.041; this.dMuT_1 = 1.000; this.Res_1 = 3.12;
-    this.MuT_H_o = 1.263; this.MuT_L_o = 0.943; this.dMuT_o = 0.320; this.Res_o = 1.00;
+        const TYPE_MEDIUM_PELLETE = [
+            { Id: 0, Type: "-" },
+            { Id: 1, Type: "BN" },
+            { Id: 2, Type: "Other..." }
+        ]
+        Pellet_Medium.value = 1 // 初期値は「BN」
 
-    // functions
-    this.changeComponentsElement = function(i) { // i番目の元素が変更された
-        if (i == 0) {
-            // 特にすることも現状ないが、なんとなく残しておくｗ
-            if (this.sample == 1) { // Foil
-                this.Foil_R = getRhoByZ(this.Z[0]);
+        const TYPE_EDGE = [
+            { Id: 0, Name: "K" },
+            { Id: 1, Name: "L1" },
+            { Id: 2, Name: "L2" },
+            { Id: 3, Name: "L3" }
+        ]
+        Pellet_Sample_Edge.value = 0 // 初期値は「K」
+
+        const TYPE_RATIO = [
+            { Id: 0, Type: "Atom" },
+            { Id: 1, Type: "Mass" }
+        ]
+        Pellet_Sample_RatioType.value = TYPE_RATIO[0].Id // 初期値は「Atom」
+
+        // マウント時にlicense.htmlを読み込む
+        onMounted(async () => {
+            try {
+                const res = await fetch('license.html')
+                licenseContent.value = await res.text()
+            } catch (e) {
+                console.error('Failed to load license.html', e)
             }
-        } else {
-            if (this.Z[i] == 0) { // i番目の元素が「なし」に変更された
-                for (var j = i+1 ; j < 10 ; j++) {
-                    this.Z[j-1] = this.Z[j]; // (i+1)番目以降を１つ前にズラす
-                    this.Ratio[j-1] = this.Ratio[j];
+        })
+
+        // ユーティリティ関数
+
+        // medium選択時の処理
+        const onSelect_Medium = () => {
+            if (Pellet_Medium.value === 0) {
+                // meiumなしを選択した場合
+                Pellet_Medium_Z.value = []
+                Pellet_Medium_Ratio.value = []
+                Pellet_Medium_Z_last.value = 0
+                Pellet_Medium_Ratio_last.value = 0
+            }
+            if (Pellet_Medium.value === 1) {
+                // BNを選択した場合にBNに再初期化する
+                Pellet_Medium_Z.value = [5, 7]
+                Pellet_Medium_Ratio.value = [1, 1]
+                Pellet_Medium_Z_last.value = 0
+                Pellet_Medium_Ratio_last.value = 0
+            }
+        }
+
+        // medium=Other時のテーブル各行の元素が変更された場合
+        const onChange_Medium_Z = (index) => {
+            if (Pellet_Medium_Z.value[index] == 0) {
+                // ゼロが選択されたのでその元素を削除する
+                Pellet_Medium_Z.value.splice(index, 1)
+                Pellet_Medium_Ratio.value.splice(index, 1)
+                // Pellet_Medium_Weight.value.splice(index, 1)
+            } // ゼロ以外なら元素の変更なので、特に何もすることはない
+        }
+
+        // medium=Other時のテーブル最終行に元素が追加された場合
+        const onChange_Medium_Z_last = async () => {
+            if (Pellet_Medium_Z_last.value === 0) {
+                // 最終行でゼロが選ばれたのでその元素を削除する
+                Pellet_Medium_Z.value.pop()
+                Pellet_Medium_Ratio.value.pop()
+                // Pellet_Medium_Weight.value.pop()
+            } else {
+                // 最終行に元素が追加されたので、配列を1つ伸長する
+                Pellet_Medium_Z.value.push(Pellet_Medium_Z_last.value)
+                Pellet_Medium_Ratio.value.push(1)
+                // Pellet_Medium_Weight.value.push(0)
+            }
+            await nextTick()
+            Pellet_Medium_Z_last.value = 0
+            Pellet_Medium_Ratio_last.value = 0
+        }
+
+        // medium=Other時のテーブル最終行の比率が変更された場合
+        const onSelect_Medium_Ratio_last = () => {
+            if (Pellet_Medium_Ratio_last.value === 0) {
+                // 最終行でゼロが選ばれたのでその元素を削除する
+                Pellet_Medium_Z.value.pop()
+                Pellet_Medium_Ratio.value.pop()
+                Pellet_Medium_Weight.value.pop()
+            } else {
+                // 最終行に元素が追加されたので、配列を1つ伸長する
+                Pellet_Medium_Z.value.push(Pellet_Medium_Z_last.value)
+                Pellet_Medium_Ratio.value.push(Pellet_Medium_Ratio_last.value)
+                Pellet_Medium_Weight.value.push(0)
+            }
+        }
+
+        // Pellete_Meduimを監視してPellet_Medium_Weightを更新する
+        watchEffect(() => {
+            let M_total = 0
+            Pellet_Medium_Z.value.forEach((Z, index) => {
+                M_total += Pellet_Medium_Ratio.value[index] * Elements.value[Z].A
+            })
+
+            const weights = []
+            Pellet_Medium_Z.value.forEach((Z, index) => {
+                weights.push((Pellet_Medium_Ratio.value[index] * Elements.value[Z].A) / M_total)
+            })
+            Pellet_Medium_Weight.value = weights
+        })
+
+        // sampleのtableの各行の元素が変更された場合
+        const onChange_Sample_Z = (index) => {
+            if (Pellet_Sample_Z.value[index] == 0) { // ある行の元素がゼロ番目のものに変更された
+                // ゼロ番目が選択されたのでその元素を削除する
+                Pellet_Sample_Z.value.splice(index, 1)
+                Pellet_Sample_Ratio.value.splice(index, 1)
+                if (index < Pellet_Sample_TargetId.value) {
+                    // 削除した元素がターゲットより前だったらターゲットのインデックスをシフトさせる
+                    Pellet_Sample_TargetId.value -= 1
+                } else if (index === Pellet_Sample_TargetId.value) {
+                    // 削除した元素がターゲットだった場合
+                    if (index > 0) { // ゼロ番目以外ならインデックスを１つ減らす
+                        Pellet_Sample_TargetId.value -= 1
+                    } else { // ゼロ番目ならゼロのままにしておく
+                        Pellet_Sample_TargetId.value = 0
+                    }
                 }
-                this.Z[9] = 0; this.Ratio[9] = 0; // 最後の元素を「なし」にする
-                if (this.targetId >= i) this.targetId = i-1; // ターゲットが削除された元素より後だったら、ターゲットを(i-1)番目に戻す
+            } else if (index === Pellet_Sample_TargetId.value) {// ターゲット元素が変更された場合
+                if (sampleType.value == TYPE_SAMPLE.FOIL) { // Foil
+                    Foil_R.value = Victoreens.getRhoByZ(Pellet_Sample_Z.value[index])
+                }
             }
         }
-        this.calcResult();
-    }
 
-
-    this.changePelletMedium = function() {
-        if (this.Pellet_Medium == 1) { // BN
-            this.Pellet_T = 1;
-            this.Pellet_Medium_unit = 0; // Thickness
-            this.Pellet_Medium_Z = [5,7,0,0,0,0,0,0,0,0]; // BN
-            this.Pellet_Medium_Ratio = [1,1,0,0,0,0,0,0,0,0];
-            this.Pellet_Medium_Weight = [0.435535858178888,0.564464141821112,0,0,0,0,0,0,0,0];
-        } else if (this.Pellet_Medium == 2) { // Other...
-            this.Pellet_Medium_unit = 1; // Weight
+        // sampleのtableの最終行に元素が追加された場合
+        const onChange_Sample_Z_last = async () => {
+            if (Pellet_Sample_Z_last.value === 0) {
+                // 最終行でゼロが選ばれたのでその元素を削除する
+                Pellet_Sample_Z.value.pop()
+                Pellet_Sample_Ratio.value.pop()
+            } else {
+                // 最終行に元素が追加されたので、配列を1つ伸長する
+                Pellet_Sample_Z.value.push(Pellet_Sample_Z_last.value)
+                Pellet_Sample_Ratio.value.push(1)
+            }
+            await nextTick()
+            Pellet_Sample_Z_last.value = 0
+            Pellet_Sample_Ratio_last.value = 0
         }
-        this.calcResult();
-    }
 
-    this.calcResult = function() {
-        this.ratio_step = (this.ratio==0)?0.01:0.001; // ここでやっとく
-        switch (this.sample) {
-            case 0: // Pellet
-                this.calc4Pellet();
-                break;
-            case 1: // Foil
-                this.calc4Foil();
-                break;
-            default: this.calc4Pellet();
+        const calcPelletMediumMoRG = function () {
+            let G // [g]
+            switch (Pellet_Medium.value) {
+                case 0: // No medium
+                    return 0.0;
+                case 1: // BN
+                    if (Pellet_Def.value == 0) { // Thickness
+                        G = Pellet_T.value * 0.1735 // BN 173.5mg/mm
+                    } else { // Weight
+                        G = Pellet_T.value / 1000.0 // mg -> g
+                    }
+                    return G * (Victoreens.getMoR(5, Lambda.value) * 0.435536 + Victoreens.getMoR(7, Lambda.value) * 0.564464)
+                case 2: // Other...
+                    G = Pellet_T.value / 1000.0 // mg -> g
+                    var MoR = 0.0
+                    Pellet_Medium_Z.value.forEach((Z, index) => {
+                        MoR += Victoreens.getMoR(Z, Lambda.value) * Pellet_Medium_Weight.value[index]
+                    })
+                    return G * MoR;
+            }
+        }
+
+        // Δμtが指定値となる重量を求める
+        const calcGramByDeltaMuT = function (d) {
+            // ターゲット元素の指定吸収端前後の質量吸収係数を求める
+            let BothMoR = Victoreens.getBothMoR(Pellet_Sample_Z.value[Pellet_Sample_TargetId.value], Pellet_Sample_Edge.value);
+            return Math.PI * Math.pow(Pellet_D.value / 20.0, 2) * d / (BothMoR[0] - BothMoR[1]) / Pellet_Sample_Weight.value[Pellet_Sample_TargetId.value];
+        }
+
+        // μt_Hが指定値となる重量を求める
+        const calcGramByMuTH = function (H) {
+            let MoRw = 0.0
+            Pellet_Sample_Weight.value.forEach((w, i) => {
+                if (i != Pellet_Sample_TargetId.value) {
+                    MoRw += Victoreens.getMoR(Pellet_Sample_Z.value[i], Lambda.value) * w
+                }
+            })
+            MoRw += Victoreens.getBothMoR(Pellet_Sample_Z.value[Pellet_Sample_TargetId.value], Pellet_Sample_Edge.value)[0] * Pellet_Sample_Weight.value[Pellet_Sample_TargetId.value];
+            let PRR = Math.PI * Math.pow(Pellet_D.value / 20.0, 2); // πr^2 [cm^2]
+            return (PRR * H - calcPelletMediumMoRG()) / MoRw;
+        }
+
+        // 指定重量でのμt_H,μt_Lを求める
+        const calcAllMuTByGram = function (g) {
+            let BothMoR = Victoreens.getBothMoR(Pellet_Sample_Z.value[Pellet_Sample_TargetId.value], Pellet_Sample_Edge.value) // ターゲット元素の指定吸収端前後の質量吸収係数を求める
+            let PRR = Math.PI * Math.pow(Pellet_D.value / 20.0, 2) // πr^2 [cm^2]
+            let MoR = 0.0
+            Pellet_Sample_Weight.value.forEach((w, i) => {
+                if (i != Pellet_Sample_TargetId.value) {
+                    MoR += Victoreens.getMoR(Pellet_Sample_Z.value[i], Lambda.value) * w
+                }
+            })
+            let MoRG_M = calcPelletMediumMoRG()
+            let MuT_H = (g * (MoR + BothMoR[0] * Pellet_Sample_Weight.value[Pellet_Sample_TargetId.value]) + MoRG_M) / PRR
+            let MuT_L = (g * (MoR + BothMoR[1] * Pellet_Sample_Weight.value[Pellet_Sample_TargetId.value]) + MoRG_M) / PRR
+            return [MuT_H, MuT_L]
+        }
+
+        // Δμtが指定値となるフォイル厚さ[cm]を求める
+        const calcCMByDeltaMuT = function (d) {
+            // ターゲット元素の指定吸収端前後の質量吸収係数を求める
+            let BothMoR = Victoreens.getBothMoR(Pellet_Sample_Z.value[Pellet_Sample_TargetId.value], Pellet_Sample_Edge.value)
+            return d / (Foil_R.value * (BothMoR[0] - BothMoR[1]) * Pellet_Sample_Weight.value[Pellet_Sample_TargetId.value])
+        }
+
+        // μt_Hが指定値となるフォイル厚さ[cm]を求める
+        const calcCMByMuTH = function (H) {
+            let MoRw = 0.0
+            Pellet_Sample_Weight.value.forEach((w, i) => {
+                if (i != Pellet_Sample_TargetId.value) {
+                    MoRw += Victoreens.getMoR(Pellet_Sample_Z.value[i], Lambda.value) * w
+                }
+            })
+            MoRw += Victoreens.getBothMoR(Pellet_Sample_Z.value[Pellet_Sample_TargetId.value], Pellet_Sample_Edge.value)[0] * Pellet_Sample_Weight.value[Pellet_Sample_TargetId.value]
+            return H / MoRw / Foil_R.value
+        }
+
+        // 指定厚さでのμt_H,μt_Lを求める
+        const calcAllMuTByCM = function (t) {
+            // ターゲット元素の指定吸収端前後の質量吸収係数を求める
+            let BothMoR = Victoreens.getBothMoR(Pellet_Sample_Z.value[Pellet_Sample_TargetId.value], Pellet_Sample_Edge.value)
+            let MoRw = 0.0
+            Pellet_Sample_Weight.value.forEach((w, i) => {
+                if (i != Pellet_Sample_TargetId.value) {
+                    MoRw += Victoreens.getMoR(Pellet_Sample_Z.value[i], Lambda.value) * w
+                }
+            })
+            let MuT_H = t * Foil_R.value * (MoRw + BothMoR[0] * Pellet_Sample_Weight.value[Pellet_Sample_TargetId.value])
+            let MuT_L = t * Foil_R.value * (MoRw + BothMoR[1] * Pellet_Sample_Weight.value[Pellet_Sample_TargetId.value])
+            return [MuT_H, MuT_L]
+        }
+
+
+        // Pellete_Sample_Ratioを監視してPellet_Sample_Weightを更新し、さらにResultsも更新する
+        watchEffect(() => {
+            // Pellet_Sample_Weightを更新
+            if (Pellet_Sample_RatioType.value === 0) {// Atom : 原子数
+                let M_total = 0
+                Pellet_Sample_Ratio.value.forEach((ratio, index) => {
+                    M_total += ratio * Elements.value[Pellet_Sample_Z.value[index]].A
+                })
+                const weights = []
+                Pellet_Sample_Ratio.value.forEach((ratio, index) => {
+                    weights.push(ratio * Elements.value[Pellet_Sample_Z.value[index]].A / M_total)
+                })
+                Pellet_Sample_Weight.value = weights
+            } else {// Mass : 重量分率
+                let M_total = 0
+                // Pellet_Sample_Ratio.valueの総和を求める
+                Pellet_Sample_Ratio.value.forEach((ratio) => M_total += ratio)
+                // Pellet_Sample_Weight.valueを計算する
+                const weights = []
+                Pellet_Sample_Ratio.value.forEach((ratio) => weights.push(ratio / M_total))
+                Pellet_Sample_Weight.value = weights
+            }
+            // Resultsを更新
+            // ターゲット元素のエッジ波長を再設定
+            Lambda.value = Victoreens.getLambdaOfEdge(Pellet_Sample_Z.value[Pellet_Sample_TargetId.value], Pellet_Sample_Edge.value)
+            if (sampleType.value === TYPE_SAMPLE.FOIL) { // フォイルの場合
+                let t = 0.0
+                let r = []
+                // Δμt=1となる厚さを求め、そこからμt_H,μt_Lを求める
+                t = calcCMByDeltaMuT(1.0)
+                r = calcAllMuTByCM(t)
+                MuT_H_1.value = r[0]; MuT_L_1.value = r[1]; Res_1.value = t * 10000;
+                // μt_H=4となる厚さを求め、そこからμt_H,μt_Lを求める
+                t = calcCMByMuTH(4.0)
+                r = calcAllMuTByCM(t)
+                MuT_H_4.value = r[0]; MuT_L_4.value = r[1]; dMuT_4.value = r[0] - r[1]; Res_4.value = t * 10000;
+                // μt_H=2.5となる厚さを求め、そこからμt_H,μt_Lを求める
+                t = calcCMByMuTH(2.5)
+                r = calcAllMuTByCM(t)
+                MuT_H_2.value = r[0]; MuT_L_2.value = r[1]; dMuT_2.value = r[0] - r[1]; Res_2.value = t * 10000;
+                // Res_oからμt_H,μt_Lを求める
+                r = calcAllMuTByCM(Res_o.value / 10000.0)
+                MuT_H_o.value = r[0]; MuT_L_o.value = r[1]; dMuT_o.value = r[0] - r[1]
+            } else { // ペレットの場合
+                let g = 0.0
+                let r = []
+                // Δμt=1となるグラムを求め、そこからμt_H,μt_Lを求める
+                g = calcGramByDeltaMuT(1.0);
+                r = calcAllMuTByGram(g);
+                MuT_H_1.value = r[0]; MuT_L_1.value = r[1]; Res_1.value = g * 1000;
+                // μt_H=4となるグラムを求め、そこからμt_H,μt_Lを求める
+                g = calcGramByMuTH(4.0);
+                r = calcAllMuTByGram(g);
+                MuT_H_4.value = r[0]; MuT_L_4.value = r[1]; dMuT_4.value = r[0] - r[1]; Res_4.value = g * 1000;
+                // μt_H=2.5となるグラムを求め、そこからμt_H,μt_Lを求める
+                g = calcGramByMuTH(2.5);
+                r = calcAllMuTByGram(g);
+                MuT_H_2.value = r[0]; MuT_L_2.value = r[1]; dMuT_2.value = r[0] - r[1]; Res_2.value = g * 1000;
+                // Res_oからμt_H,μt_Lを求める
+                r = calcAllMuTByGram(Res_o.value / 1000.0);
+                MuT_H_o.value = r[0]; MuT_L_o.value = r[1]; dMuT_o.value = r[0] - r[1];
+            }
+        })
+
+
+        return {
+            licenseDialog, licenseContent,
+            TYPE_SAMPLE, sampleType, Lambda,
+            Foil_R,
+            Pellet_D, Pellet_Def, Pellet_T, Pellet_Medium, Pellet_Medium_Z, Pellet_Medium_Ratio, Pellet_Medium_Weight, Pellet_Medium_Z_last, Pellet_Medium_Ratio_last,
+            TYPE_DEF_PELLETE, TYPE_MEDIUM_PELLETE,
+            Elements, ElementNamesZ,
+            onSelect_Medium, onChange_Medium_Z, onChange_Medium_Z_last,
+            Pellet_Sample_TargetId, Pellet_Sample_Edge, Pellet_Sample_Z, Pellet_Sample_Ratio, Pellet_Sample_Weight,
+            Pellet_Sample_Z_last, Pellet_Sample_Ratio_last, TYPE_EDGE, Pellet_Sample_RatioType, TYPE_RATIO,
+            onChange_Sample_Z, onChange_Sample_Z_last,
+            MuT_H_4, MuT_L_4, dMuT_4, Res_4,
+            MuT_H_2, MuT_L_2, dMuT_2, Res_2,
+            MuT_H_1, MuT_L_1, dMuT_1, Res_1,
+            MuT_H_o, MuT_L_o, dMuT_o, Res_o,
         }
     }
-
-    this.calc4Foil = function() {
-        var t = 0.0; var r = [];
-        // 念のためエッジ波長を再設定しておく
-        this.Lambda = getLambdaOfEdge(this.Z[this.targetId], this.edge);
-        // 重量分率を再計算する
-        this.updateWeightRatio();
-        // Δμt=1となる厚さを求め、そこからμt_H,μt_Lを求める
-        t = this.calcCMByDeltaMuT(1.0);
-        r = this.calcAllMuTByCM(t);
-        this.MuT_H_1 = r[0]; this.MuT_L_1 = r[1]; this.Res_1 = t*10000;
-        // μt_H=4となる厚さを求め、そこからμt_H,μt_Lを求める
-        t = this.calcCMByMuTH(4.0);
-        r = this.calcAllMuTByCM(t);
-        this.MuT_H_4 = r[0]; this.MuT_L_4 = r[1]; this.dMuT_4 = r[0]-r[1]; this.Res_4 = t*10000;
-        // μt_H=2.5となる厚さを求め、そこからμt_H,μt_Lを求める
-        t = this.calcCMByMuTH(2.5);
-        r = this.calcAllMuTByCM(t);
-        this.MuT_H_2 = r[0]; this.MuT_L_2 = r[1]; this.dMuT_2 = r[0]-r[1]; this.Res_2 = t*10000;
-        // Res_oからμt_H,μt_Lを求める
-        r = this.calcAllMuTByCM(this.Res_o / 10000.0);
-        this.MuT_H_o = r[0]; this.MuT_L_o = r[1]; this.dMuT_o = r[0]-r[1];
-    }
-
-    this.calc4Pellet = function() {
-        var g = 0.0; var r = [];
-        // 念のためエッジ波長を再設定しておく
-        this.Lambda = getLambdaOfEdge(this.Z[this.targetId], this.edge);
-        // 重量分率を再計算する
-        this.updateWeightRatio();
-        this.updatePelletMediumWeightRatio();
-        // Δμt=1となるグラムを求め、そこからμt_H,μt_Lを求める
-        g = this.calcGramByDeltaMuT(1.0);
-        r = this.calcAllMuTByGram(g);
-        this.MuT_H_1 = r[0]; this.MuT_L_1 = r[1]; this.Res_1 = g*1000;
-        // μt_H=4となるグラムを求め、そこからμt_H,μt_Lを求める
-        g = this.calcGramByMuTH(4.0);
-        r = this.calcAllMuTByGram(g);
-        this.MuT_H_4 = r[0]; this.MuT_L_4 = r[1]; this.dMuT_4 = r[0]-r[1]; this.Res_4 = g*1000;
-        // μt_H=2.5となるグラムを求め、そこからμt_H,μt_Lを求める
-        g = this.calcGramByMuTH(2.5);
-        r = this.calcAllMuTByGram(g);
-        this.MuT_H_2 = r[0]; this.MuT_L_2 = r[1]; this.dMuT_2 = r[0]-r[1]; this.Res_2 = g*1000;
-        // Res_oからμt_H,μt_Lを求める
-        r = this.calcAllMuTByGram(this.Res_o / 1000.0);
-        this.MuT_H_o = r[0]; this.MuT_L_o = r[1]; this.dMuT_o = r[0]-r[1];
-    }
-
-    this.updateWeightRatio = function() { // 重量分率を再計算する
-        if (this.ratio == 0) { // Atom
-            var M_total = 0;
-            for (var i = 0 ; i < 10 ; i++) M_total += this.Ratio[i]*elements[this.Z[i]].A;
-            for (var i = 0 ; i < 10 ; i++) this.Weight[i] = this.Ratio[i]*elements[this.Z[i]].A / M_total;
-        } else { // Mass
-            var M_total = 0;
-            for (var i = 0 ; i < 10 ; i++) M_total += this.Ratio[i];
-            for (var i = 0 ; i < 10 ; i++) this.Weight[i] = this.Ratio[i] / M_total;
-        }
-    }
-
-    this.updatePelletMediumWeightRatio = function() { // 重量分率を再計算する
-        var M_total = 0;
-        for (var i = 0 ; i < 10 ; i++) M_total += this.Pellet_Medium_Ratio[i]*elements[this.Pellet_Medium_Z[i]].A;
-        for (var i = 0 ; i < 10 ; i++) this.Pellet_Medium_Weight[i] = this.Pellet_Medium_Ratio[i]*elements[this.Pellet_Medium_Z[i]].A / M_total;
-    }
-
-    this.calcGramByDeltaMuT = function(d) { // Δμtが指定値となる重量を求める
-        var BothMoR = getBothMoR(this.Z[this.targetId], this.edge); // ターゲット元素の指定吸収端前後の質量吸収係数を求める
-        return Math.PI*Math.pow(this.Pellet_D/20.0, 2)*d/(BothMoR[0]-BothMoR[1]) / this.Weight[this.targetId];
-    }
-
-    this.calcGramByMuTH = function(H) {
-        var MoRw = 0.0;
-        for (var i = 0 ; i < 10 ; i++) {
-            if (i == this.targetId) continue;
-            MoRw += getMoR(this.Z[i], this.Lambda) * this.Weight[i];
-        }
-        MoRw += getBothMoR(this.Z[this.targetId], this.edge)[0]*this.Weight[this.targetId];
-        var PRR = Math.PI*Math.pow(this.Pellet_D/20.0, 2); // πr^2 [cm^2]
-        return (PRR*H-this.calcPelletMediumMoRG())/MoRw;
-
-    }
-
-    this.calcAllMuTByGram = function(g) { // 指定重量でのμt_H,μt_Lを求める
-        var BothMoR = getBothMoR(this.Z[this.targetId], this.edge); // ターゲット元素の指定吸収端前後の質量吸収係数を求める
-        var PRR = Math.PI*Math.pow(this.Pellet_D/20.0, 2); // πr^2 [cm^2]
-        var MoR = 0.0;
-        for (var i = 0 ; i < 10 ; i++) {
-            if (i == this.targetId) continue;
-            MoR += getMoR(this.Z[i], this.Lambda) * this.Weight[i];
-        }
-        var MoRG_M = this.calcPelletMediumMoRG();
-        var MuT_H = (g*(MoR + BothMoR[0]*this.Weight[this.targetId]) + MoRG_M) / PRR;
-        var MuT_L = (g*(MoR + BothMoR[1]*this.Weight[this.targetId]) + MoRG_M) / PRR;
-        return [MuT_H, MuT_L];
-    }
-
-    this.calcPelletMediumMoRG = function() {
-        var G; // [g]
-        switch (this.Pellet_Medium) {
-            case 0: // No medium
-                return 0.0;
-            case 1: // BN
-                if (this.Pellet_Medium_unit == 0) G = this.Pellet_T * 0.1735; // BN 173.5mg/mm
-                else G = this.Pellet_T / 1000.0; // mg -> g
-                return G*(getMoR(5, this.Lambda)*0.435536 + getMoR(7, this.Lambda)*0.564464);
-            case 2: // Other...
-                G = this.Pellet_T / 1000.0; // mg -> g
-                var MoR = 0.0;
-                for (var i = 0 ; i < 10 ; i++) MoR += getMoR(this.Pellet_Medium_Z[i], this.Lambda) * this.Pellet_Medium_Weight[i];
-                return G*MoR;
-        }
-    }
-
-    this.calcCMByDeltaMuT = function(d) { // Δμtが指定値となるフォイル厚さ[cm]を求める
-        var BothMoR = getBothMoR(this.Z[this.targetId], this.edge); // ターゲット元素の指定吸収端前後の質量吸収係数を求める
-        return d / (this.Foil_R * (BothMoR[0]-BothMoR[1]) * this.Weight[this.targetId]);
-    }
-
-    this.calcCMByMuTH = function(H) { // μt_Hが指定値となるフォイル厚さ[cm]を求める
-        var MoRw = 0.0;
-        for (var i = 0 ; i < 10 ; i++) {
-            if (i == this.targetId) continue;
-            MoRw += getMoR(this.Z[i], this.Lambda) * this.Weight[i];
-        }
-        MoRw += getBothMoR(this.Z[this.targetId], this.edge)[0]*this.Weight[this.targetId];
-        return H / MoRw / this.Foil_R;
-    }
-
-    this.calcAllMuTByCM = function(t) { // 指定厚さでのμt_H,μt_Lを求める
-        var BothMoR = getBothMoR(this.Z[this.targetId], this.edge); // ターゲット元素の指定吸収端前後の質量吸収係数を求める
-        var MoRw = 0.0;
-        for (var i = 0 ; i < 10 ; i++) {
-            if (i == this.targetId) continue;
-            MoRw += getMoR(this.Z[i], this.Lambda) * this.Weight[i];
-        }
-        var MuT_H = t * this.Foil_R * (MoRw + BothMoR[0]*this.Weight[this.targetId]);
-        var MuT_L = t * this.Foil_R * (MoRw + BothMoR[1]*this.Weight[this.targetId]);
-        return [MuT_H, MuT_L];
-    }
-
-
-
-
-
-
-
-
-
-    this.showLicenseDlg = function($event) {
-        $resource('./license.html', {}, {
-            'get': {
-                transformResponse: function(data, headersGetter, status) {
-                    return {content: data};
-        }}}).get(function(d) {
-            $mdDialog.show(
-                $mdDialog.alert()
-                .clickOutsideToClose(true)
-                .htmlContent(d.content)
-                .ok('OK')
-                .targetEvent($event)
-            );
-        });
-    }
-});
-app.config(function($mdThemingProvider) {
-    // Configure a dark theme with primary foreground yellow
-    $mdThemingProvider
-    .theme('default')
-    .primaryPalette('blue')
-    .accentPalette('teal')
-    .warnPalette('red')
-    .backgroundPalette('grey');
-});
+}).use(createVuetify()).mount('#app')

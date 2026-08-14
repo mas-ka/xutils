@@ -1,201 +1,182 @@
 <!DOCTYPE html>
-<html lang=""  ng-app="myApp">
+<html>
+
 <head>
     <meta charset="UTF-8">
-    <!-- include AngularJS -->
-    <link href="https://fonts.googleapis.com/css?family=Noto+Serif:700|Roboto+Mono|Open+Sans" rel="stylesheet">
-    <link href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/angular_material/1.0.0/angular-material.min.css">
-    <link rel="stylesheet" type="text/css" href="calq.css">
-    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.5/angular.min.js"></script>
-    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.5/angular-resource.min.js"></script>
-    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.5/angular-sanitize.min.js"></script>
-    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.5/angular-animate.min.js"></script>
-    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.5/angular-aria.min.js"></script>
-    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.5/angular-messages.min.js"></script>
-    <script src="https://ajax.googleapis.com/ajax/libs/angular_material/1.1.0/angular-material.min.js"></script>
-    <script type="text/javascript" src="calq.js"></script>
-    <!-- title -->
+    <!-- import font -->
+    <link href="https://fonts.googleapis.com/css?family=Noto+Serif:700|Roboto+Mono" rel="stylesheet">
+    <!-- import Vuetify -->
+    <link href="https://cdn.jsdelivr.net/npm/@mdi/font@5.x/css/materialdesignicons.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/vuetify@3.12.6/dist/vuetify.min.css" rel="stylesheet">
+    <!-- import Vue3 & Vuetify3 from CDN -->
+    <script type="importmap"> { "imports": {
+            "vue": "https://unpkg.com/vue@3/dist/vue.esm-browser.js", 
+            "vuetify": "https://cdn.jsdelivr.net/npm/vuetify@3.12.6/dist/vuetify.esm.js"
+        } } </script>
+    <!-- import Vue3 JS code -->
+    <script type="module" src="calq.js"></script>
+    <!-- load other JS files -->
+    <!-- import sprintf-js from CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/sprintf-js@1.1.3/dist/sprintf.min.js"></script>
+    <!-- custom style -->
+    <style>
+        /* v-text-fieldのtype="number"のスピナーのみ非表示にする */
+        .v-text-field input[type="number"]::-webkit-outer-spin-button,
+        .v-text-field input[type="number"]::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
+        .v-text-field input[type="number"] {
+            -moz-appearance: textfield;
+        }
+    </style>
+    <!-- Page Title -->
     <title>CALQ</title>
 </head>
 
-<body ng-controller="myController as Cntl" layout-padding>
-    <h1>
-        <div class="title_main">C A L Q</div>
-        <div class="title_sub">- Q-range calcurator for SAXS measurement -</div>
-    </h1>
-    <h2>X-ray</h2>
-    <div layout="row" layout-align="start end" layout-margin>
-        <md-input-container>
-            <label>Wavelength</label>
-            <input type="number" step="0.0001" ng-model="Cntl.Lambda" ng-change="Cntl.updateAll()">
-        </md-input-container>
-        <p> &Aring;</p>
-    </div>
-    <h2>Detector</h2>
-    <div layout="row" layout-align="start end" layout-margin>
-        <md-input-container>
-            <label>Radius</label>
-            <input type="number" step="1" ng-model="Cntl.Radius" ng-change="Cntl.updateAll()">
-        </md-input-container>
-        <p> mm</p>
-    </div>
-    <h2>Results</h2>
-    <div layout="column" layout-align="space-around start" layout-margin>
-        <table class="table_result">
-            <tbody>
-                <tr>
-                    <td class="mode" colspan="2" rowspan="2">
-                        <md-input-container>
-                            <label>Mode</label>
-                            <md-select ng-model="Cntl.Mode" ng-change="Cntl.updateAll()">
-                                <md-option ng-value="mode" ng-repeat="mode in Cntl.Modes">{{mode.name}}</md-option>
-                            </md-select>
-                        </md-input-container>
-                    </td>
-                    <td class="bs_whole" colspan="4">Beam stop diameter [mm]</td>
-                </tr>
-                <tr>
-                    <td class="td_diameter">
-                        <md-input-container>
-                            <input class = "bs" type="number" step="1" ng-model="Cntl.Diameters[0]" ng-change="Cntl.updateAll()">
-                        </md-input-container>
-                    </td>
-                    <td class="td_diameter">
-                        <md-input-container>
-                            <input class = "bs" type="number" step="1" ng-model="Cntl.Diameters[1]" ng-change="Cntl.updateAll()">
-                        </md-input-container>
-                    </td>
-                    <td class="td_diameter">
-                        <md-input-container>
-                            <input class = "bs" type="number" step="1" ng-model="Cntl.Diameters[2]" ng-change="Cntl.updateAll()">
-                        </md-input-container>
-                    </td>
-                    <td class="td_diameter">
-                        <md-input-container>
-                            <input class = "bs" type="number" step="1" ng-model="Cntl.Diameters[3]" ng-change="Cntl.updateAll()">
-                        </md-input-container>
-                    </td>
-                </tr>
-                <tr>
-                    <td class="pl_whole" rowspan="10">Path length [mm]</td>
-                    <td class="td_length">
-                        <md-input-container>
-                            <input type="number" step="1" ng-model="Cntl.Lengths[0]" ng-change="Cntl.updateAll()">
-                        </md-input-container>
-                    </td>
-                    <td>{{Cntl.Ranges[0][0]}}</td>
-                    <td>{{Cntl.Ranges[0][1]}}</td>
-                    <td>{{Cntl.Ranges[0][2]}}</td>
-                    <td>{{Cntl.Ranges[0][3]}}</td>
-                </tr>
-                <tr>
-                    <td class="td_length">
-                        <md-input-container>
-                            <input type="number" step="1" ng-model="Cntl.Lengths[1]" ng-change="Cntl.updateAll()">
-                        </md-input-container>
-                    </td>
-                    <td class="even">{{Cntl.Ranges[1][0]}}</td>
-                    <td class="even">{{Cntl.Ranges[1][1]}}</td>
-                    <td class="even">{{Cntl.Ranges[1][2]}}</td>
-                    <td class="even">{{Cntl.Ranges[1][3]}}</td>
-                </tr>
-                <tr>
-                    <td class="td_length">
-                        <md-input-container>
-                            <input type="number" step="1" ng-model="Cntl.Lengths[2]" ng-change="Cntl.updateAll()">
-                        </md-input-container>
-                    </td>
-                    <td>{{Cntl.Ranges[2][0]}}</td>
-                    <td>{{Cntl.Ranges[2][1]}}</td>
-                    <td>{{Cntl.Ranges[2][2]}}</td>
-                    <td>{{Cntl.Ranges[2][3]}}</td>
-                </tr>
-                <tr>
-                    <td class="td_length">
-                        <md-input-container>
-                            <input type="number" step="1" ng-model="Cntl.Lengths[3]" ng-change="Cntl.updateAll()">
-                        </md-input-container>
-                    </td>
-                    <td class="even">{{Cntl.Ranges[3][0]}}</td>
-                    <td class="even">{{Cntl.Ranges[3][1]}}</td>
-                    <td class="even">{{Cntl.Ranges[3][2]}}</td>
-                    <td class="even">{{Cntl.Ranges[3][3]}}</td>
-                </tr>
-                <tr>
-                    <td class="td_length">
-                        <md-input-container>
-                            <input type="number" step="1" ng-model="Cntl.Lengths[4]" ng-change="Cntl.updateAll()">
-                        </md-input-container>
-                    </td>
-                    <td>{{Cntl.Ranges[4][0]}}</td>
-                    <td>{{Cntl.Ranges[4][1]}}</td>
-                    <td>{{Cntl.Ranges[4][2]}}</td>
-                    <td>{{Cntl.Ranges[4][3]}}</td>
-                </tr>
-                <tr>
-                    <td class="td_length">
-                        <md-input-container>
-                            <input type="number" step="1" ng-model="Cntl.Lengths[5]" ng-change="Cntl.updateAll()">
-                        </md-input-container>
-                    </td>
-                    <td class="even">{{Cntl.Ranges[5][0]}}</td>
-                    <td class="even">{{Cntl.Ranges[5][1]}}</td>
-                    <td class="even">{{Cntl.Ranges[5][2]}}</td>
-                    <td class="even">{{Cntl.Ranges[5][3]}}</td>
-                </tr>
-                <tr>
-                    <td class="td_length">
-                        <md-input-container>
-                            <input type="number" step="1" ng-model="Cntl.Lengths[6]" ng-change="Cntl.updateAll()">
-                        </md-input-container>
-                    </td>
-                    <td>{{Cntl.Ranges[6][0]}}</td>
-                    <td>{{Cntl.Ranges[6][1]}}</td>
-                    <td>{{Cntl.Ranges[6][2]}}</td>
-                    <td>{{Cntl.Ranges[6][3]}}</td>
-                </tr>
-                <tr>
-                    <td class="td_length">
-                        <md-input-container>
-                            <input type="number" step="1" ng-model="Cntl.Lengths[7]" ng-change="Cntl.updateAll()">
-                        </md-input-container>
-                    </td>
-                    <td class="even">{{Cntl.Ranges[7][0]}}</td>
-                    <td class="even">{{Cntl.Ranges[7][1]}}</td>
-                    <td class="even">{{Cntl.Ranges[7][2]}}</td>
-                    <td class="even">{{Cntl.Ranges[7][3]}}</td>
-                </tr>
-                <tr>
-                    <td class="td_length">
-                        <md-input-container>
-                            <input type="number" step="1" ng-model="Cntl.Lengths[8]" ng-change="Cntl.changeLength()">
-                        </md-input-container>
-                    </td>
-                    <td>{{Cntl.Ranges[8][0]}}</td>
-                    <td>{{Cntl.Ranges[8][1]}}</td>
-                    <td>{{Cntl.Ranges[8][2]}}</td>
-                    <td>{{Cntl.Ranges[8][3]}}</td>
-                </tr>
-                <tr>
-                    <td class="td_length">
-                        <md-input-container>
-                            <input type="number" step="1" ng-model="Cntl.Lengths[9]" ng-change="Cntl.changeLength()">
-                        </md-input-container>
-                    </td>
-                    <td class="even">{{Cntl.Ranges[9][0]}}</td>
-                    <td class="even">{{Cntl.Ranges[9][1]}}</td>
-                    <td class="even">{{Cntl.Ranges[9][2]}}</td>
-                    <td class="even">{{Cntl.Ranges[9][3]}}</td>
-                </tr>
-            </tbody>
-        </table>
-    </div>
-    <md-divider ></md-divider>
-    <footer>
-        <a href="https://twitter.com/share" class="twitter-share-button" data-text="CALQ- Q-range calcurator for SAXS measurement -">Tweet</a>
-<script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0],p=/^http:/.test(d.location)?'http':'https';if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src=p+'://platform.twitter.com/widgets.js';fjs.parentNode.insertBefore(js,fjs);}}(document, 'script', 'twitter-wjs');</script>
-        <p>&diams; Code licensed under <a href="" ng-click="Cntl.showLicenseDlg($event)">MIT license</a>.</p>
-    </footer>
+<body id="app">
+    <v-app>
+        <v-main class="bg-grey-lighten-4">
+            <v-container class="py-4 ml-0" style="overflow-x: auto;">
+                <v-row justify="start">
+                    <v-col cols="auto">
+                        <v-card class="elevation-4" style="width: 820px; min-width: 820px;">
+                            <!-- Title -->
+                            <v-toolbar id="TITLE" color="primary" height="80" class="position-relative">
+                                <v-toolbar-title class="text-center font-weight-bold">
+                                    <div class="text-h4" style="cursor: default; font-family: 'Noto Serif';">C A L
+                                        Q
+                                        <!-- <span class="text-body-1">(β)</span> -->
+                                    </div>
+                                    <div class="text-caption font-weight-regular text-grey-lighten-3"
+                                        style="cursor: default; font-family: 'Noto Serif';">
+                                        - Q-range calculator for SAXS measurement -
+                                    </div>
+                                </v-toolbar-title>
+                                <v-btn icon="mdi-license" class="position-absolute"
+                                    style="right: 16px; top: 50%; transform: translateY(-50%);"
+                                    @click="licenseDialog = true"></v-btn>
+                            </v-toolbar>
+                            <!-- X-ray settings -->
+                            <v-toolbar id="X-RAY" class="mb-3" color="blue-lighten-2" density="compact">
+                                <v-toolbar-title class="text-subtitle-1 font-weight-bold text-white"
+                                    style="cursor: default;">
+                                    X-ray
+                                </v-toolbar-title>
+                            </v-toolbar>
+                            <v-card-text class="pa-4">
+                                <v-row align="center" class="mb-2" dense="compact">
+                                    <v-col cols="4">
+                                        <v-text-field v-model="xrayValue"
+                                            :label="Unit_lambda === 'Å' ? 'wavelength' : 'Energy'" type="number"
+                                            variant="outlined" density="compact" hide-details="auto">
+                                            <template v-slot:append-inner>
+                                                <v-menu>
+                                                    <template v-slot:activator="{ props }">
+                                                        <v-btn v-bind="props" variant="text" density="compact"
+                                                            class="px-2 text-none text-body-2" min-width="0"
+                                                            :ripple="false">
+                                                            {{ Unit_lambda }} <v-icon icon="mdi-menu-down"></v-icon>
+                                                        </v-btn>
+                                                    </template>
+                                                    <v-list density="compact">
+                                                        <v-list-item v-for="item in ['Å', 'eV']" :key="item"
+                                                            @click="Unit_lambda = item">
+                                                            <v-list-item-title>{{ item }}</v-list-item-title>
+                                                        </v-list-item>
+                                                    </v-list>
+                                                </v-menu>
+                                            </template>
+                                        </v-text-field>
+                                    </v-col>
+                                </v-row>
+                            </v-card-text>
+                            <!-- Detector settings -->
+                            <v-toolbar id="DETECTOR" class="mb-3" color="blue-lighten-2" density="compact">
+                                <v-toolbar-title class="text-subtitle-1 font-weight-bold text-white"
+                                    style="cursor: default;">
+                                    Detector
+                                </v-toolbar-title>
+                            </v-toolbar>
+                            <v-card-text class="pa-4">
+                                <v-row align="center" class="mb-2" dense="compact">
+                                    <v-col cols="4">
+                                        <v-text-field v-model="radius" label="Radius" type="number" suffix="mm"
+                                            variant="outlined" density="compact" hide-details="auto"></v-text-field>
+                                    </v-col>
+                                </v-row>
+                            </v-card-text>
+                            <!-- Range -->
+                            <v-toolbar id="RANGE" class="mb-3" color="green-lighten-2" density="compact">
+                                <v-toolbar-title class="text-subtitle-1 font-weight-bold text-white"
+                                    style="cursor: default;">
+                                    Range
+                                </v-toolbar-title>
+                            </v-toolbar>
+                            <v-card-text class="pa-4">
+                                <table border="1" cellspacing="0" style="border:2px solid #333">
+                                    <tbody>
+                                        <tr>
+                                            <td colspan="2" rowspan="2" class="text-center pa-4">
+                                                <v-select v-model="Mode" label="Notation" :items="Modes"
+                                                    item-title="name" item-value="value" return-object
+                                                    variant="outlined" density="compact" hide-details="auto">
+                                                </v-select>
+                                            </td>
+                                            <td :colspan="BSdiameters.length"
+                                                class="pa-1 text-center bg-blue-lighten-1">Beam
+                                                stop diameter [mm]</td>
+                                        </tr>
+                                        <tr>
+                                            <td v-for="(bs, index) in BSdiameters" :key="'header-'+index"
+                                                class="pa-1 text-center bg-blue-lighten-5">
+                                                <input v-model="BSdiameters[index]" type="number"
+                                                    style="text-align:center;width:140px">
+                                            </td>
+                                        </tr>
+                                        <template v-for="(length, index) in lengths">
+                                            <tr>
+                                                <td v-if="index === 0" :rowspan="lengths.length"
+                                                    class="pa-2 text-center bg-blue-lighten-1">Path
+                                                    length<br />[mm]</td>
+                                                <td class="pa-1 bg-blue-lighten-5">
+                                                    <input v-model="lengths[index]" type="number" step="10"
+                                                        style="text-align: center; width: 80px">
+                                                </td>
+                                                <template v-for="(bs) in BSdiameters">
+                                                    <td>
+                                                        <pre class="text-center text-body-2">{{ calcRanges(Mode.value,
+                                                        bs, length) }}</pre>
+                                                    </td>
+                                                </template>
+                                            </tr>
+                                        </template>
+                                    </tbody>
+                                </table>
+                            </v-card-text>
+                        </v-card>
+                    </v-col>
+                </v-row>
+            </v-container>
+        </v-main>
+
+        <!-- License Dialog -->
+        <v-dialog v-model="licenseDialog" max-width="650px">
+            <v-card>
+                <v-card-title class="text-h5 font-weight-bold bg-primary text-white pa-4">
+                    Software Licenses
+                </v-card-title>
+                <v-card-text class="pa-4 bg-grey-lighten-5 text-body-2" style="max-height: 500px; overflow-y: auto;">
+                    <div v-html="licenseContent"></div>
+                </v-card-text>
+                <v-card-actions class="pa-4 bg-grey-lighten-5">
+                    <v-spacer></v-spacer>
+                    <v-btn color="primary" variant="elevated" @click="licenseDialog = false">Close</v-btn>
+                </v-card-actions>
+            </v-card>
+        </v-dialog>
+    </v-app>
 </body>
+
 </html>
