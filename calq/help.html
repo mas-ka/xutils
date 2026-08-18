@@ -1,0 +1,50 @@
+<div id="help_text">
+    <div id="introduction">
+        <p>　このアプリはSAXS/WAXSにおける散乱ベクトルの測定範囲を計算するためのものです。
+            また、散乱ベクトルのほかに2θ角やd間隔も計算することができます。</p>
+    </div>
+    <br />
+    <hr /><br />
+    <div id="X-ray">
+        <h3>X-ray</h3><br />
+        <p>　入力欄にエネルギー(eV)または波長(Å)を入力します。
+            右端の［Å, eV］の文字をクリックして単位を切り替えることができます。</p>
+    </div>
+    <br />
+    <hr /><br />
+    <div id="Detector">
+        <h3>Detector</h3><br />
+        <p>　検出器の測定領域(<small>mm</small>)を入力します。</p><br />
+        <p>※この値は「半径」として取り扱われます。例えば、検出エリアサイズが「80 <small>mm</small>」の検出器で、</p><br />
+        <ul style="padding-left: 1.5em;">
+            <li>全周積分を測定する場合：「40 <small>mm</small>」</li>
+            <li>半周積分を測定する場合：「80 <small>mm</small>」</li>
+        </ul><br />
+        <p>と入力します。
+        <p>
+    </div>
+    <br />
+    <hr /><br />
+    <div id="Range">
+        <h3>Range</h3><br />
+        <P>　上記パラメータにおける「試料－検出器間距離(<small>mm</small>)」ごとの測定範囲を一覧表示します。</P><br />
+        <p>　表の各行は「試料－検出器間距離(<small>mm</small>)」で、その値はユーザー入力が可能です。</p><br />
+        <p>　表の各列は「ダイレクトビームストップ」の直径(<small>mm</small>)の値になっており、この値もユーザー入力が可能です。</p><br />
+        <p>　表のセルには「試料－検出器間距離(<small>mm</small>)」と「ダイレクトビームストップ径(<small>mm</small>)」から計算された
+            散乱ベクトルの範囲が表示されます。</p><br />
+        <p>　表示される範囲の単位は、表左上の[Notation]で以下から選択することができます。</p><br />
+        <ul style="padding-left: 1.5em;">
+            <li><b>2θ</b><small> [°]</small></li>
+            <li><b>d</b><small> [Å]</small> = λ / (2 sin(θ))</li>
+            <li><b>q</b><small> [nm⁻¹]</small> = 4π sin(θ) / λ </li>
+            <li><b>s</b><small> [nm⁻¹]</small> = 2 sin(θ) / λ </li>
+        </ul>
+    </div>
+    <br />
+    <hr /><br />
+    <div id="Licence">
+        <h3>Licence</h3><br />
+        <p>このアプリのライセンスは"The MIT License (MIT)"です。</p><br />
+        <p>使用するライブラリを含めた詳細は【ライセンス】ボタンをクリックしてください。</p>
+    </div>
+</div>

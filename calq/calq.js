@@ -6,6 +6,8 @@ createApp({
         // refの宣言
         const licenseDialog = ref(false)
         const licenseContent = ref('')
+        const helpContent = ref('')
+        const showHelp = ref(false)
         const lambda = ref('1.5498')        // 初期波長は1.5498Å(=8keV)
         const Unit_lambda = ref('Å')        // 単位
         const radius = ref(80.0)          // 検出器の測定領域半径[mm]
@@ -75,6 +77,12 @@ createApp({
             } catch (e) {
                 console.error('Failed to load license.html', e)
             }
+            try {
+                const resHelp = await fetch('help.html')
+                helpContent.value = await resHelp.text()
+            } catch (e) {
+                console.error('Failed to load help.html', e)
+            }
         })
 
         const calcRanges = function (mode, diameter, length) {
@@ -102,7 +110,7 @@ createApp({
 
 
         return {
-            licenseDialog, licenseContent,
+            licenseDialog, licenseContent, helpContent, showHelp,
             lambda, Unit_lambda, xrayValue,
             radius, Modes, Mode, lengths, BSdiameters,
             calcRanges,
