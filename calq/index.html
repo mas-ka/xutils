@@ -52,7 +52,7 @@
     <v-app>
         <v-main class="bg-grey-lighten-4">
             <v-container class="py-4 ml-0" style="overflow-x: auto;">
-                <v-row justify="start" align="start" class="flex-nowrap">
+                <v-row justify="start" class="flex-nowrap align-stretch">
                     <v-col cols="auto">
                         <v-card class="elevation-4" style="width: 820px; min-width: 820px;">
                             <!-- Title -->
@@ -173,17 +173,18 @@
                         </v-card>
                     </v-col>
                     <!-- Help Card -->
-                    <v-col v-if="showHelp" cols="auto">
-                        <v-card class="elevation-4 d-flex flex-column"
-                            style="width: 320px; min-width: 320px; height: 800px;">
-                            <v-toolbar color="blue-grey-lighten-3" density="compact">
+                    <v-col v-if="showHelp" cols="auto" class="position-relative"
+                        style="width: 344px; min-width: 344px;">
+                        <v-card class="elevation-4 d-flex flex-column position-absolute"
+                            style="top: 12px; bottom: 12px; left: 12px; right: 12px;">
+                            <v-toolbar color="blue-grey-lighten-3" density="compact" class="flex-grow-0">
                                 <v-toolbar-title class="text-subtitle-1 font-weight-bold">
                                     Help
                                 </v-toolbar-title>
                                 <v-spacer></v-spacer>
                                 <v-btn variant="tonal" @click="showHelp = false">CLOSE</v-btn>
                             </v-toolbar>
-                            <v-card-text class="pa-4" style="overflow-y: auto;">
+                            <v-card-text class="pa-4 flex-grow-1" style="overflow-y: auto;">
                                 <div v-html="helpContent"></div>
                             </v-card-text>
                         </v-card>
