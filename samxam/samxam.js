@@ -8,6 +8,8 @@ createApp({
         // refの宣言
         const licenseDialog = ref(false)
         const licenseContent = ref('')
+        const helpContent = ref('')
+        const showHelp = ref(false)
         const Elements = ref(Victoreens.elements)
         const ElementNamesZ = ref(Victoreens.getElementNamesZ())
         const Lambda = ref(1.380840)        // Cu-K [Å]
@@ -81,13 +83,19 @@ createApp({
         ]
         Pellet_Sample_RatioType.value = TYPE_RATIO[0].Id // 初期値は「Atom」
 
-        // マウント時にlicense.htmlを読み込む
+        // マウント時にlicense.htmlおよびhelp.htmlを読み込む
         onMounted(async () => {
             try {
                 const res = await fetch('license.html')
                 licenseContent.value = await res.text()
             } catch (e) {
                 console.error('Failed to load license.html', e)
+            }
+            try {
+                const resHelp = await fetch('help.html')
+                helpContent.value = await resHelp.text()
+            } catch (e) {
+                console.error('Failed to load help.html', e)
             }
         })
 
@@ -367,7 +375,7 @@ createApp({
 
 
         return {
-            licenseDialog, licenseContent,
+            licenseDialog, licenseContent, helpContent, showHelp,
             TYPE_SAMPLE, sampleType, Lambda,
             Foil_R,
             Pellet_D, Pellet_Def, Pellet_T, Pellet_Medium, Pellet_Medium_Z, Pellet_Medium_Ratio, Pellet_Medium_Weight, Pellet_Medium_Z_last, Pellet_Medium_Ratio_last,
