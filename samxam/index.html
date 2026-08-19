@@ -19,6 +19,20 @@
     <script type="module" src="samxam.js"></script>
     <!-- load other JS files -->
     <!-- custom style -->
+    <style>
+        /* AI hint */
+        .sr-only {
+            position: absolute !important;
+            height: 1px;
+            width: 1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border: 0 !important;
+            padding: 0 !important;
+            margin: 0 !important;
+        }
+    </style>
     <!-- Page Title -->
     <title>SAMXAM</title>
 </head>
@@ -27,7 +41,7 @@
     <v-app>
         <v-main class="bg-grey-lighten-4">
             <v-container class="py-4 ml-0" style="overflow-x: auto;">
-                <v-row justify="start">
+                <v-row justify="start" align="start" class="flex-nowrap">
                     <v-col cols="auto">
                         <v-card class="elevation-4" style="width: 800px; min-width: 800px;">
                             <!-- Title -->
@@ -40,9 +54,11 @@
                                         - Sample preparation for XAS measurement -
                                     </div>
                                 </v-toolbar-title>
-                                <v-btn icon="mdi-license" class="position-absolute"
-                                    style="right: 16px; top: 50%; transform: translateY(-50%);"
-                                    @click="licenseDialog = true"></v-btn>
+                                <div class="position-absolute d-flex"
+                                    style="right: 16px; top: 50%; transform: translateY(-50%);">
+                                    <v-btn icon="mdi-license" @click="licenseDialog = true"></v-btn>
+                                    <v-btn icon="mdi-help-circle" @click="showHelp = !showHelp"></v-btn>
+                                </div>
                             </v-toolbar>
                             <!-- Sample settings -->
                             <v-toolbar id="X-RAY" class="mb-3" color="blue-lighten-2" density="compact">
@@ -372,7 +388,27 @@
                             </v-row>
                         </v-card>
                     </v-col>
+                    <!-- Help Card -->
+                    <v-col v-if="showHelp" cols="auto">
+                        <v-card class="elevation-4 d-flex flex-column"
+                            style="width: 320px; min-width: 320px; height: 800px;">
+                            <v-toolbar color="blue-grey-lighten-3" density="compact">
+                                <v-toolbar-title class="text-subtitle-1 font-weight-bold">
+                                    Help
+                                </v-toolbar-title>
+                                <v-spacer></v-spacer>
+                                <v-btn variant="tonal" @click="showHelp = false">CLOSE</v-btn>
+                            </v-toolbar>
+                            <v-card-text class="pa-4" style="overflow-y: auto;">
+                                <div v-html="helpContent"></div>
+                            </v-card-text>
+                        </v-card>
+                    </v-col>
                 </v-row>
+                <!-- Help for AI -->
+                <div class="sr-only" id="ai-hint-samxam">
+                    <div v-html="helpContent"></div>
+                </div>
                 <P class="ma-2 text-body-2">&diams; &quot;Mass attenuation coefficients&quot; of each element were
                     derived from the data available
                     <a href="http://www.sasakiken.net/abcoeff/abcoeff2.html" target="_blank">here</a> and
