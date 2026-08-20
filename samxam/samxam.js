@@ -10,6 +10,7 @@ createApp({
         const licenseContent = ref('')
         const helpContent = ref('')
         const showHelp = ref(false)
+        const hasHelp = ref(false)
         const Elements = ref(Victoreens.elements)
         const ElementNamesZ = ref(Victoreens.getElementNamesZ())
         const Lambda = ref(1.380840)        // Cu-K [Å]
@@ -93,7 +94,10 @@ createApp({
             }
             try {
                 const resHelp = await fetch('help.html')
-                helpContent.value = await resHelp.text()
+                if (resHelp.ok) {
+                    helpContent.value = await resHelp.text()
+                    hasHelp.value = true
+                }
             } catch (e) {
                 console.error('Failed to load help.html', e)
             }
@@ -375,7 +379,7 @@ createApp({
 
 
         return {
-            licenseDialog, licenseContent, helpContent, showHelp,
+            licenseDialog, licenseContent, helpContent, showHelp, hasHelp,
             TYPE_SAMPLE, sampleType, Lambda,
             Foil_R,
             Pellet_D, Pellet_Def, Pellet_T, Pellet_Medium, Pellet_Medium_Z, Pellet_Medium_Ratio, Pellet_Medium_Weight, Pellet_Medium_Z_last, Pellet_Medium_Ratio_last,
