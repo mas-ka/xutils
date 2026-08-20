@@ -35,6 +35,9 @@ createApp({
         const elementList = ref(elements)
         const selectedElement = ref(null)
         const selectedEdge = ref('K')
+        const showHelp = ref(false)
+        const hasHelp = ref(false)
+        const helpContent = ref('')
 
         // ローカルの宣言
         let curr9809File = new File9809()
@@ -441,6 +444,24 @@ createApp({
             URL.revokeObjectURL(link.href)
         }
 
+        onMounted(() => {
+            fetch('./help.html')
+                .then(res => {
+                    if (res.ok) {
+                        hasHelp.value = true;
+                        return res.text();
+                    }
+                    throw new Error('help.html not found');
+                })
+                .then(text => {
+                    helpContent.value = text;
+                })
+                .catch(e => {
+                    hasHelp.value = false;
+                    console.log('No help available');
+                });
+        })
+
         return {
             numLoaded, currFileName, currFileIdx, FileNums, fInput, isDragging, isCorrect9809,
             fileHeader, fileBlock, fileDataHeader, fileDataBody,
@@ -449,6 +470,7 @@ createApp({
             Numerator, Denominator, ColsNum, ColsDen, applyLn, showDevider,
             handleSelect, isAxisInEnergy, handleSwitch, onClickAngle, onClickEnergy,
             licenseHTML, license_dialog, exportAgenda_dialog, onClickExportAgendaOK, elementList, selectedElement, selectedEdge,
+            showHelp, hasHelp, helpContent,
         }
     }
 }).use(createVuetify()).mount('#app')

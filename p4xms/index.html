@@ -18,6 +18,19 @@
     <!-- load other JS files -->
     <!-- custom style -->
     <style>
+        /* AI hint */
+        .sr-only {
+            position: absolute !important;
+            height: 1px;
+            width: 1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border: 0 !important;
+            padding: 0 !important;
+            margin: 0 !important;
+        }
+
         /* 1. インプット要素内のフォントサイズ設定 */
         .custom-number-input input {
             font-size: 0.875rem !important;
@@ -438,6 +451,10 @@
                         </v-card>
                     </v-col>
                 </v-row>
+                <!-- Help for AI -->
+                <div class="sr-only" id="ai-hint-p4xms">
+                    <div v-html="helpContent"></div>
+                </div>
             </v-container>
         </v-main>
 
