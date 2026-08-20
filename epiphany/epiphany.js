@@ -24,6 +24,9 @@ createApp({
         const license_dialog = ref(false)
         const header9809_dialog = ref(false)
         const header9809_text = ref('')
+        const showHelp = ref(false)
+        const hasHelp = ref(false)
+        const helpContent = ref('')
 
 
 
@@ -399,6 +402,19 @@ createApp({
             } catch (error) {
                 licenseHTML.value = '<p></p>'
             }
+
+            // ヘルプの読み込み
+            try {
+                const res = await fetch('./help.html')
+                if (res.ok) {
+                    helpContent.value = await res.text()
+                    hasHelp.value = true
+                } else {
+                    hasHelp.value = false
+                }
+            } catch (error) {
+                hasHelp.value = false
+            }
         })
 
         return {
@@ -414,7 +430,7 @@ createApp({
             save9809File,
             header9809_dialog, header9809_text,
             license_dialog, licenseHTML,
-        
+            showHelp, hasHelp, helpContent,
         }
     }
 }).use(createVuetify()).mount('#app')

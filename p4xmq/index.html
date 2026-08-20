@@ -18,12 +18,26 @@
     <!-- load other JS files -->
     <!-- Page Title -->
     <title>P4XMQ</title>
+    <style>
+        /* AI hint */
+        .sr-only {
+            position: absolute !important;
+            height: 1px;
+            width: 1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border: 0 !important;
+            padding: 0 !important;
+            margin: 0 !important;
+        }
+    </style>
 </head>
 
 <body id="app">
     <v-app>
         <v-main class="bg-grey-lighten-4">
-            <v-container class="py-4 ml-0" style="overflow-x: auto;">
+            <v-container fluid class="py-4 ml-0" style="overflow-x: auto;">
                 <v-row justify="start">
                     <v-col cols="auto">
                         <v-card class="elevation-4" style="width: 600px; min-width: 600px;"
@@ -39,9 +53,11 @@
                                         - Parameters for XAS Measurement in Quick scan -
                                     </div>
                                 </v-toolbar-title>
-                                <v-btn icon="mdi-license" class="position-absolute"
-                                    style="right: 16px; top: 50%; transform: translateY(-50%);"
-                                    @click="licenseDialog = true"></v-btn>
+                                <div class="position-absolute d-flex"
+                                    style="right: 16px; top: 50%; transform: translateY(-50%);">
+                                    <v-btn icon="mdi-license" @click="licenseDialog = true"></v-btn>
+                                    <v-btn v-if="hasHelp" icon="mdi-help-circle" @click="showHelp = !showHelp"></v-btn>
+                                </div>
                             </v-toolbar>
                             <!-- Monochrometer settings -->
                             <v-toolbar id="MONOCHROMETER" class="mb-3" color="blue-lighten-2" density="compact">
@@ -226,7 +242,30 @@
                             </v-card-text>
                         </v-card>
                     </v-col>
+                    <!-- Help Card -->
+                    <v-col v-if="showHelp" cols="auto" class="position-relative"
+                        style="width: 344px; min-width: 344px;">
+                        <!-- Scroll spacer -->
+                        <div style="width: 100%; height: 1px; visibility: hidden;"></div>
+                        <v-card class="elevation-12 rounded-xl d-flex flex-column position-absolute"
+                            style="top: 12px; bottom: 12px; left: 12px; right: 12px;">
+                            <v-toolbar color="info" density="compact">
+                                <v-toolbar-title class="text-subtitle-1 font-weight-bold text-white">
+                                    Help
+                                </v-toolbar-title>
+                                <v-spacer></v-spacer>
+                                <v-btn variant="tonal" @click="showHelp = false">CLOSE</v-btn>
+                            </v-toolbar>
+                            <v-card-text class="pa-4 bg-grey-lighten-5 text-body-2">
+                                <div v-html="helpContent"></div>
+                            </v-card-text>
+                        </v-card>
+                    </v-col>
                 </v-row>
+                <!-- Help for AI -->
+                <div class="sr-only" id="ai-hint-p4xmq">
+                    <div v-html="helpContent"></div>
+                </div>
             </v-container>
         </v-main>
 

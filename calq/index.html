@@ -51,7 +51,7 @@
 <body id="app">
     <v-app>
         <v-main class="bg-grey-lighten-4">
-            <v-container class="py-4 ml-0" style="overflow-x: auto;">
+            <v-container fluid class="py-4 ml-0" style="overflow-x: auto;">
                 <v-row justify="start" class="flex-nowrap align-stretch">
                     <v-col cols="auto">
                         <v-card class="elevation-4" style="width: 820px; min-width: 820px;">
@@ -70,7 +70,7 @@
                                 <div class="position-absolute d-flex"
                                     style="right: 16px; top: 50%; transform: translateY(-50%);">
                                     <v-btn icon="mdi-license" @click="licenseDialog = true"></v-btn>
-                                    <v-btn icon="mdi-help-circle" @click="showHelp = !showHelp"></v-btn>
+                                    <v-btn v-if="hasHelp" icon="mdi-help-circle" @click="showHelp = !showHelp"></v-btn>
                                 </div>
                             </v-toolbar>
                             <!-- X-ray settings -->
@@ -175,6 +175,8 @@
                     <!-- Help Card -->
                     <v-col v-if="showHelp" cols="auto" class="position-relative"
                         style="width: 344px; min-width: 344px;">
+                        <!-- Scroll spacer -->
+                        <div style="width: 100%; height: 1px; visibility: hidden;"></div>
                         <v-card class="elevation-4 d-flex flex-column position-absolute"
                             style="top: 12px; bottom: 12px; left: 12px; right: 12px;">
                             <v-toolbar color="blue-grey-lighten-3" density="compact" class="flex-grow-0">
