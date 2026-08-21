@@ -8,6 +8,9 @@ createApp({
         // refの宣言
         const licenseDialog = ref(false)
         const licenseContent = ref('')
+        const helpContent = ref('')
+        const showHelp = ref(false)
+        const hasHelp = ref(false)
         const selectedXtal = ref(null)
         const selectedElement = ref(null)
         const selectedEdge = ref(null)
@@ -124,6 +127,15 @@ createApp({
                 licenseContent.value = await res.text()
             } catch (e) {
                 console.error('Failed to load license.html', e)
+            }
+            try {
+                const resHelp = await fetch('help.html')
+                if (resHelp.ok) {
+                    helpContent.value = await resHelp.text()
+                    hasHelp.value = true
+                }
+            } catch (e) {
+                console.error('Failed to load help.html', e)
             }
         })
 
@@ -935,6 +947,7 @@ createApp({
         return {
             formatF, eV2deg, eV2k, TYPE_I,
             licenseDialog, licenseContent,
+            helpContent, showHelp, hasHelp,
             xtals, selectedXtal, changeXtalPlane,
             elementNames, selectedElement, selectedEdge, edges,
             selectedEdge, selectedEdgeValue, availableEdges,

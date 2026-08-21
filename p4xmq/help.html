@@ -1,0 +1,81 @@
+<div id="help_text">
+    <div id="introduction">
+        <p>　このアプリはQuickスキャンによるXAFS測定のために、モノクロメータ・測定対象元素と吸収端、
+            およびスキャンパラメータを設定するためのツールです。
+            設定したパラメータはファイルとして保存・読込することができます。</p>
+    </div>
+    <br />
+    <hr /><br />
+    <div id="Monochrometer">
+        <h3>Monochrometer</h3><br />
+        <p>　分光結晶の結晶面を選択します。</p><br />
+        <ul style="padding-left: 1.5em;">
+            <li><b>Si(111)</b>: d = 3.13551 <small>Å</small></li>
+            <li><b>Si(311)</b>: d = 1.63747 <small>Å</small></li>
+            <li><b>Si(220)</b>: d = 1.92010 <small>Å</small></li>
+            <li><b>Other...</b>: 任意の格子定数<small>[Å]</small>を入力できます</li>
+        </ul><br />
+        <p>　選択された結晶面に対応する格子面間隔が右側に表示されます。</p>
+    </div>
+    <br />
+    <hr /><br />
+    <div id="Elements">
+        <h3>Elements</h3><br />
+        <p>　測定対象の元素と吸収端を選択します。</p><br />
+        <ul style="padding-left: 1.5em;">
+            <li><b>Element</b>: 測定対象の元素記号</li><br />
+            <li><b>Edge</b>: 吸収端［K, L1, L2, L3, M］</li>
+        </ul><br />
+        <p>　選択した元素・吸収端に対応する吸収端エネルギー(eV)とブラッグ角が右側に表示されます。</p><br />
+        <p>※一般的なSi2結晶分光器では測定できないエネルギー領域の吸収端はグレーアウトされ選択できません。</p>
+    </div>
+    <br />
+    <hr /><br />
+    <div id="Parameters">
+        <h3>Parameters</h3><br />
+        <p>　Quickスキャンのパラメータを設定します。</p><br />
+        <ul style="padding-left: 1.5em;">
+            <li><b>Begin</b><small> [eV]</small>: スキャン開始エネルギー</li><br />
+            <ul style="padding-left: 1.5em;">
+                <li><b>ΔE0</b><small> [eV]</small>: 吸収端からの相対エネルギー（Begin = E<sub>0</sub> + ΔE0）</li>
+            </ul><br />
+            <p>※BeginとΔE0は連動しており、一方を変更するともう一方が自動更新されます。</p><br />
+            <li><b>End</b><small> [eV]</small>: スキャン終了エネルギー</li><br />
+            <ul style="padding-left: 1.5em;">
+                <li><b>K</b>: 波数<small> [Å<sup>-1</sup>]</small>（End = E<sub>0</sub> + K² / 0.2625）</li>
+            </ul><br />
+            <p>※EndとKは連動しており、一方を変更するともう一方が自動更新されます。</p><br />
+            <li><b>Step</b><small> [eV]</small>: ステップ幅</li><br />
+            <p>右側に「<b>Total points</b>（総測定点数）」が表示されます。</p><br />
+            <li><b>Exposure</b><small> [sec.]</small>: スキャン全体の露光時間</li><br />
+            <p>右側にモノクロメータの<b>主軸回転速度</b><small> [°/sec.] </small>が表示されます。</p>
+        </ul><br />
+        <p>※実際のQuickスキャンでは、等速回転するモノクロメータに対して等時間間隔でデータ収集をおこなうため、
+            厳密には「等エネルギー間隔」とはなりません。<b>Step</b>値は「分光器がE<sub>0</sub>近傍を通過する際の
+            エネルギー間隔が<b>Step</b><small>[eV]</small>となるような等時間間隔でデータ収集が行われる」ことを意味します。</p>
+    </div>
+    <br />
+    <hr /><br />
+    <div id="File">
+        <h3>File</h3><br />
+        <p>　パラメータの保存・読込を行います。</p><br />
+        <ul style="padding-left: 1.5em;">
+            <li><b>Save as</b>: 現在のパラメータをファイルとして保存します</li><br />
+            <ul style="padding-left: 1.5em;">
+                <li>Agenda (SAGA-LS)：SAGA-LS形式のAgendaファイル（.agenda）として保存</li>
+            </ul><br />
+            <li><b>Load from</b>: 設定ファイルを読み込み、現在のパラメータとして復元します</li><br />
+            <ul style="padding-left: 1.5em;">
+                <li>Agenda (SAGA-LS)：SAGA-LS形式のAgendaファイルを読み込み</li>
+            </ul><br />
+        </ul><br />
+        <p>※ファイルをカード上にドラッグ＆ドロップすることでも読み込みが可能です。</p><br />
+    </div>
+    <br />
+    <hr /><br />
+    <div id="Licence">
+        <h3>Licence</h3><br />
+        <p>このアプリのライセンスは"The MIT License (MIT)"です。</p><br />
+        <p>使用するライブラリを含めた詳細は【ライセンス】ボタン<i class="mdi mdi-license mr-1"></i>をクリックしてください。</p>
+    </div>
+</div>
