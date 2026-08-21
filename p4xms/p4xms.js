@@ -12,6 +12,8 @@ createApp({
         const showHelp = ref(false)
         const hasHelp = ref(false)
         const selectedXtal = ref(null)
+        const braggSpeed = ref(0.138889)
+        const overheadTime = ref(0.5)
         const selectedElement = ref(null)
         const selectedEdge = ref(null)
         const availableEdges = ref([])
@@ -146,6 +148,86 @@ createApp({
             if (!selectedElement.value || !selectedEdge.value) return ''
             const el = getElementByName(selectedElement.value)
             return el[selectedEdge.value] ?? ''
+        })
+
+        // 総測定点数
+        const totalPoints = computed(() => {
+            if (!blocks.value || blocks.value.length === 0) return 0
+            let pts = 0
+            for (let i = 0; i < blocks.value.length - 1; i++) {
+                const b = blocks.value[i]
+                if (b.TYPE_I === TYPE_I.BY_DIVS) {
+                    pts += Number(b.NUM_I) || 0
+                } else if (b.TYPE_I === TYPE_I.BY_STEP) {
+                    const nextB = blocks.value[i + 1]
+                    if (nextB) {
+                        const deltaE = nextB.BEGIN - b.BEGIN
+                        const step = Number(b.NUM_I)
+                        if (step > 0) {
+                            pts += Math.round(deltaE / step)
+                        }
+                    }
+                }
+            }
+            return pts + 1 // 最終エネルギー点
+        })
+
+        // 露光時間合計 [sec.]
+        const totalExpTime = computed(() => {
+            if (!blocks.value || blocks.value.length === 0) return 0
+            let expSec = 0
+            for (let i = 0; i < blocks.value.length - 1; i++) {
+                const b = blocks.value[i]
+                let pts = 0
+                if (b.TYPE_I === TYPE_I.BY_DIVS) {
+                    pts = Number(b.NUM_I) || 0
+                } else if (b.TYPE_I === TYPE_I.BY_STEP) {
+                    const nextB = blocks.value[i + 1]
+                    if (nextB) {
+                        const deltaE = nextB.BEGIN - b.BEGIN
+                        const step = Number(b.NUM_I)
+                        if (step > 0) {
+                            pts += Math.round(deltaE / step)
+                        }
+                    }
+                }
+                expSec += pts * (Number(b.EXPT) || 0)
+            }
+            const finalB = blocks.value[blocks.value.length - 1]
+            if (finalB) {
+                expSec += Number(finalB.EXPT) || 0
+            }
+            return expSec
+        })
+
+        // 分光器ブラッグ角移動時間合計 [sec.]
+        const totalMoveTime = computed(() => {
+            if (!blocks.value || blocks.value.length < 2 || !selectedXtal.value?.d || !braggSpeed.value || braggSpeed.value <= 0) return 0
+            const startE = blocks.value[0].BEGIN
+            const finalE = blocks.value[blocks.value.length - 1].BEGIN
+            const d = selectedXtal.value.d
+            const thetaStart = eV2deg(startE, d)
+            const thetaFinal = eV2deg(finalE, d)
+            if (isNaN(thetaStart) || isNaN(thetaFinal)) return 0
+            const deltaTheta = Math.abs(thetaStart - thetaFinal)
+            return deltaTheta / braggSpeed.value
+        })
+
+        // オーバーヘッド時間合計 [sec.]
+        const totalOverheadTime = computed(() => {
+            const ov = Number(overheadTime.value) || 0
+            return totalPoints.value * ov
+        })
+
+        // 総測定時間 [sec.]
+        const totalMeasurementTime = computed(() => {
+            return totalExpTime.value + totalMoveTime.value + totalOverheadTime.value
+        })
+
+        // 総測定時間フォーマット（~ #.# min.）
+        const totalMeasurementTimeFormatted = computed(() => {
+            const min = (totalMeasurementTime.value / 60).toFixed(1)
+            return `~ ${min} min.`
         })
 
         // 選択された Element で値が 0.00 の Edge は disabled にする
@@ -949,6 +1031,7 @@ createApp({
             licenseDialog, licenseContent,
             helpContent, showHelp, hasHelp,
             xtals, selectedXtal, changeXtalPlane,
+            braggSpeed, overheadTime,
             elementNames, selectedElement, selectedEdge, edges,
             selectedEdge, selectedEdgeValue, availableEdges,
             blocks, activeBlockMenuIndex, toggleBlockMenu,
@@ -965,6 +1048,7 @@ createApp({
             isOKDisabled_T, isInvalid_T, onInput_T, onBlur_T, onUpdate_T, onEnter_T,
             addBlock, removeBlock, mergeBlocks, splitBlock,
             onClick_Tplus, onClick_Tminus,
+            totalPoints, totalMeasurementTimeFormatted, totalExpTime, totalMoveTime, totalOverheadTime, totalMeasurementTime,
             onSaveAsAgenda, onLoadFromAgenda, loadAgendaFromFile,
             isDragging, onDrop,
             snackbar, snackbarText,
