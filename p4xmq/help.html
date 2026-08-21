@@ -1,0 +1,69 @@
+<div id="help_text">
+    <div id="introduction">
+        <p>　このアプリはXAS（X線吸収分光）のQuickスキャン測定におけるモノクロメータおよびスキャンパラメータを計算・設定するためのツールです。
+            設定したパラメータはSAGA-LS形式のAgendaファイルとして保存・読込することができます。</p>
+    </div>
+    <br />
+    <hr /><br />
+    <div id="Monochrometer">
+        <h3>Monochrometer</h3><br />
+        <p>　分光結晶の結晶面を選択します。</p><br />
+        <ul style="padding-left: 1.5em;">
+            <li><b>Si(111)</b>: d = 3.13551 Å</li>
+            <li><b>Si(311)</b>: d = 1.63747 Å</li>
+            <li><b>Si(220)</b>: d = 1.92010 Å</li>
+            <li><b>Other...</b>: 任意の格子定数(d)を入力できます</li>
+        </ul><br />
+        <p>　選択された結晶面に対応する格子面間隔(d)が右側に表示されます。
+            「Other...」を選択した場合は、格子面間隔を直接入力することができます。</p>
+    </div>
+    <br />
+    <hr /><br />
+    <div id="Elements">
+        <h3>Elements</h3><br />
+        <p>　測定対象の元素と吸収端を選択します。</p><br />
+        <ul style="padding-left: 1.5em;">
+            <li><b>Element</b>: 測定対象の元素記号を選択します</li><br />
+            <li><b>Edge</b>: 吸収端（K, L1, L2, L3）を選択します</li>
+        </ul><br />
+        <p>　選択した元素・吸収端に対応する吸収端エネルギー(eV)とブラッグ角が右側に表示されます。</p><br />
+        <p>※値が0の吸収端はグレーアウトされ選択できません。</p>
+    </div>
+    <br />
+    <hr /><br />
+    <div id="Parameters">
+        <h3>Parameters</h3><br />
+        <p>　Quickスキャンのパラメータを設定します。</p><br />
+        <ul style="padding-left: 1.5em;">
+            <li><b>Begin</b><small> [eV]</small>: スキャン開始エネルギー</li><br />
+            <li><b>ΔE0</b><small> [eV]</small>: 吸収端からの相対エネルギー（Begin = Edge + ΔE0）</li><br />
+            <p>※BeginとΔE0は連動しており、一方を変更するともう一方が自動更新されます。</p><br />
+            <li><b>End</b><small> [eV]</small>: スキャン終了エネルギー</li><br />
+            <li><b>K</b>: 波数ベクトル（End = E0 + K² / 0.2625）</li><br />
+            <p>※EndとKは連動しており、一方を変更するともう一方が自動更新されます。</p><br />
+            <li><b>Step</b><small> [eV]</small>: エネルギーステップ幅</li><br />
+            <p>　右側にスキャン範囲の<b>Total points</b>（総測定点数）が表示されます。</p><br />
+            <li><b>Exposure</b><small> [sec.]</small>: スキャン全体の露光時間</li><br />
+            <p>　右側にモノクロメータの<b>回転速度</b>（°/sec.）が表示されます。</p>
+        </ul>
+    </div>
+    <br />
+    <hr /><br />
+    <div id="File">
+        <h3>File</h3><br />
+        <p>　パラメータの保存・読込を行います。</p><br />
+        <ul style="padding-left: 1.5em;">
+            <li><b>Save as</b>: 現在のパラメータをSAGA-LS形式のAgendaファイル（.agenda）として保存します</li><br />
+            <li><b>Load from</b>: Agendaファイルを読み込み、パラメータを復元します</li>
+        </ul><br />
+        <p>※Agendaファイルをカード上にドラッグ＆ドロップすることでも読み込みが可能です。</p><br />
+        <p>※対応するスキャンタイプは「Quick」のみです。</p>
+    </div>
+    <br />
+    <hr /><br />
+    <div id="Licence">
+        <h3>Licence</h3><br />
+        <p>このアプリのライセンスは"The MIT License (MIT)"です。</p><br />
+        <p>使用するライブラリを含めた詳細は【ライセンス】ボタンをクリックしてください。</p>
+    </div>
+</div>
