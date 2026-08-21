@@ -83,7 +83,7 @@
                                 </v-toolbar-title>
                             </v-toolbar>
                             <v-card-text class="pa-4">
-                                <v-row align="center" class="mb-2" dense="compact">
+                                <v-row align="center" class="mb-4" dense="compact">
                                     <v-col cols="4">
                                         <v-select label="Crystal Plane" :items="xtals" item-title="name"
                                             v-model="selectedXtal" return-object variant="outlined" density="compact"
@@ -102,6 +102,20 @@
                                             <strong>{{ selectedXtal?.d ?? '-' }}</strong> <span
                                                 class="ml-1 text-caption text-grey-medium-emphasis">Å</span>
                                         </div>
+                                    </v-col>
+                                </v-row>
+                                <v-row align="center" dense="compact">
+                                    <v-col cols="4">
+                                        <v-number-input label="Bragg Axis Speed" v-model="braggSpeed"
+                                            suffix="°/sec." variant="outlined" density="compact"
+                                            control-variant="stacked" :precision="6" :step="0.000001"
+                                            :min="0.000001" :max="0.150000" hide-details></v-number-input>
+                                    </v-col>
+                                    <v-col cols="4">
+                                        <v-number-input label="Overhead" v-model="overheadTime"
+                                            suffix="sec." variant="outlined" density="compact"
+                                            control-variant="stacked" :precision="3" :step="0.001"
+                                            :min="0" hide-details></v-number-input>
                                     </v-col>
                                 </v-row>
                             </v-card-text>
@@ -406,6 +420,30 @@
                                                     <td v-else style="display: none;"></td>
                                                 </tr>
                                             </tbody>
+                                            <tfoot>
+                                                <tr>
+                                                    <td colspan="4" class="pt-3 pb-1">
+                                                        <hr style="border: none; border-top: 1px solid #e0e0e0;">
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <td colspan="2"></td>
+                                                    <td class="pa-1">
+                                                        <div class="d-flex align-center justify-center bg-grey-lighten-3 rounded px-1 border text-body-2 text-grey-darken-3"
+                                                            style="height: 38px; cursor: default;">
+                                                            <span class="text-grey-medium-emphasis mr-1 text-caption">Total</span>
+                                                            <strong>{{ totalPoints }}</strong>
+                                                            <span class="ml-1 text-caption text-grey-medium-emphasis">pts</span>
+                                                        </div>
+                                                    </td>
+                                                    <td class="pa-1">
+                                                        <div class="d-flex align-center justify-center bg-grey-lighten-3 rounded px-1 border text-body-2 text-grey-darken-3"
+                                                            style="height: 38px; cursor: default;">
+                                                            <strong>{{ totalMeasurementTimeFormatted }}</strong>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            </tfoot>
                                         </table>
                                     </v-col>
                                 </v-row>
