@@ -106,16 +106,15 @@
                                 </v-row>
                                 <v-row align="center" dense="compact">
                                     <v-col cols="4">
-                                        <v-number-input label="Bragg Axis Speed" v-model="braggSpeed"
-                                            suffix="°/sec." variant="outlined" density="compact"
-                                            control-variant="stacked" :precision="6" :step="0.000001"
-                                            :min="0.000001" :max="0.150000" hide-details></v-number-input>
+                                        <v-number-input label="Bragg Axis Speed" v-model="braggSpeed" suffix="°/sec."
+                                            variant="outlined" density="compact" control-variant="stacked"
+                                            :precision="6" :step="0.000001" :min="0.000001" :max="0.150000"
+                                            hide-details></v-number-input>
                                     </v-col>
                                     <v-col cols="4">
-                                        <v-number-input label="Overhead" v-model="overheadTime"
-                                            suffix="sec." variant="outlined" density="compact"
-                                            control-variant="stacked" :precision="3" :step="0.001"
-                                            :min="0" hide-details></v-number-input>
+                                        <v-number-input label="Overhead" v-model="overheadTime" suffix="sec."
+                                            variant="outlined" density="compact" control-variant="stacked"
+                                            :precision="3" :step="0.001" :min="0" hide-details></v-number-input>
                                     </v-col>
                                 </v-row>
                             </v-card-text>
@@ -286,77 +285,68 @@
                                             <thead>
                                                 <tr class="bg-blue-darken-1 text-white">
                                                     <th class="text-caption text-center font-weight-bold pa-3 border-md"
-                                                        style="width: 72px; --v-border-color: white;">BLOCK</th>
+                                                        style="width: 300px; --v-border-color: white;">BOUNDARY ENERGY</th>
                                                     <th class="text-caption text-center font-weight-bold pa-3 border-md"
-                                                        style="width: 180px; --v-border-color: white;">ENERGY</th>
-                                                    <th class="text-caption text-center font-weight-bold pa-3 border-md"
-                                                        style="width: 128px; --v-border-color: white;">INTERPOLATION
+                                                        style="width: 160px; --v-border-color: white;">INTERPOLATION
                                                     </th>
                                                     <th class="text-caption text-center font-weight-bold pa-3 border-md"
-                                                        style="width: 128px; --v-border-color: white;">EXPOSURE</th>
+                                                        style="width: 160px; --v-border-color: white;">EXPOSURE</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
                                                 <tr v-for="(block, index) in blocks" :key="index">
-                                                    <!-- 1. BLOCK -->
-                                                    <td class="pa-0 text-center"
-                                                        style="position: relative; overflow: visible; width: 70px;">
-                                                        <v-speed-dial size="small" location="right center"
-                                                            transition="fade-transition" attach>
-                                                            <template v-slot:activator="{ props: activatorProps }">
-                                                                <v-chip v-bind="activatorProps" variant="flat"
-                                                                    color="transparent" rounded="lg"
-                                                                    class="ma-0 px-1 text-body-2 font-weight-bold"
-                                                                    style="min-width: 60px; width: 60px; height: 32px; justify-content: space-between; overflow: hidden;">
-                                                                    <template v-slot:prepend>
-                                                                        <v-icon icon="mdi-menu" class="mr-1"
-                                                                            style="font-size: 20px;"></v-icon>
-                                                                    </template>
-                                                                    <span class="text-no-wrap">{{ index + 1 }}.</span>
-                                                                </v-chip>
-                                                            </template>
-                                                            <v-btn key="1" icon="mdi-plus-circle"
-                                                                :disabled="(blocks.length > 12) || (0 < index && index < blocks.length-1)"
-                                                                @click="addBlock(index)"></v-btn>
-                                                            <v-btn key="2" icon="mdi-minus-circle"
-                                                                :disabled="(blocks.length <= 2) || (0 < index && index < blocks.length-1)"
-                                                                @click="removeBlock(index)"></v-btn>
-                                                            <v-btn key="3" icon="mdi-close-circle"
-                                                                :disabled="index < 1 || blocks.length-1 <= index"
-                                                                @click="mergeBlocks(index)"></v-btn>
-                                                        </v-speed-dial>
-                                                    </td>
-                                                    <!-- 2. ENERGY -->
+                                                    <!-- 1. ENERGY -->
                                                     <td class="pa-1">
-                                                        <v-chip v-model="block.BEGIN"
-                                                            class="px-3 text-body-1 justify-space-between"
-                                                            density="default" variant="flat" color="grey-lighten-3"
-                                                            rounded="lg"
-                                                            style="width: 220px; cursor: pointer; font-family: 'Roboto Mono';"
-                                                            @click="openDialog_E(index, block)">
-                                                            <span class="ms-auto text-right" style="min-width: 75px;">
-                                                                {{ Number(block.BEGIN).toFixed(2) }}
-                                                            </span>
-                                                            <template v-slot:prepend>
-                                                                <v-chip class="mr-2 text-caption justify-center"
-                                                                    density="compact" color="grey-darken-1"
-                                                                    variant="flat"
-                                                                    style="width: 72px; cursor: pointer; font-family: 'Roboto Mono';"
-                                                                    @click.stop="openDialog_K(index, block)">
-                                                                    {{ Number(block.BEGIN) < Number(selectedEdgeValue)
-                                                                        ? '(' + (Number(block.BEGIN) -
-                                                                        Number(selectedEdgeValue)).toFixed(1) + ')' :
-                                                                        eV2k(Number(block.BEGIN),
-                                                                        Number(selectedEdgeValue)).toFixed(2)
-                                                                        }}</v-chip>
-                                                            </template>
-                                                            <template v-slot:append>
-                                                                <span class="ml-2 text-caption"
-                                                                    style="margin-top: 3px;">eV</span>
-                                                            </template>
-                                                        </v-chip>
+                                                        <div class="d-inline-flex align-center">
+                                                            <v-speed-dial size="small" location="right center"
+                                                                transition="fade-transition" attach>
+                                                                <template v-slot:activator="{ props: activatorProps }">
+                                                                    <v-btn v-bind="activatorProps" icon="mdi-menu"
+                                                                        variant="text" density="compact" size="small"
+                                                                        class="ma-0"></v-btn>
+                                                                </template>
+                                                                <v-btn key="1" icon="mdi-plus-circle"
+                                                                    :disabled="(blocks.length > 12) || (0 < index && index < blocks.length-1)"
+                                                                    @click="addBlock(index)"></v-btn>
+                                                                <v-btn key="2" icon="mdi-minus-circle"
+                                                                    :disabled="(blocks.length <= 2) || (0 < index && index < blocks.length-1)"
+                                                                    @click="removeBlock(index)"></v-btn>
+                                                                <v-btn key="3" icon="mdi-close-circle"
+                                                                    :disabled="index < 1 || blocks.length-1 <= index"
+                                                                    @click="mergeBlocks(index)"></v-btn>
+                                                            </v-speed-dial><span>&nbsp;</span>
+                                                            <v-chip v-model="block.BEGIN"
+                                                                class="px-3 text-body-1 justify-space-between"
+                                                                density="default" variant="flat" color="indigo-lighten-5"
+                                                                rounded="lg"
+                                                                style="width: 255px; cursor: pointer; font-family: 'Roboto Mono';"
+                                                                @click="openDialog_E(index, block)">
+                                                                <span class="ms-auto text-right"
+                                                                    style="min-width: 80px;">
+                                                                    {{ Number(block.BEGIN).toFixed(2) }}
+                                                                </span>
+                                                                <template v-slot:prepend>
+                                                                    <v-chip class="mr-2 text-caption justify-center"
+                                                                        density="compact" color="indigo-darken-3"
+                                                                        variant="flat"
+                                                                        style="width: 80px; cursor: pointer; font-family: 'Roboto Mono';"
+                                                                        @click.stop="openDialog_K(index, block)">
+                                                                        {{ Number(block.BEGIN) <
+                                                                            Number(selectedEdgeValue) ? '(' +
+                                                                            (Number(block.BEGIN) -
+                                                                            Number(selectedEdgeValue)).toFixed(1) + ')'
+                                                                            : eV2k(Number(block.BEGIN),
+                                                                            Number(selectedEdgeValue)).toFixed(2)
+                                                                            }}</v-chip>
+                                                                </template>
+                                                                <template v-slot:append>
+                                                                    <span class="ml-2 text-caption"
+                                                                        style="margin-top: 3px;">eV</span>
+                                                                </template>
+                                                            </v-chip>
+                                                        </div>
                                                     </td>
-                                                    <!-- 3. INTERPOLATION -->
+                                                    <!-- 2. INTERPOLATION -->
                                                     <td v-if="block.TYPE_I !== TYPE_I.BY_FINAL" class="pa-1"
                                                         style="height: 40px; vertical-align: middle;">
                                                         <div class="d-inline-flex align-center"
@@ -373,7 +363,7 @@
                                                                     @click="splitBlock(index)"></v-btn>
                                                             </v-speed-dial><span>&nbsp;</span>
                                                             <v-chip class="px-3 text-body-1 justify-space-between"
-                                                                density="default" variant="flat" color="grey-lighten-3"
+                                                                density="default" variant="flat" color="indigo-lighten-5"
                                                                 rounded="lg"
                                                                 style="width: 120px; cursor: pointer; font-family: 'Roboto Mono';"
                                                                 @click="openDialog_I(index, block)">
@@ -388,11 +378,11 @@
                                                         </div>
                                                     </td>
                                                     <td v-else style="display: none;"></td>
-                                                    <!-- 4. EXPOSURE -->
+                                                    <!-- 3. EXPOSURE -->
                                                     <td v-if="block.TYPE_I !== TYPE_I.BY_FINAL"
                                                         style="height: 40px; vertical-align: middle;">
                                                         <v-chip class="px-3 text-body-1" density="default"
-                                                            variant="flat" color="grey-lighten-3" rounded="lg"
+                                                            variant="flat" color="indigo-lighten-5" rounded="lg"
                                                             @click="openDialog_T(index, block)"
                                                             style="width: 154px; cursor: pointer; font-family: 'Roboto Mono'; position: relative; top: 20px;">
                                                             <span class="ms-auto text-right" style="min-width: 48px;">
@@ -422,24 +412,42 @@
                                             </tbody>
                                             <tfoot>
                                                 <tr>
-                                                    <td colspan="4" class="pt-3 pb-1">
+                                                    <td colspan="3" class="pt-3 pb-1">
                                                         <hr style="border: none; border-top: 1px solid #e0e0e0;">
                                                     </td>
                                                 </tr>
                                                 <tr>
-                                                    <td colspan="2"></td>
                                                     <td class="pa-1">
-                                                        <div class="d-flex align-center justify-center bg-grey-lighten-3 rounded px-1 border text-body-2 text-grey-darken-3"
+                                                        <div class="d-flex align-center justify-space-between bg-grey-lighten-3 rounded px-2 border text-body-2 text-grey-darken-3"
                                                             style="height: 38px; cursor: default;">
-                                                            <span class="text-grey-medium-emphasis mr-1 text-caption">Total</span>
-                                                            <strong>{{ totalPoints }}</strong>
-                                                            <span class="ml-1 text-caption text-grey-medium-emphasis">pts</span>
+                                                            <span style="font-family: 'Roboto Mono'; font-size: 0.8rem;">
+                                                                <strong>{{ startEnergyFormatted }}</strong>
+                                                                <span class="text-grey-medium-emphasis mx-1">~</span>
+                                                                <strong>{{ finalEnergyFormatted }}</strong>
+                                                                <span class="text-caption text-grey-medium-emphasis ml-1">eV</span>
+                                                            </span>
+                                                            <span class="text-caption text-grey-medium-emphasis">
+                                                                (Total <strong>{{ totalBlocks }}</strong> {{ totalBlocks === 1 ? 'block' : 'blocks' }})
+                                                            </span>
                                                         </div>
                                                     </td>
                                                     <td class="pa-1">
                                                         <div class="d-flex align-center justify-center bg-grey-lighten-3 rounded px-1 border text-body-2 text-grey-darken-3"
                                                             style="height: 38px; cursor: default;">
-                                                            <strong>{{ totalMeasurementTimeFormatted }}</strong>
+                                                            <span
+                                                                class="text-grey-medium-emphasis mr-1 text-caption">Total</span>
+                                                            <strong>{{ totalPoints }}</strong>
+                                                            <span
+                                                                class="ml-1 text-caption text-grey-medium-emphasis">pts</span>
+                                                        </div>
+                                                    </td>
+                                                    <td class="pa-1">
+                                                        <div class="d-flex align-center justify-center bg-grey-lighten-3 rounded px-1 border text-body-2 text-grey-darken-3"
+                                                            style="height: 38px; cursor: default;">
+                                                            <span class="text-grey-medium-emphasis mr-1 text-caption">~</span>
+                                                            <strong>{{ totalMeasurementTimeMin }}</strong>
+                                                            <span
+                                                                class="ml-1 text-caption text-grey-medium-emphasis">min.</span>
                                                         </div>
                                                     </td>
                                                 </tr>

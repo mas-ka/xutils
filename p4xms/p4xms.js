@@ -230,6 +230,29 @@ createApp({
             return `~ ${min} min.`
         })
 
+        // 総測定時間 [分]
+        const totalMeasurementTimeMin = computed(() => {
+            return (totalMeasurementTime.value / 60).toFixed(1)
+        })
+
+        // 開始エネルギー [eV]
+        const startEnergyFormatted = computed(() => {
+            if (!blocks.value || blocks.value.length === 0) return '-'
+            return Number(blocks.value[0].BEGIN).toFixed(2)
+        })
+
+        // 終了エネルギー [eV]
+        const finalEnergyFormatted = computed(() => {
+            if (!blocks.value || blocks.value.length === 0) return '-'
+            return Number(blocks.value[blocks.value.length - 1].BEGIN).toFixed(2)
+        })
+
+        // 総ブロック数 (区間数)
+        const totalBlocks = computed(() => {
+            if (!blocks.value || blocks.value.length <= 1) return 0
+            return blocks.value.length - 1
+        })
+
         // 選択された Element で値が 0.00 の Edge は disabled にする
         // availableEdges を再構築し、現在の selectedEdge が無効なら最初の有効な Edge に切り替える
         const buildAvailableEdges = function (elementName) {
@@ -670,7 +693,7 @@ createApp({
             isDialogOpen_T.value = false
         }
 
-        // 左スピードダイアルの[+]がクリックされた
+        // ENERGY列スピードダイアルの[+]がクリックされた
         const addBlock = (index) => {
             if (index === 0) { // 先頭への追加
                 const e = blocks.value[0].BEGIN
@@ -691,7 +714,7 @@ createApp({
             }
         }
 
-        // 左スピードダイアルの[-]がクリックされた
+        // ENERGY列スピードダイアルの[-]がクリックされた
         const removeBlock = (index) => {
             if (index === 0) { // 先頭の削除
                 blocks.value.shift()
@@ -705,7 +728,7 @@ createApp({
             }
         }
 
-        // 左スピードダイアルの[X]がクリックされた
+        // ENERGY列スピードダイアルの[X]がクリックされた
         const mergeBlocks = (index) => {
             const prevBlock = blocks.value[index - 1]
             const currBlock = blocks.value[index]
@@ -725,7 +748,7 @@ createApp({
             }
         }
 
-        // 右スピードダイアルの[<]がクリックされた
+        // INTERPOLATION列スピードダイアルの[<]がクリックされた
         const splitBlock = (index) => {
             const E0 = selectedEdgeValue.value
             const currBlock = blocks.value[index]
@@ -1048,7 +1071,8 @@ createApp({
             isOKDisabled_T, isInvalid_T, onInput_T, onBlur_T, onUpdate_T, onEnter_T,
             addBlock, removeBlock, mergeBlocks, splitBlock,
             onClick_Tplus, onClick_Tminus,
-            totalPoints, totalMeasurementTimeFormatted, totalExpTime, totalMoveTime, totalOverheadTime, totalMeasurementTime,
+            totalPoints, totalMeasurementTimeFormatted, totalMeasurementTimeMin, totalExpTime, totalMoveTime, totalOverheadTime, totalMeasurementTime,
+            startEnergyFormatted, finalEnergyFormatted, totalBlocks,
             onSaveAsAgenda, onLoadFromAgenda, loadAgendaFromFile,
             isDragging, onDrop,
             snackbar, snackbarText,
