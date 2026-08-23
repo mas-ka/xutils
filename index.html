@@ -29,8 +29,64 @@
             border: none;
         }
     </style>
-    <!-- Page Title -->
+    <!-- Page Title & Meta -->
     <title>xutils</title>
+    <meta name="description" content="xutils: Web utilities for X-ray analysis and synchrotron experiments, including samxam, p4xms, p4xmq, RetroCog, Epiphany, and calq.">
+
+    <!-- JSON-LD Structured Data for SEO / AI Crawlers -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "WebApplication",
+        "name": "xutils",
+        "description": "Web utilities for X-ray absorption (XAS/XAFS) and scattering (SAXS) measurement and analysis",
+        "applicationCategory": "ScientificApplication",
+        "hasPart": [
+            {
+                "@type": "WebApplication",
+                "name": "samxam",
+                "description": "Sample preparation for XAS measurement",
+                "url": "index.html?app=samxam",
+                "applicationCategory": "ScientificApplication"
+            },
+            {
+                "@type": "WebApplication",
+                "name": "p4xms",
+                "description": "Parameters for XAS measurement in Step scan",
+                "url": "index.html?app=p4xms",
+                "applicationCategory": "ScientificApplication"
+            },
+            {
+                "@type": "WebApplication",
+                "name": "p4xmq",
+                "description": "Parameters for XAS measurement in Quick scan",
+                "url": "index.html?app=p4xmq",
+                "applicationCategory": "ScientificApplication"
+            },
+            {
+                "@type": "WebApplication",
+                "name": "RetroCog",
+                "description": "Viewer of XAS file in '9809' format",
+                "url": "index.html?app=retrocog",
+                "applicationCategory": "ScientificApplication"
+            },
+            {
+                "@type": "WebApplication",
+                "name": "Epiphany",
+                "description": "Applying ROI to 'Spectrogram' Post-productively",
+                "url": "index.html?app=epiphany",
+                "applicationCategory": "ScientificApplication"
+            },
+            {
+                "@type": "WebApplication",
+                "name": "calq",
+                "description": "Calculator for Q range in SAXS measurement",
+                "url": "index.html?app=calq",
+                "applicationCategory": "ScientificApplication"
+            }
+        ]
+    }
+    </script>
 </head>
 
 <body>
