@@ -54,7 +54,8 @@
                     </v-list-subheader>
 
                     <v-list-item>
-                        <v-btn block color="primary" variant="text" href="samxam/index.html" target="main_column">
+                        <v-btn block color="primary" variant="text" href="samxam/index.html" target="main_column"
+                            @click="onSelectApp('samxam', $event)">
                             samxam
                             <v-tooltip activator="parent" location="right">
                                 Sample preparation for XAS measurement
@@ -63,7 +64,8 @@
                     </v-list-item>
 
                     <v-list-item>
-                        <v-btn block color="primary" variant="text" href="p4xms/index.html" target="main_column">
+                        <v-btn block color="primary" variant="text" href="p4xms/index.html" target="main_column"
+                            @click="onSelectApp('p4xms', $event)">
                             p4xms
                             <v-tooltip activator="parent" location="right">
                                 Parameters for XAS measurement in Step scan
@@ -72,7 +74,8 @@
                     </v-list-item>
 
                     <v-list-item>
-                        <v-btn block color="primary" variant="text" href="p4xmq/index.html" target="main_column">
+                        <v-btn block color="primary" variant="text" href="p4xmq/index.html" target="main_column"
+                            @click="onSelectApp('p4xmq', $event)">
                             p4xmq
                             <v-tooltip activator="parent" location="right">
                                 Parameters for XAS measurement in Quick scan
@@ -81,7 +84,8 @@
                     </v-list-item>
 
                     <v-list-item>
-                        <v-btn block color="primary" variant="text" href="retrocog/index.html" target="main_column">
+                        <v-btn block color="primary" variant="text" href="retrocog/index.html" target="main_column"
+                            @click="onSelectApp('retrocog', $event)">
                             RetroCog
                             <v-tooltip activator="parent" location="right">
                                 Viewer of XAS file in '9809' format
@@ -90,7 +94,8 @@
                     </v-list-item>
 
                     <v-list-item>
-                        <v-btn block color="primary" variant="text" href="epiphany/index.html" target="main_column">
+                        <v-btn block color="primary" variant="text" href="epiphany/index.html" target="main_column"
+                            @click="onSelectApp('epiphany', $event)">
                             Epiphany
                             <v-tooltip activator="parent" location="right">
                                 Applying ROI to "Spectrogram" Post-productively
@@ -106,7 +111,8 @@
                     </v-list-subheader>
 
                     <v-list-item>
-                        <v-btn block color="primary" variant="text" href="calq/index.html" target="main_column">
+                        <v-btn block color="primary" variant="text" href="calq/index.html" target="main_column"
+                            @click="onSelectApp('calq', $event)">
                             calq
                             <v-tooltip activator="parent" location="right">
                                 Calcurator for Q range
@@ -119,7 +125,7 @@
             <!-- 右側メインコンテンツ（iframe領域） -->
             <v-main style="height: 100vh;">
                 <div class="iframe-container">
-                    <iframe id="parent-iframe" name="main_column" class="full-iframe"></iframe>
+                    <iframe id="parent-iframe" name="main_column" class="full-iframe" :src="currentSrc"></iframe>
                 </div>
             </v-main>
         </v-app>
@@ -132,13 +138,67 @@
 
     <!-- 3. インラインでのVue初期化スクリプト -->
     <script>
-        const { createApp } = Vue;
+        const { createApp, ref, onMounted } = Vue;
         const { createVuetify } = Vuetify;
 
-        // グローバル読み込みなので、Vuetifyがすべてのコンポーネントを自動で保持しています
+        const APP_MAP = {
+            'samxam': 'samxam/index.html',
+            'p4xms': 'p4xms/index.html',
+            'p4xmq': 'p4xmq/index.html',
+            'retrocog': 'retrocog/index.html',
+            'epiphany': 'epiphany/index.html',
+            'calq': 'calq/index.html',
+        };
+
         const vuetify = createVuetify();
 
-        createApp({}).use(vuetify).mount('#app');
+        createApp({
+            setup() {
+                const currentSrc = ref('');
+
+                // URLパラメータから現在のアプリを取得してiframeのsrcを更新
+                const syncFromUrl = () => {
+                    const params = new URLSearchParams(window.location.search);
+                    const appKey = params.get('app');
+                    if (appKey && APP_MAP[appKey]) {
+                        currentSrc.value = APP_MAP[appKey];
+                        const iframe = document.getElementById('parent-iframe');
+                        if (iframe && iframe.src !== APP_MAP[appKey]) {
+                            iframe.src = APP_MAP[appKey];
+                        }
+                    } else if (!appKey) {
+                        currentSrc.value = '';
+                    }
+                };
+
+                // 左クリック時にURLパラメータを更新
+                const onSelectApp = (key, event) => {
+                    // 修飾キー（Ctrl, Cmd, Shift）やホイールクリック等の場合はURL更新をスキップ（標準の別タブ動作に任せる）
+                    if (event && (event.ctrlKey || event.metaKey || event.shiftKey || event.button !== 0)) {
+                        return;
+                    }
+                    const params = new URLSearchParams(window.location.search);
+                    if (params.get('app') !== key) {
+                        const newUrl = new URL(window.location.href);
+                        newUrl.searchParams.set('app', key);
+                        history.pushState({ app: key }, '', newUrl.toString());
+                    }
+                };
+
+                onMounted(() => {
+                    syncFromUrl();
+                    // ブラウザの戻る・進むボタンに対応
+                    window.addEventListener('popstate', () => {
+                        syncFromUrl();
+                    });
+                });
+
+                return {
+                    currentSrc,
+                    onSelectApp
+                };
+            }
+        }).use(vuetify).mount('#app');
     </script>
 </body>
 
