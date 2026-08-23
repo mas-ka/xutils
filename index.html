@@ -18,10 +18,12 @@
         #app {
             height: 100%;
             margin: 0;
+            overflow: hidden;
         }
 
         .iframe-container,
         .full-iframe {
+            display: block;
             width: 100%;
             height: 100%;
             border: none;
@@ -123,7 +125,7 @@
             </v-navigation-drawer>
 
             <!-- 右側メインコンテンツ（iframe領域） -->
-            <v-main style="height: 100vh;">
+            <v-main style="height: 100%; overflow: hidden;">
                 <div class="iframe-container">
                     <iframe id="parent-iframe" name="main_column" class="full-iframe" :src="currentSrc"></iframe>
                 </div>
