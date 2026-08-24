@@ -1,0 +1,112 @@
+<div id="help_text">
+    <div id="introduction">
+        <p>　このアプリはStepスキャンによるXAFS測定のために、モノクロメータ・測定対象元素と吸収端、
+            および複数ブロックからなるスキャンパラメータを設定・計算するためのツールです。
+            設定したパラメータはファイルとして保存・読み込むことができます。</p>
+    </div>
+    <br />
+    <hr /><br />
+    <div id="Monochrometer">
+        <h3>Monochrometer</h3><br />
+        <p>　分光結晶の結晶面や動作速度を設定します。</p><br />
+        <ul style="padding-left: 1.5em;">
+            <li><b>Crystal Plane</b>: 分光結晶の結晶面を選択します</li><br />
+            <ul style="padding-left: 1.5em;">
+                <li><b>Si(111)</b>: d = 3.13551 <small>Å</small></li>
+                <li><b>Si(311)</b>: d = 1.63747 <small>Å</small></li>
+                <li><b>Si(220)</b>: d = 1.92010 <small>Å</small></li>
+                <li><b>Other...</b>: 任意の格子面間隔<small>[Å]</small>を入力できます</li>
+            </ul><br />
+            <p>選択された結晶面に対応する格子面間隔が右側に表示されます。</p><br />
+            <li><b>Bragg Axis Speed</b><small> [°/sec.]</small>: モノクロメータ主軸（ブラッグ角回転）の移動速度</li><br />
+            <li><b>Overhead</b><small> [sec.]</small>: 測定点ごとの制御・通信オーバーヘッド時間</li>
+        </ul><br />
+        <p>※主軸速度およびオーバーヘッド時間は、総測定時間の見積もり計算に使用されます。</p>
+    </div>
+    <br />
+    <hr /><br />
+    <div id="Elements">
+        <h3>Elements</h3><br />
+        <p>　測定対象の元素と吸収端を選択します。</p><br />
+        <ul style="padding-left: 1.5em;">
+            <li><b>Element</b>: 測定対象の元素記号</li><br />
+            <li><b>Edge</b>: 吸収端［K, L1, L2, L3, M］</li>
+        </ul><br />
+        <p>　選択した元素・吸収端に対応する吸収端エネルギー (eV) とブラッグ角が右側に表示されます。</p><br />
+        <p>※一般的なSi2結晶分光器では測定できないエネルギー領域の吸収端はグレーアウトされ選択できません。</p><br />
+        <p>※元素または吸収端を変更すると、その吸収端エネルギー（E<sub>0</sub>）に合わせた標準的なパラメータに自動で初期化・設定されます。</p>
+    </div>
+    <br />
+    <hr /><br />
+    <div id="Parameters">
+        <h3>Parameters</h3><br />
+        <p>　Stepスキャンのための複数ブロックからなる測定パラメータを設定します。</p><br />
+        <p>※<b>ブロックとは</b>：測定エネルギー範囲を分割した各区間のことです。ブロックごとに異なる分割数/ステップ幅や露光時間を設定できるため、「XANES領域は微小ステップで細かく測定し、ノイズが増えるEXAFS領域は露光時間を延ばしてSN比を稼ぐ」といった、領域に応じた最適な測定条件を柔軟に組み立てることができます。
+        </p><br />
+        <ul style="padding-left: 1.5em;">
+            <li><b>BOUNDARY ENERGY</b>: 各ブロックの境界エネルギー</li><br />
+            <p>境界エネルギー<small>[eV]</small>および吸収端からの相対エネルギー ΔE<sub>0</sub><small>[eV]</small> / 波数
+                k<small>[Å⁻¹]</small>が表示されます。</p><br />
+            <ul style="padding-left: 1.5em;">
+                <li>左端の<b>ハンバーガーボタン</b> <i class="mdi mdi-menu"></i> からブロックの操作を行えます：
+                    <ul style="padding-left: 1.2em; margin-top: 4px;">
+                        <li><i class="mdi mdi-plus-circle"></i> <b>追加</b>: 先頭または末尾に新しいブロックを追加します。</li>
+                        <li><i class="mdi mdi-minus-circle"></i> <b>削除</b>: 先頭または末尾のブロックを削除します。</li>
+                        <li><i class="mdi mdi-close-circle"></i> <b>結合</b>: 途中の境界を削除し、前後のブロックを1つに結合します。</li>
+                    </ul>
+                </li>
+                <p>※設定可能なブロック数は<b>最大12ブロック</b>です（上限に達すると追加・分割ボタンが無効化されます）。</p><br />
+                <li>左側の<b>k / ΔE<sub>0</sub>欄</b>（紺色の角丸枠）をクリックすると、ダイアログで相対エネルギー ΔE<sub>0</sub><small>[eV]</small>または波数
+                    k<small>[Å⁻¹]</small>を入力して設定できます。</li>
+                <li>右側の<b>エネルギー値欄</b>をクリックすると、ダイアログで境界エネルギーの絶対値<small>[eV]</small>を直接入力して設定できます。</li><br />
+            </ul><br />
+            <li><b>INTERPOLATION</b>: ブロック内のデータ点補間方法</li><br />
+            <p>数値欄をクリックするとダイアログが開き、補間方法と値を設定できます。</p>
+            <ul style="padding-left: 1.5em;">
+                <li><b>Step</b><small> [eV]</small>: 指定したエネルギー間隔（ステップ幅）で測定します。</li>
+                <li><b>Division</b><small> [div.]</small>: ブロック内を指定した分割数で等分割して測定します。</li>
+                <li>左端の<b>ハンバーガーボタン</b> <i class="mdi mdi-menu"></i> から：
+                    <ul style="padding-left: 1.2em; margin-top: 4px;">
+                        <li><i class="mdi mdi-chevron-left-circle"></i> <b>分割</b>:
+                            対象ブロックの中間エネルギーに新しい境界を追加し、2つのブロックに分割します。</li>
+                    </ul>
+                </li>
+            </ul><br />
+            <li><b>EXPOSURE</b>: 測定点ごとの露光時間<small> [sec.]</small></li><br />
+            <p>数値欄をクリックしてダイアログから入力すると、該当ブロックの露光時間のみが個別に変更されます（±0.1秒単位）。一方、欄内の <i
+                    class="mdi mdi-minus-circle"></i> / <i class="mdi mdi-plus-circle"></i>
+                ボタンをクリックすると、そのブロック以降にあるすべてのブロックの露光時間が同じ値に連動して一括変更（±1.0秒単位）されます。</p>
+        </ul><br />
+        <p><b>【下部集計欄】</b></p>
+        <ul style="padding-left: 1.5em;">
+            <li><b>開始〜終了エネルギー / 総ブロック数</b>: 全体のスキャン範囲<small>[eV]</small>とブロック数を表示します。</li>
+            <li><b>Total pts</b>: スキャン全体の総測定点数を自動計算して表示します。</li>
+            <li><b>~ min.</b>: 露光時間合計・分光器移動時間・オーバーヘッド時間から算出された推定総測定時間を表示します。</li>
+        </ul><br />
+        <p>※推定総測定時間は概算です。実際の測定時間とは多少前後するため、実機に合わせて「Overhead」値で微調整してください。</p>
+    </div>
+    <br />
+    <hr /><br />
+    <div id="File">
+        <h3>File</h3><br />
+        <p>　パラメータの保存・読み込みを行います。</p><br />
+        <ul style="padding-left: 1.5em;">
+            <li><b>Save as</b>: 現在のパラメータをファイルとして保存します</li><br />
+            <ul style="padding-left: 1.5em;">
+                <li><b>Agenda (SAGA-LS)</b>: SAGA-LS形式のアジェンダファイル（.agenda）として保存・ダウンロード</li>
+            </ul><br />
+            <li><b>Load from</b>: 設定ファイルを読み込み、現在のパラメータとして復元します</li><br />
+            <ul style="padding-left: 1.5em;">
+                <li><b>Agenda (SAGA-LS)</b>: SAGA-LS形式のアジェンダファイルを読み込み</li>
+            </ul>
+        </ul><br />
+        <p>※ファイルを画面上にドラッグ＆ドロップすることでも読み込みが可能です。</p>
+    </div>
+    <br />
+    <hr /><br />
+    <div id="License">
+        <h3>License</h3><br />
+        <p>このアプリのライセンスは"The MIT License (MIT)"です。</p><br />
+        <p>使用するライブラリを含めた詳細は【ライセンス】ボタン<i class="mdi mdi-license mr-1"></i>をクリックしてください。</p>
+    </div>
+</div>
