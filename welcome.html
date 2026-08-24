@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>xutils - X-ray Analysis & Synchrotron Experiment Utilities</title>
+    <meta name="description"
+        content="xutils: Web utilities for X-ray absorption (XAFS) and scattering (SAXS) measurement and analysis, including samxam, p4xms, p4xmq, RetroCog, Epiphany, and calq.">
+
+    <!-- Fonts -->
+    <link
+        href="https://fonts.googleapis.com/css2?family=Noto+Serif:ital,wght@0,600;0,700;1,600&family=Roboto:wght@300;400;500;700&family=Roboto+Mono:wght@400;500&display=swap"
+        rel="stylesheet">
+    <!-- Material Design Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/@mdi/font@5.x/css/materialdesignicons.min.css" rel="stylesheet">
+    <!-- Vuetify CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/vuetify@3.12.6/dist/vuetify.min.css" rel="stylesheet">
+
+    <style>
+        body {
+            font-family: 'Roboto', -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            background-color: #f8fafc;
+            color: #334155;
+        }
+
+        .serif-title {
+            font-family: 'Noto Serif', Georgia, serif;
+            letter-spacing: 0.03em;
+        }
+
+        .mono-text {
+            font-family: 'Roboto Mono', monospace;
+        }
+
+        /* 控えめで上質なカードスタイル */
+        .tool-card {
+            border: 1px solid #e2e8f0 !important;
+            border-radius: 8px !important;
+            background-color: #ffffff !important;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            max-width: 360px;
+            width: 100%;
+            text-decoration: none !important;
+            color: inherit !important;
+        }
+
+        .tool-card:hover {
+            border-color: #6366f1 !important;
+            box-shadow: 0 6px 16px -4px rgba(99, 102, 241, 0.12), 0 2px 6px -2px rgba(0, 0, 0, 0.04) !important;
+            transform: translateY(-2px);
+        }
+
+        .section-badge {
+            display: inline-flex;
+            align-items: center;
+            font-size: 0.75rem;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            padding: 2px 10px;
+            border-radius: 4px;
+        }
+
+        .badge-xafs {
+            background-color: #eef2ff;
+            color: #4338ca;
+            border: 1px solid #c7d2fe;
+        }
+
+        .badge-saxs {
+            background-color: #f0fdf4;
+            color: #15803d;
+            border: 1px solid #bbf7d0;
+        }
+
+        .feature-chip {
+            font-size: 0.75rem;
+            color: #64748b;
+            background-color: #f1f5f9;
+            border-radius: 4px;
+            padding: 2px 8px;
+            margin-right: 6px;
+            margin-bottom: 6px;
+            display: inline-block;
+        }
+
+        .github-link {
+            transition: color 0.15s ease;
+        }
+
+        .github-link:hover {
+            color: #1e293b !important;
+            text-decoration: underline !important;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="app">
+        <v-app class="bg-slate-50" style="background-color: #f8fafc;">
+            <v-main>
+                <v-container class="py-8 px-6" style="max-width: 1100px;">
+                    <!-- ヘッダー / 概要 -->
+                    <header class="mb-8">
+                        <div class="d-flex flex-wrap align-baseline justify-space-between mb-2">
+                            <h1 class="text-h4 font-weight-bold text-slate-800 serif-title" style="color: #1e293b;">
+                                xutils
+                            </h1>
+                            <span class="text-caption text-grey-darken-1">Designed for Synchrotron Radiation &
+                                Laboratory X-ray Experiments</span>
+                        </div>
+                        <p class="text-subtitle-1 text-grey-darken-2 mb-3" style="line-height: 1.6;">
+                            X線吸収微細構造（<strong>XAFS</strong>）および
+                            X線小角散乱（<strong>SAXS</strong>）の実験準備・測定パラメータ設計・データ解析支援のためのWebユーティリティ集です。
+                        </p>
+                        <v-divider class="my-4"></v-divider>
+                    </header>
+
+                    <!-- XAFS セクション -->
+                    <section class="mb-10">
+                        <div class="d-flex align-center mb-4">
+                            <span class="section-badge badge-xafs mr-3">XAFS</span>
+                            <h2 class="text-h6 font-weight-bold text-grey-darken-3 mb-0">X線吸収分光 測定・解析支援</h2>
+                        </div>
+
+                        <v-row>
+                            <!-- SAMXAM -->
+                            <v-col cols="12" md="6" lg="4">
+                                <v-card class="tool-card pa-4" elevation="0" href="samxam/index.html" @click="launchApp('samxam', $event)">
+                                    <div class="mb-1">
+                                        <div class="serif-title text-h6 font-weight-bold" style="color: #312e81;">SAMXAM
+                                        </div>
+                                    </div>
+                                    <div class="text-caption font-weight-medium text-indigo-darken-2 mb-2">
+                                        透過XAFS 試料調製計算
+                                    </div>
+                                    <p class="text-body-2 text-grey-darken-2 flex-grow-1 mb-3"
+                                        style="line-height: 1.5;">
+                                        測定対象元素と吸収端に応じた最適フォイル厚さや、試料粉末重量、ペレット厚み、希釈剤（BN等）重量を算出します。
+                                    </p>
+                                    <div class="mb-3">
+                                        <span class="feature-chip">フォイル厚さ</span>
+                                        <span class="feature-chip">粉末試料重量</span>
+                                        <span class="feature-chip">吸収量評価</span>
+                                    </div>
+                                    <div class="d-flex justify-end pt-2" style="border-top: 1px dashed #e2e8f0;">
+                                        <v-btn size="small" variant="text" color="indigo-darken-2"
+                                            append-icon="mdi-arrow-right">
+                                            起動する
+                                        </v-btn>
+                                    </div>
+                                </v-card>
+                            </v-col>
+
+                            <!-- P4XMS -->
+                            <v-col cols="12" md="6" lg="4">
+                                <v-card class="tool-card pa-4" elevation="0" href="p4xms/index.html" @click="launchApp('p4xms', $event)">
+                                    <div class="mb-1">
+                                        <div class="serif-title text-h6 font-weight-bold" style="color: #312e81;">P4XMS
+                                        </div>
+                                    </div>
+                                    <div class="text-caption font-weight-medium text-indigo-darken-2 mb-2">
+                                        Step scan 測定パラメータ設計
+                                    </div>
+                                    <p class="text-body-2 text-grey-darken-2 flex-grow-1 mb-3"
+                                        style="line-height: 1.5;">
+                                        ステップスキャンXAFS測定のエネルギーブロック構成（領域分割・刻み幅・積算時間）を設計し、予想所要時間を計算します。
+                                    </p>
+                                    <div class="mb-3">
+                                        <span class="feature-chip">ステップスキャン</span>
+                                        <span class="feature-chip">エネルギーブロック設定</span>
+                                        <span class="feature-chip">所要測定時間予測</span>
+                                    </div>
+                                    <div class="d-flex justify-end pt-2" style="border-top: 1px dashed #e2e8f0;">
+                                        <v-btn size="small" variant="text" color="indigo-darken-2"
+                                            append-icon="mdi-arrow-right">
+                                            起動する
+                                        </v-btn>
+                                    </div>
+                                </v-card>
+                            </v-col>
+
+                            <!-- P4XMQ -->
+                            <v-col cols="12" md="6" lg="4">
+                                <v-card class="tool-card pa-4" elevation="0" href="p4xmq/index.html" @click="launchApp('p4xmq', $event)">
+                                    <div class="mb-1">
+                                        <div class="serif-title text-h6 font-weight-bold" style="color: #312e81;">P4XMQ
+                                        </div>
+                                    </div>
+                                    <div class="text-caption font-weight-medium text-indigo-darken-2 mb-2">
+                                        Quick scan (QXAFS) 測定パラメータ設計
+                                    </div>
+                                    <p class="text-body-2 text-grey-darken-2 flex-grow-1 mb-3"
+                                        style="line-height: 1.5;">
+                                        分光器連続駆動による高速XAFS測定（QXAFS）のエネルギー範囲、測定点数、露光時間を設計します。
+                                    </p>
+                                    <div class="mb-3">
+                                        <span class="feature-chip">クイックスキャン(QXAFS)</span>
+                                        <span class="feature-chip">時間分解測定</span>
+                                    </div>
+                                    <div class="d-flex justify-end pt-2" style="border-top: 1px dashed #e2e8f0;">
+                                        <v-btn size="small" variant="text" color="indigo-darken-2"
+                                            append-icon="mdi-arrow-right">
+                                            起動する
+                                        </v-btn>
+                                    </div>
+                                </v-card>
+                            </v-col>
+
+                            <!-- RetroCog -->
+                            <v-col cols="12" md="6" lg="4">
+                                <v-card class="tool-card pa-4" elevation="0" href="retrocog/index.html" @click="launchApp('retrocog', $event)">
+                                    <div class="mb-1">
+                                        <div class="serif-title text-h6 font-weight-bold" style="color: #312e81;">
+                                            RetroCog</div>
+                                    </div>
+                                    <div class="text-caption font-weight-medium text-indigo-darken-2 mb-2">
+                                        9809形式 XAFSデータビューア
+                                    </div>
+                                    <p class="text-body-2 text-grey-darken-2 flex-grow-1 mb-3"
+                                        style="line-height: 1.5;">
+                                        日本の放射光施設で広く使われる標準フォーマット（9809形式）のXAFSスペクトルデータをブラウザ上で即座に確認・プロットします。
+                                    </p>
+                                    <div class="mb-3">
+                                        <span class="feature-chip">9809フォーマット</span>
+                                        <span class="feature-chip">XAFSスペクトル</span>
+                                        <span class="feature-chip"><i>μ</i>(<i>E</i>) / <i>μt</i> 表示</span>
+                                    </div>
+                                    <div class="d-flex justify-end pt-2" style="border-top: 1px dashed #e2e8f0;">
+                                        <v-btn size="small" variant="text" color="indigo-darken-2"
+                                            append-icon="mdi-arrow-right">
+                                            起動する
+                                        </v-btn>
+                                    </div>
+                                </v-card>
+                            </v-col>
+
+                            <!-- Epiphany -->
+                            <v-col cols="12" md="6" lg="4">
+                                <v-card class="tool-card pa-4" elevation="0" href="epiphany/index.html" @click="launchApp('epiphany', $event)">
+                                    <div class="mb-1">
+                                        <div class="serif-title text-h6 font-weight-bold" style="color: #312e81;">
+                                            Epiphany</div>
+                                    </div>
+                                    <div class="text-caption font-weight-medium text-indigo-darken-2 mb-2">
+                                        スペクトログラム ROI 後処理
+                                    </div>
+                                    <p class="text-body-2 text-grey-darken-2 flex-grow-1 mb-3"
+                                        style="line-height: 1.5;">
+                                        測定後のスペクトログラムデータ(TIFF形式)に対してROIを事後的に再設定し、目的の蛍光X線スペクトルを抽出します。
+                                    </p>
+                                    <div class="mb-3">
+                                        <span class="feature-chip">2Dスペクトログラム</span>
+                                        <span class="feature-chip">ROI再設定</span>
+                                        <span class="feature-chip">蛍光XAFS</span>
+                                    </div>
+                                    <div class="d-flex justify-end pt-2" style="border-top: 1px dashed #e2e8f0;">
+                                        <v-btn size="small" variant="text" color="indigo-darken-2"
+                                            append-icon="mdi-arrow-right">
+                                            起動する
+                                        </v-btn>
+                                    </div>
+                                </v-card>
+                            </v-col>
+                        </v-row>
+                    </section>
+
+                    <!-- SAXS セクション -->
+                    <section class="mb-10">
+                        <div class="d-flex align-center mb-4">
+                            <span class="section-badge badge-saxs mr-3">SAXS</span>
+                            <h2 class="text-h6 font-weight-bold text-grey-darken-3 mb-0">X線小角散乱 実験支援</h2>
+                        </div>
+
+                        <v-row>
+                            <!-- calq -->
+                            <v-col cols="12" md="6" lg="4">
+                                <v-card class="tool-card pa-4" elevation="0" href="calq/index.html" @click="launchApp('calq', $event)">
+                                    <div class="mb-1">
+                                        <div class="serif-title text-h6 font-weight-bold" style="color: #14532d;">calq
+                                        </div>
+                                    </div>
+                                    <div class="text-caption font-weight-medium text-teal-darken-3 mb-2">
+                                        散乱ベクトル <i>Q</i> レンジ計算
+                                    </div>
+                                    <p class="text-body-2 text-grey-darken-2 flex-grow-1 mb-3"
+                                        style="line-height: 1.5;">
+                                        X線エネルギー（波長）、カメラ長、検出器サイズ・ビームストップ径から散乱ベクトル <i>Q</i> レンジ（<i>Q</i><sub>min</sub> ～
+                                        <i>Q</i><sub>max</sub>）をシミュレーションします。
+                                    </p>
+                                    <div class="mb-3">
+                                        <span class="feature-chip"><i>Q</i>レンジ算出</span>
+                                        <span class="feature-chip">カメラ長設定</span>
+                                        <span class="feature-chip">光学系配置</span>
+                                    </div>
+                                    <div class="d-flex justify-end pt-2" style="border-top: 1px dashed #e2e8f0;">
+                                        <v-btn size="small" variant="text" color="teal-darken-3"
+                                            append-icon="mdi-arrow-right">
+                                            起動する
+                                        </v-btn>
+                                    </div>
+                                </v-card>
+                            </v-col>
+                        </v-row>
+                    </section>
+
+                    <!-- 補足・仕様情報 -->
+                    <footer class="pt-4 pb-6" style="border-top: 1px solid #e2e8f0;">
+                        <div
+                            class="d-flex flex-wrap align-center justify-space-between text-caption text-grey-darken-1">
+                            <div class="d-flex align-center">
+                                <v-icon size="small" color="grey-darken-1"
+                                    class="mr-1">mdi-shield-check-outline</v-icon>
+                                <span>すべての計算・処理はブラウザ内で完結します（データは外部サーバに送信されません）</span>
+                            </div>
+                            <div class="d-flex align-center mt-2 mt-sm-0">
+                                <a href="https://github.com/mas-ka/xutils" target="_blank" rel="noopener noreferrer"
+                                    class="text-grey-darken-1 d-flex align-center text-decoration-none github-link"
+                                    title="GitHub リポジトリを開く">
+                                    <v-icon size="small" class="mr-1">mdi-github</v-icon>
+                                    <span>GitHub Repository</span>
+                                </a>
+                            </div>
+                        </div>
+                    </footer>
+                </v-container>
+            </v-main>
+        </v-app>
+    </div>
+
+    <!-- Vue 3 & Vuetify 3 Scripts -->
+    <script src="https://unpkg.com/vue@3.5.40/dist/vue.global.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vuetify@4.1.5/dist/vuetify.min.js"></script>
+
+    <script>
+        const { createApp } = Vue;
+        const { createVuetify } = Vuetify;
+
+        const APP_MAP = {
+            'samxam': 'samxam/index.html',
+            'p4xms': 'p4xms/index.html',
+            'p4xmq': 'p4xmq/index.html',
+            'retrocog': 'retrocog/index.html',
+            'epiphany': 'epiphany/index.html',
+            'calq': 'calq/index.html',
+        };
+
+        createApp({
+            setup() {
+                const launchApp = (key, event) => {
+                    // 修飾キー（Ctrl, Cmd, Shift）や中クリック（button !== 0）の場合はブラウザ標準の別タブリンク動作に任せる
+                    if (event && (event.ctrlKey || event.metaKey || event.shiftKey || event.button !== 0)) {
+                        return;
+                    }
+                    if (event) {
+                        event.preventDefault();
+                    }
+
+                    // 親ウィンドウ（index.html）が存在し、親に selectAppByKey がある場合
+                    if (window.parent && window.parent !== window && typeof window.parent.selectAppByKey === 'function') {
+                        window.parent.selectAppByKey(key);
+                    } else if (window.parent && window.parent !== window) {
+                        // postMessageで親に通知
+                        window.parent.postMessage({ type: 'xutils:selectApp', key: key }, '*');
+                        // また、親のiframe自体を切り替えるフォールバック
+                        if (APP_MAP[key]) {
+                            window.location.href = APP_MAP[key];
+                        }
+                    } else {
+                        // 単体表示時は直接リンク先へ遷移
+                        if (APP_MAP[key]) {
+                            window.location.href = APP_MAP[key];
+                        }
+                    }
+                };
+
+                return {
+                    launchApp
+                };
+            }
+        }).use(createVuetify()).mount('#app');
+    </script>
+</body>
+
+</html>

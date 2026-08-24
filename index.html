@@ -1,17 +1,15 @@
 <!DOCTYPE html>
-<html>
+<html lang="ja">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <!-- import font -->
-    <link href="https://fonts.googleapis.com/css?family=Noto+Serif:700|Roboto+Mono" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif:ital,wght@0,700;1,700&family=Roboto:wght@400;500;700&family=Roboto+Mono&display=swap" rel="stylesheet">
     <!-- import Vuetify CSS -->
     <link href="https://cdn.jsdelivr.net/npm/@mdi/font@5.x/css/materialdesignicons.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/vuetify@3.12.6/dist/vuetify.min.css" rel="stylesheet">
-    <!-- import Vue3 JS code -->
-    <!-- load other JS files -->
-    <!-- import local scripts -->
+    
     <style>
         html,
         body,
@@ -19,6 +17,7 @@
             height: 100%;
             margin: 0;
             overflow: hidden;
+            background-color: #f8fafc;
         }
 
         .iframe-container,
@@ -28,10 +27,20 @@
             height: 100%;
             border: none;
         }
+
+        .menu-header-btn {
+            cursor: pointer;
+            user-select: none;
+            transition: filter 0.15s ease;
+        }
+
+        .menu-header-btn:hover {
+            filter: brightness(1.1);
+        }
     </style>
     <!-- Page Title & Meta -->
-    <title>xutils</title>
-    <meta name="description" content="xutils: Web utilities for X-ray analysis and synchrotron experiments, including samxam, p4xms, p4xmq, RetroCog, Epiphany, and calq.">
+    <title>xutils - X-ray Analysis & Synchrotron Experiment Utilities</title>
+    <meta name="description" content="xutils: Web utilities for X-ray absorption (XAFS) and scattering (SAXS) measurement and analysis, including samxam, p4xms, p4xmq, RetroCog, Epiphany, and calq.">
 
     <!-- JSON-LD Structured Data for SEO / AI Crawlers -->
     <script type="application/ld+json">
@@ -46,42 +55,42 @@
                 "@type": "WebApplication",
                 "name": "samxam",
                 "description": "Sample preparation for XAS measurement",
-                "url": "index.html?app=samxam",
+                "url": "samxam/index.html",
                 "applicationCategory": "ScientificApplication"
             },
             {
                 "@type": "WebApplication",
                 "name": "p4xms",
                 "description": "Parameters for XAS measurement in Step scan",
-                "url": "index.html?app=p4xms",
+                "url": "p4xms/index.html",
                 "applicationCategory": "ScientificApplication"
             },
             {
                 "@type": "WebApplication",
                 "name": "p4xmq",
                 "description": "Parameters for XAS measurement in Quick scan",
-                "url": "index.html?app=p4xmq",
+                "url": "p4xmq/index.html",
                 "applicationCategory": "ScientificApplication"
             },
             {
                 "@type": "WebApplication",
                 "name": "RetroCog",
                 "description": "Viewer of XAS file in '9809' format",
-                "url": "index.html?app=retrocog",
+                "url": "retrocog/index.html",
                 "applicationCategory": "ScientificApplication"
             },
             {
                 "@type": "WebApplication",
                 "name": "Epiphany",
                 "description": "Applying ROI to 'Spectrogram' Post-productively",
-                "url": "index.html?app=epiphany",
+                "url": "epiphany/index.html",
                 "applicationCategory": "ScientificApplication"
             },
             {
                 "@type": "WebApplication",
                 "name": "calq",
                 "description": "Calculator for Q range in SAXS measurement",
-                "url": "index.html?app=calq",
+                "url": "calq/index.html",
                 "applicationCategory": "ScientificApplication"
             }
         ]
@@ -90,17 +99,41 @@
 </head>
 
 <body>
-    <!-- body直下ではなく、マウント用のdivを用意します -->
+    <!-- JavaScript無効環境・クローラー用フォールバック (SEO) -->
+    <noscript>
+        <div style="padding: 20px; font-family: sans-serif;">
+            <h1>xutils - X-ray Analysis & Synchrotron Experiment Utilities</h1>
+            <p>Web utilities for X-ray absorption (XAFS) and scattering (SAXS) measurement and analysis.</p>
+            <h2>XAFS Tools</h2>
+            <ul>
+                <li><a href="samxam/index.html">SAMXAM - Sample preparation for XAS measurement</a></li>
+                <li><a href="p4xms/index.html">P4XMS - Parameters for XAS measurement in Step scan</a></li>
+                <li><a href="p4xmq/index.html">P4XMQ - Parameters for XAS measurement in Quick scan</a></li>
+                <li><a href="retrocog/index.html">RetroCog - Viewer of XAS file in '9809' format</a></li>
+                <li><a href="epiphany/index.html">Epiphany - Applying ROI to Spectrogram Post-productively</a></li>
+            </ul>
+            <h2>SAXS Tools</h2>
+            <ul>
+                <li><a href="calq/index.html">calq - Calculator for Q range in SAXS measurement</a></li>
+            </ul>
+        </div>
+    </noscript>
+
+    <!-- Vueマウント用div -->
     <div id="app">
         <v-app>
             <!-- 左側サイドナビ（常時固定表示） -->
             <v-navigation-drawer permanent elevation="2" width="180">
-                <!-- メニューヘッダー -->
-                <v-toolbar color="indigo" dark>
-                    <v-toolbar-title class="bg-indigo text-h6 text-white font-weight-bold font-italic rounded"
-                        style="cursor: default; font-family: 'Noto Serif'">
-                        xutils : Menu
-                    </v-toolbar-title>
+                <!-- メニューヘッダー（クリックでHomeへ） -->
+                <v-toolbar color="indigo" dark class="menu-header-btn px-4" @click="onSelectApp('welcome', $event)">
+                    <div class="d-flex align-center justify-space-between w-100">
+                        <span class="text-h6 text-white font-weight-bold font-italic"
+                            style="font-family: 'Noto Serif'">xutils</span>
+                        <v-icon size="small" color="white" class="opacity-80">mdi-home-outline</v-icon>
+                    </div>
+                    <v-tooltip activator="parent" location="bottom">
+                        Home
+                    </v-tooltip>
                 </v-toolbar>
 
                 <v-list class="pa-4">
@@ -112,8 +145,11 @@
                     </v-list-subheader>
 
                     <v-list-item>
-                        <v-btn block color="primary" variant="text" href="samxam/index.html" target="main_column"
-                            @click="onSelectApp('samxam', $event)">
+                        <v-btn block :color="currentAppKey === 'samxam' ? 'indigo-lighten-4' : 'primary'"
+                            :variant="currentAppKey === 'samxam' ? 'flat' : 'text'"
+                            href="samxam/index.html" target="main_column"
+                            @click="onSelectApp('samxam', $event)"
+                            class="justify-start">
                             samxam
                             <v-tooltip activator="parent" location="right">
                                 Sample preparation for XAS measurement
@@ -122,8 +158,11 @@
                     </v-list-item>
 
                     <v-list-item>
-                        <v-btn block color="primary" variant="text" href="p4xms/index.html" target="main_column"
-                            @click="onSelectApp('p4xms', $event)">
+                        <v-btn block :color="currentAppKey === 'p4xms' ? 'indigo-lighten-4' : 'primary'"
+                            :variant="currentAppKey === 'p4xms' ? 'flat' : 'text'"
+                            href="p4xms/index.html" target="main_column"
+                            @click="onSelectApp('p4xms', $event)"
+                            class="justify-start">
                             p4xms
                             <v-tooltip activator="parent" location="right">
                                 Parameters for XAS measurement in Step scan
@@ -132,8 +171,11 @@
                     </v-list-item>
 
                     <v-list-item>
-                        <v-btn block color="primary" variant="text" href="p4xmq/index.html" target="main_column"
-                            @click="onSelectApp('p4xmq', $event)">
+                        <v-btn block :color="currentAppKey === 'p4xmq' ? 'indigo-lighten-4' : 'primary'"
+                            :variant="currentAppKey === 'p4xmq' ? 'flat' : 'text'"
+                            href="p4xmq/index.html" target="main_column"
+                            @click="onSelectApp('p4xmq', $event)"
+                            class="justify-start">
                             p4xmq
                             <v-tooltip activator="parent" location="right">
                                 Parameters for XAS measurement in Quick scan
@@ -142,8 +184,11 @@
                     </v-list-item>
 
                     <v-list-item>
-                        <v-btn block color="primary" variant="text" href="retrocog/index.html" target="main_column"
-                            @click="onSelectApp('retrocog', $event)">
+                        <v-btn block :color="currentAppKey === 'retrocog' ? 'indigo-lighten-4' : 'primary'"
+                            :variant="currentAppKey === 'retrocog' ? 'flat' : 'text'"
+                            href="retrocog/index.html" target="main_column"
+                            @click="onSelectApp('retrocog', $event)"
+                            class="justify-start">
                             RetroCog
                             <v-tooltip activator="parent" location="right">
                                 Viewer of XAS file in '9809' format
@@ -152,8 +197,11 @@
                     </v-list-item>
 
                     <v-list-item>
-                        <v-btn block color="primary" variant="text" href="epiphany/index.html" target="main_column"
-                            @click="onSelectApp('epiphany', $event)">
+                        <v-btn block :color="currentAppKey === 'epiphany' ? 'indigo-lighten-4' : 'primary'"
+                            :variant="currentAppKey === 'epiphany' ? 'flat' : 'text'"
+                            href="epiphany/index.html" target="main_column"
+                            @click="onSelectApp('epiphany', $event)"
+                            class="justify-start">
                             Epiphany
                             <v-tooltip activator="parent" location="right">
                                 Applying ROI to "Spectrogram" Post-productively
@@ -169,11 +217,14 @@
                     </v-list-subheader>
 
                     <v-list-item>
-                        <v-btn block color="primary" variant="text" href="calq/index.html" target="main_column"
-                            @click="onSelectApp('calq', $event)">
+                        <v-btn block :color="currentAppKey === 'calq' ? 'indigo-lighten-4' : 'primary'"
+                            :variant="currentAppKey === 'calq' ? 'flat' : 'text'"
+                            href="calq/index.html" target="main_column"
+                            @click="onSelectApp('calq', $event)"
+                            class="justify-start">
                             calq
                             <v-tooltip activator="parent" location="right">
-                                Calcurator for Q range
+                                Calculator for Q range
                             </v-tooltip>
                         </v-btn>
                     </v-list-item>
@@ -191,7 +242,7 @@
 
     <!-- 1. Vue 3 本体（グローバル版CDN） -->
     <script src="https://unpkg.com/vue@3.5.40/dist/vue.global.js"></script>
-    <!-- 2. Vuetify 3 本体（グローバル版CDN：全コンポーネントが自動登録されます） -->
+    <!-- 2. Vuetify 3 本体（グローバル版CDN） -->
     <script src="https://cdn.jsdelivr.net/npm/vuetify@4.1.5/dist/vuetify.min.js"></script>
 
     <!-- 3. インラインでのVue初期化スクリプト -->
@@ -200,6 +251,7 @@
         const { createVuetify } = Vuetify;
 
         const APP_MAP = {
+            'welcome': 'welcome.html',
             'samxam': 'samxam/index.html',
             'p4xms': 'p4xms/index.html',
             'p4xmq': 'p4xmq/index.html',
@@ -210,22 +262,30 @@
 
         const vuetify = createVuetify();
 
-        createApp({
+        const appInstance = createApp({
             setup() {
-                const currentSrc = ref('');
+                const currentSrc = ref('welcome.html');
+                const currentAppKey = ref('welcome');
 
                 // URLパラメータから現在のアプリを取得してiframeのsrcを更新
                 const syncFromUrl = () => {
                     const params = new URLSearchParams(window.location.search);
                     const appKey = params.get('app');
                     if (appKey && APP_MAP[appKey]) {
+                        currentAppKey.value = appKey;
                         currentSrc.value = APP_MAP[appKey];
                         const iframe = document.getElementById('parent-iframe');
-                        if (iframe && iframe.src !== APP_MAP[appKey]) {
+                        if (iframe && !iframe.src.endsWith(APP_MAP[appKey])) {
                             iframe.src = APP_MAP[appKey];
                         }
-                    } else if (!appKey) {
-                        currentSrc.value = '';
+                    } else {
+                        // パラメータ未指定時はwelcome.htmlを表示
+                        currentAppKey.value = 'welcome';
+                        currentSrc.value = APP_MAP['welcome'];
+                        const iframe = document.getElementById('parent-iframe');
+                        if (iframe && !iframe.src.endsWith(APP_MAP['welcome'])) {
+                            iframe.src = APP_MAP['welcome'];
+                        }
                     }
                 };
 
@@ -235,13 +295,32 @@
                     if (event && (event.ctrlKey || event.metaKey || event.shiftKey || event.button !== 0)) {
                         return;
                     }
-                    const params = new URLSearchParams(window.location.search);
-                    if (params.get('app') !== key) {
-                        const newUrl = new URL(window.location.href);
-                        newUrl.searchParams.set('app', key);
-                        history.pushState({ app: key }, '', newUrl.toString());
+                    if (event) {
+                        event.preventDefault();
                     }
+                    selectApp(key);
                 };
+
+                const selectApp = (key) => {
+                    if (!APP_MAP[key]) return;
+                    currentAppKey.value = key;
+                    currentSrc.value = APP_MAP[key];
+                    const iframe = document.getElementById('parent-iframe');
+                    if (iframe) {
+                        iframe.src = APP_MAP[key];
+                    }
+
+                    const newUrl = new URL(window.location.href);
+                    if (key === 'welcome') {
+                        newUrl.searchParams.delete('app');
+                    } else {
+                        newUrl.searchParams.set('app', key);
+                    }
+                    history.pushState({ app: key }, '', newUrl.toString());
+                };
+
+                // 外部・iframeからの呼び出し用に関数を公開
+                window.selectAppByKey = selectApp;
 
                 onMounted(() => {
                     syncFromUrl();
@@ -249,14 +328,24 @@
                     window.addEventListener('popstate', () => {
                         syncFromUrl();
                     });
+
+                    // iframeからのメッセージ通知受信
+                    window.addEventListener('message', (event) => {
+                        if (event.data && event.data.type === 'xutils:selectApp' && event.data.key) {
+                            selectApp(event.data.key);
+                        }
+                    });
                 });
 
                 return {
                     currentSrc,
+                    currentAppKey,
                     onSelectApp
                 };
             }
-        }).use(vuetify).mount('#app');
+        });
+        
+        appInstance.use(vuetify).mount('#app');
     </script>
 </body>
 
