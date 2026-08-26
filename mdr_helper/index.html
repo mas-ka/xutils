@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>MDR XAFS Metadata Helper (UI Prototype)</title>
+  <title>MDR XAFS Metadata Helper</title>
   
   <!-- Fonts & Icons -->
   <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;500&family=Roboto:wght@300;400;500;700&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
@@ -34,23 +34,116 @@
       overflow-y: auto;
       white-space: pre;
     }
-    .key-badge {
-      font-size: 0.75rem;
-      padding: 2px 6px;
-      border-radius: 4px;
-      font-weight: 500;
+    .drop-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(25, 118, 210, 0.85);
+      z-index: 9999;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      pointer-events: none;
     }
   </style>
 </head>
 <body>
   <div id="app">
-    <v-app>
-      <!-- Top App Bar -->
+    <v-app
+      @dragover.prevent="isDraggingOver = true"
+      @dragleave.prevent="isDraggingOver = false"
+      @drop.prevent="handleDrop"
+    >
+      <!-- D&D 全画面オーバーレイ -->
+      <v-fade-transition>
+        <div v-if="isDraggingOver" class="drop-overlay">
+          <v-icon icon="mdi-cloud-upload" size="80" class="mb-4 text-white"></v-icon>
+          <div class="text-h5 font-weight-bold mb-2">ここに YAML / JSON ファイルをドロップ</div>
+          <div class="text-subtitle-1">既存のメタデータと自動マージ・衝突判定を行います</div>
+        </div>
+      </v-fade-transition>
+
+      <!-- 隠しファイル入力要素 -->
+      <input 
+        type="file" 
+        ref="fileInputRef" 
+        id="fileInput"
+        style="display: none;" 
+        accept=".yml,.yaml,.json" 
+        @change="handleFileInput"
+      >
+
+      <!-- Top App Bar with Integrated Menu Bar -->
       <v-app-bar color="primary" density="compact" elevation="2">
-        <v-app-bar-title class="font-weight-bold d-flex align-center">
+        <v-app-bar-title class="font-weight-bold d-flex align-center flex-grow-0 mr-4">
           <v-icon icon="mdi-database-edit-outline" class="mr-2"></v-icon>
-          MDR XAFS Metadata Helper <span class="text-caption ml-2 opacity-80">(UI/UX Prototype)</span>
+          MDR XAFS Helper
         </v-app-bar-title>
+
+        <!-- メニューバー: ファイル (File) -->
+        <v-menu transition="slide-y-transition">
+          <template v-slot:activator="{ props }">
+            <v-btn variant="text" size="small" v-bind="props" class="text-none font-weight-medium">
+              ファイル
+              <v-icon icon="mdi-chevron-down" end size="16"></v-icon>
+            </v-btn>
+          </template>
+          <v-list density="compact" class="py-1">
+            <v-list-item prepend-icon="mdi-folder-open-outline" @click="$refs.fileInputRef ? $refs.fileInputRef.click() : document.getElementById('fileInput').click()">
+              <v-list-item-title>ファイルを開く (YAML/JSON)...</v-list-item-title>
+            </v-list-item>
+            <v-list-item prepend-icon="mdi-file-download-outline" @click="saveYamlFile">
+              <v-list-item-title>YAMLとして保存 (metadata.yml)</v-list-item-title>
+            </v-list-item>
+            <v-list-item prepend-icon="mdi-code-json" @click="saveJsonFile">
+              <v-list-item-title>JSONとして保存 (metadata.json)</v-list-item-title>
+            </v-list-item>
+            <v-divider class="my-1"></v-divider>
+            <v-list-item prepend-icon="mdi-trash-can-outline" base-color="error" @click="clearAll">
+              <v-list-item-title>新規作成 (全クリア)</v-list-item-title>
+            </v-list-item>
+          </v-list>
+        </v-menu>
+
+        <!-- メニューバー: 編集 (Edit) -->
+        <v-menu transition="slide-y-transition">
+          <template v-slot:activator="{ props }">
+            <v-btn variant="text" size="small" v-bind="props" class="text-none font-weight-medium">
+              編集
+              <v-icon icon="mdi-chevron-down" end size="16"></v-icon>
+            </v-btn>
+          </template>
+          <v-list density="compact" class="py-1">
+            <v-list-item prepend-icon="mdi-clipboard-text-outline" @click="copyMdrText">
+              <v-list-item-title>MDR登録用サマリーをコピー</v-list-item-title>
+            </v-list-item>
+            <v-list-item prepend-icon="mdi-flask-outline" @click="loadSampleData">
+              <v-list-item-title>サンプルデータを投入 (テスト用)</v-list-item-title>
+            </v-list-item>
+          </v-list>
+        </v-menu>
+
+        <!-- メニューバー: ヘルプ (Help) -->
+        <v-menu transition="slide-y-transition">
+          <template v-slot:activator="{ props }">
+            <v-btn variant="text" size="small" v-bind="props" class="text-none font-weight-medium">
+              ヘルプ
+              <v-icon icon="mdi-chevron-down" end size="16"></v-icon>
+            </v-btn>
+          </template>
+          <v-list density="compact" class="py-1">
+            <v-list-item prepend-icon="mdi-information-outline" @click="showHelpDialog = true">
+              <v-list-item-title>MDR XAFS DB について</v-list-item-title>
+            </v-list-item>
+            <v-list-item prepend-icon="mdi-tag-outline" @click="showAboutDialog = true">
+              <v-list-item-title>バージョン情報</v-list-item-title>
+            </v-list-item>
+          </v-list>
+        </v-menu>
 
         <v-spacer></v-spacer>
 
@@ -69,20 +162,12 @@
         <v-chip 
           :color="recommendedStatus.isComplete ? 'success' : 'teal'" 
           variant="elevated" 
-          class="mr-3 font-weight-bold"
+          class="mr-1 font-weight-bold"
           size="small"
         >
           <v-icon :icon="recommendedStatus.isComplete ? 'mdi-check-circle' : 'mdi-lightbulb-outline'" start></v-icon>
           推奨: {{ recommendedStatus.progress }}
         </v-chip>
-
-        <!-- アクションボタン -->
-        <v-btn variant="text" size="small" prepend-icon="mdi-file-download-outline" @click="loadSampleData">
-          サンプル投入
-        </v-btn>
-        <v-btn variant="text" size="small" prepend-icon="mdi-trash-can-outline" color="red-lighten-3" @click="clearAll">
-          全クリア
-        </v-btn>
       </v-app-bar>
 
       <!-- Main Content -->
@@ -293,22 +378,22 @@
                         <v-list-item-title class="font-weight-bold text-primary">
                           {{ item.path }}
                         </v-list-item-title>
-                        <v-list-item-subtitle class="text-grey-darken-3">
-                          Value: {{ JSON.stringify(item.value) }}
+                        <v-list-item-subtitle class="text-grey-darken-1">
+                          値: <span class="text-body-2 font-weight-medium text-black">{{ item.value }}</span>
                         </v-list-item-subtitle>
                         <template v-slot:append>
-                          <v-btn 
-                            icon="mdi-close" 
-                            size="x-small" 
-                            variant="text" 
-                            color="error" 
+                          <v-btn
+                            icon="mdi-close"
+                            size="x-small"
+                            variant="text"
+                            color="grey"
                             @click.stop="deleteKey(item.path)"
                           ></v-btn>
                         </template>
                       </v-list-item>
                     </template>
-                    <v-list-item v-else class="text-center text-caption text-grey py-4">
-                      設定されている項目はありません
+                    <v-list-item v-else class="text-caption text-grey text-center py-4">
+                      設定されているKeyはありません
                     </v-list-item>
                   </v-list>
                 </v-card-text>
@@ -344,8 +429,126 @@
         </v-container>
       </v-main>
 
-      <!-- トースト通知 -->
-      <v-snackbar v-model="showSnackbar" :timeout="2500" location="bottom right" color="grey-darken-4">
+      <!-- ------------------------------------------------------------- -->
+      <!-- 重複・衝突解決ダイアログ (Modal) -->
+      <!-- ------------------------------------------------------------- -->
+      <v-dialog v-model="showConflictDialog" max-width="850px" persistent>
+        <v-card>
+          <v-card-item class="bg-amber-lighten-5 py-3 border-b">
+            <v-card-title class="text-subtitle-1 font-weight-bold text-amber-darken-4 d-flex align-center">
+              <v-icon icon="mdi-alert-circle" class="mr-2" color="amber-darken-3"></v-icon>
+              データの重複・衝突が検出されました (計 {{ conflictList.length }} 件)
+            </v-card-title>
+            <v-card-subtitle class="text-caption text-grey-darken-2">
+              「{{ loadedFileName }}」内の項目に、既存データと値が異なる項目があります。上書きするかスキップ（既存維持）するかを選択してください。
+            </v-card-subtitle>
+          </v-card-item>
+
+          <v-card-text class="pa-4">
+            <!-- 一括選択ボタン -->
+            <div class="d-flex align-center gap-2 mb-3">
+              <span class="text-caption font-weight-bold text-grey-darken-2 mr-2">一括操作:</span>
+              <v-btn size="small" variant="tonal" color="primary" class="mr-2" prepend-icon="mdi-file-replace-outline" @click="setAllConflictActions('overwrite')">
+                すべて上書き (ファイル優先)
+              </v-btn>
+              <v-btn size="small" variant="tonal" color="secondary" prepend-icon="mdi-shield-check-outline" @click="setAllConflictActions('skip')">
+                すべてスキップ (既存維持)
+              </v-btn>
+            </div>
+
+            <!-- 衝突テーブル -->
+            <v-table density="compact" class="border rounded font-mono text-caption" style="max-height: 380px; overflow-y: auto;">
+              <thead>
+                <tr class="bg-grey-lighten-4">
+                  <th class="font-weight-bold">スキーマKey</th>
+                  <th class="font-weight-bold" style="width: 28%;">現在の値 (既存)</th>
+                  <th class="font-weight-bold" style="width: 28%;">読込ファイルの値</th>
+                  <th class="font-weight-bold text-center" style="width: 130px;">処理方法</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="item in conflictList" :key="item.path">
+                  <td class="font-weight-medium text-primary">{{ item.path }}</td>
+                  <td class="text-deep-orange-darken-2">{{ item.currentVal === '' ? '(空文字)' : item.currentVal }}</td>
+                  <td class="text-teal-darken-2">{{ (item.incomingVal === null || item.incomingVal === '' || item.incomingVal === undefined) ? '(空値 / 削除)' : item.incomingVal }}</td>
+                  <td class="text-center">
+                    <v-btn-toggle
+                      v-model="item.action"
+                      mandatory
+                      density="compact"
+                      color="primary"
+                      size="x-small"
+                    >
+                      <v-btn value="overwrite" size="x-small" class="px-2">上書き</v-btn>
+                      <v-btn value="skip" size="x-small" class="px-2">維持</v-btn>
+                    </v-btn-toggle>
+                  </td>
+                </tr>
+              </tbody>
+            </v-table>
+          </v-card-text>
+
+          <v-divider></v-divider>
+
+          <v-card-actions class="pa-3">
+            <v-spacer></v-spacer>
+            <v-btn variant="text" color="grey-darken-1" @click="cancelConflictResolution">
+              キャンセル
+            </v-btn>
+            <v-btn variant="flat" color="primary" class="font-weight-bold px-4" prepend-icon="mdi-check" @click="applyConflictResolution">
+              決定して反映
+            </v-btn>
+          </v-card-actions>
+        </v-card>
+      </v-dialog>
+
+      <!-- ------------------------------------------------------------- -->
+      <!-- ヘルプ・仕様ダイアログ -->
+      <!-- ------------------------------------------------------------- -->
+      <v-dialog v-model="showHelpDialog" max-width="600px">
+        <v-card>
+          <v-card-title class="bg-primary text-white d-flex align-center">
+            <v-icon icon="mdi-information-outline" class="mr-2"></v-icon>
+            MDR XAFS DB メタデータ仕様について
+          </v-card-title>
+          <v-card-text class="pa-4 text-body-2">
+            <p class="mb-2">本ツールは、物質・材料研究機構（NIMS）が運営する <strong>MDR XAFS DB</strong> および日本XAFS研究会（JXS）「XAFSメタデータ共通仕様（20230203リリース版）」に準拠しています。</p>
+            <v-divider class="my-3"></v-divider>
+            <div class="font-weight-bold mb-1">■ 関連リンク</div>
+            <ul class="pl-4">
+              <li><a href="https://mdr.nims.go.jp/collections/qz20st57x" target="_blank" rel="noopener">NIMS MDR XAFS Database</a></li>
+              <li><a href="http://www.vxafs.sakura.ne.jp/JXS/" target="_blank" rel="noopener">日本XAFS研究会 公式サイト</a></li>
+            </ul>
+          </v-card-text>
+          <v-card-actions>
+            <v-spacer></v-spacer>
+            <v-btn color="primary" variant="text" @click="showHelpDialog = false">閉じる</v-btn>
+          </v-card-actions>
+        </v-card>
+      </v-dialog>
+
+      <!-- バージョン情報ダイアログ -->
+      <v-dialog v-model="showAboutDialog" max-width="450px">
+        <v-card>
+          <v-card-title class="bg-blue-grey-darken-3 text-white d-flex align-center">
+            <v-icon icon="mdi-tag-outline" class="mr-2"></v-icon>
+            MDR XAFS Metadata Helper
+          </v-card-title>
+          <v-card-text class="pa-4 text-center">
+            <v-icon icon="mdi-database-edit-outline" size="48" color="primary" class="my-2"></v-icon>
+            <div class="text-subtitle-1 font-weight-bold">MDR XAFS Metadata Helper</div>
+            <div class="text-caption text-grey mb-3">Version 0.2.0 (Prototype)</div>
+            <div class="text-body-2 text-grey-darken-2">JXS XAFS Metadata Schema 20230203 Compliant</div>
+          </v-card-text>
+          <v-card-actions>
+            <v-spacer></v-spacer>
+            <v-btn color="primary" variant="text" @click="showAboutDialog = false">閉じる</v-btn>
+          </v-card-actions>
+        </v-card>
+      </v-dialog>
+
+      <!-- トースト通知 (スナックバー) -->
+      <v-snackbar v-model="showSnackbar" :timeout="3000" location="bottom right" color="grey-darken-4">
         {{ snackbarText }}
       </v-snackbar>
     </v-app>

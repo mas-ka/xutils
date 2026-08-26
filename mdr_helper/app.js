@@ -474,6 +474,211 @@ const app = createApp({
       showToast('サンプルデータをロードしました');
     };
 
+    // -------------------------------------------------------------
+    // ファイル読み込み・マージ・衝突解決ロジック
+    // -------------------------------------------------------------
+    const isDraggingOver = ref(false);
+    const showConflictDialog = ref(false);
+    const conflictList = ref([]);
+    const pendingNonConflicts = ref([]);
+    const loadedFileName = ref('');
+
+    // ファイル処理の共通エントリーポイント
+    const processFileContent = (contentStr, fileName = 'ファイル') => {
+      try {
+        let loadedObj = null;
+        if (fileName.endsWith('.json')) {
+          loadedObj = JSON.parse(contentStr);
+        } else {
+          loadedObj = jsyaml.load(contentStr);
+        }
+
+        if (!loadedObj || typeof loadedObj !== 'object') {
+          showToast('有効なYAML/JSONオブジェクトが見つかりませんでした');
+          return;
+        }
+
+        loadedFileName.value = fileName;
+        const incomingEntries = PathUtils.flatten(loadedObj);
+        const conflicts = [];
+        const nonConflicts = [];
+
+        for (const entry of incomingEntries) {
+          const currentVal = PathUtils.get(dataObject.value, entry.path);
+          const hasCurrentVal = currentVal !== undefined && currentVal !== null && currentVal !== '';
+
+          if (!hasCurrentVal) {
+            // 既存が未設定の場合は衝突なし（自動取り込み）
+            nonConflicts.push(entry);
+          } else {
+            // 既存に値がある場合
+            if (JSON.stringify(currentVal) === JSON.stringify(entry.value)) {
+              // 完全一致は衝突と見なさない
+              continue;
+            } else {
+              // 値が異なる（空値による上書き＝削除を含む）場合は衝突
+              conflicts.push({
+                path: entry.path,
+                currentVal: currentVal,
+                incomingVal: entry.value,
+                action: 'overwrite' // デフォルトは上書き
+              });
+            }
+          }
+        }
+
+        if (conflicts.length === 0) {
+          // 衝突なし: すべて自動マージ
+          for (const item of nonConflicts) {
+            PathUtils.set(dataObject.value, item.path, item.value);
+          }
+          dataObject.value = SchemaSorter.sortObject(dataObject.value);
+          showToast(`「${fileName}」から ${nonConflicts.length} 項目を取り込みました`);
+        } else {
+          // 衝突あり: ダイアログ表示
+          pendingNonConflicts.value = nonConflicts;
+          conflictList.value = conflicts;
+          showConflictDialog.value = true;
+        }
+      } catch (err) {
+        showToast(`ファイルの解析に失敗しました: ${err.message}`);
+      }
+    };
+
+    // 一括アクション選択 (すべて上書き / すべてスキップ)
+    const setAllConflictActions = (action) => {
+      for (const item of conflictList.value) {
+        item.action = action;
+      }
+    };
+
+    // 衝突解消の適用
+    const applyConflictResolution = () => {
+      // 1. 非衝突項目を適用
+      for (const item of pendingNonConflicts.value) {
+        PathUtils.set(dataObject.value, item.path, item.value);
+      }
+
+      // 2. 衝突項目を選択に従って適用
+      let overwrittenCount = 0;
+      let skippedCount = 0;
+
+      for (const item of conflictList.value) {
+        if (item.action === 'overwrite') {
+          if (item.incomingVal === null || item.incomingVal === undefined || item.incomingVal === '') {
+            PathUtils.delete(dataObject.value, item.path);
+          } else {
+            PathUtils.set(dataObject.value, item.path, item.incomingVal);
+          }
+          overwrittenCount++;
+        } else {
+          skippedCount++;
+        }
+      }
+
+      dataObject.value = SchemaSorter.sortObject(dataObject.value);
+      showConflictDialog.value = false;
+      showToast(`マージ完了: ${overwrittenCount + pendingNonConflicts.value.length} 項目を反映、${skippedCount} 項目をスキップしました`);
+    };
+
+    // 衝突解決のキャンセル
+    const cancelConflictResolution = () => {
+      showConflictDialog.value = false;
+      conflictList.value = [];
+      pendingNonConflicts.value = [];
+      showToast('読み込みをキャンセルしました');
+    };
+
+    // ファイル選択イベント処理
+    const handleFileInput = (e) => {
+      const file = e.target.files && e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        processFileContent(event.target.result, file.name);
+      };
+      reader.readAsText(file);
+      e.target.value = ''; // リセット
+    };
+
+    // ドラッグ＆ドロップイベント
+    const handleDrop = (e) => {
+      isDraggingOver.value = false;
+      const file = e.dataTransfer.files && e.dataTransfer.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        processFileContent(event.target.result, file.name);
+      };
+      reader.readAsText(file);
+    };
+
+    // -------------------------------------------------------------
+    // ファイル保存（エクスポート）
+    // -------------------------------------------------------------
+    const downloadFile = (content, filename, type) => {
+      const blob = new Blob([content], { type });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    };
+
+    const saveYamlFile = () => {
+      if (!dataObject.value || Object.keys(dataObject.value).length === 0) {
+        showToast('保存するデータがありません');
+        return;
+      }
+      const yamlStr = jsyaml.dump(dataObject.value, { indent: 2, lineWidth: -1, noRefs: true });
+      downloadFile(yamlStr, 'metadata.yml', 'text/yaml;charset=utf-8;');
+      showToast('「metadata.yml」を保存しました');
+    };
+
+    const saveJsonFile = () => {
+      if (!dataObject.value || Object.keys(dataObject.value).length === 0) {
+        showToast('保存するデータがありません');
+        return;
+      }
+      const jsonStr = JSON.stringify(dataObject.value, null, 2);
+      downloadFile(jsonStr, 'metadata.json', 'application/json;charset=utf-8;');
+      showToast('「metadata.json」を保存しました');
+    };
+
+    // MDR Web登録フォーム用テキストコピー
+    const copyMdrText = async () => {
+      const getVal = (path) => PathUtils.get(dataObject.value, path) || '未設定';
+      const mdrSummary = [
+        `【MDR XAFS DB Webフォーム入力用サマリー】`,
+        `・タイトル (Title): ${getVal('@data_info@title')}`,
+        `・日本語タイトル: ${getVal('@data_info@title_ja')}`,
+        `・登録者氏名 (Creator): ${getVal('@data_info@data_depositor@name')}`,
+        `・所属組織 (Affiliation): ${getVal('@data_info@data_depositor@organization')}`,
+        `・測定元素 (Element): ${getVal('@measurement@edges[0].element')}`,
+        `・吸収端 (Edge): ${getVal('@measurement@edges[0].edge')}`,
+        `・施設名 (Facility): ${getVal('@facility@name')}`,
+        `・ビームライン (Beamline): ${getVal('@facility@beamline')}`,
+        `・物質名 (Sample Name): ${getVal('@sample@name')}`,
+        `・化学式 (Formula): ${getVal('@sample@chemical_formula')}`,
+        `・相状態 (Phase): ${getVal('@sample@phase')}`,
+        `・ライセンス (License): ${getVal('@data_info@license')}`
+      ].join('\n');
+
+      try {
+        await navigator.clipboard.writeText(mdrSummary);
+        showToast('MDR登録用サマリーをクリップボードにコピーしました');
+      } catch (err) {
+        showToast('コピーに失敗しました');
+      }
+    };
+
+    // ヘルプモーダル状態
+    const showHelpDialog = ref(false);
+    const showAboutDialog = ref(false);
+
     // データの全クリア
     const clearAll = () => {
       dataObject.value = {};
@@ -519,7 +724,22 @@ const app = createApp({
       setCurrentDate,
       snackbarText,
       showSnackbar,
-      filterCategory
+      filterCategory,
+      // ロード・マージ・保存・D&D
+      isDraggingOver,
+      showConflictDialog,
+      conflictList,
+      loadedFileName,
+      setAllConflictActions,
+      applyConflictResolution,
+      cancelConflictResolution,
+      handleFileInput,
+      handleDrop,
+      saveYamlFile,
+      saveJsonFile,
+      copyMdrText,
+      showHelpDialog,
+      showAboutDialog
     };
   }
 });
