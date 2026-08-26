@@ -1,0 +1,278 @@
+key	value
+@data_info@data_depositor@organization	Aichi SR
+@data_info@data_depositor@affiliation	Aichi SR
+@data_info@data_depositor@name	Aichi SR
+@data_info@data_depositor@role	BL STAFF
+@data_info@contact_name@organization	Aichi SR
+@data_info@contact_name@affiliation	Aichi SR
+@data_info@contact_name@name	Aichi SR
+@data_info@contact_name@role	BL STAFF
+@data_info@access_rights	open
+@data_info@license	CC-BY-NC-SA
+@data_info@deposite_time@create_time	2020-09-11 09:12:00.000
+@data_info@deposite_time@update_time	2020-09-11 09:12:00.000
+@data_info@title	XAFS Std. Meas. of Y2O3 (yttrium oxide)
+@data_info@title_ja	XAFS Std. Meas. of Y2O3 (yttrium oxide)
+@data_info@identifier@pid	work-230228-BL5S1-0061
+@data_info@related_ids_0@id	None
+@data_info@related_ids_0@description	None
+@data_info@related_ids_1@id	None
+@data_info@related_ids_1@description	None
+@data_info@comment	None
+@data_info@metadata_format@version	XAFS.20230203
+@data_info@metadata_format@schema_uri	https://raw.githubusercontent.com/xafs-db/xafs-schema/main/draft/20230203/xafs-schema.json
+@data_info@measurement_methods_0@category	spectroscopy
+@data_info@measurement_methods_0@sub_category	XAFS
+@facility@name	Aichi SR
+@facility@ring@energy	1.2
+@facility@ring@energy_unit	GeV
+@facility@ring@filling_pattern	120 continuous bunchs with 15 blank bunchs
+@facility@ring@filling_pattern_mode	Standard
+@facility@ring@start_current	301.8
+@facility@ring@start_current_unit	mA
+@facility@ring@end_current	301.4
+@facility@ring@end_current_unit	mA
+@facility@light_source@type	BM
+@facility@light_source@polarization	Holizontal
+@facility@beamline	BL5S1
+@files_0@file_0@name	Y2O3-AichiSR-BL5S1-20200911
+@files_0@description	experimental
+@files_0@extension	dat
+@files_0@format	9809
+@files_0@headerlines	14
+@files_0@columns_0@name	deg
+@files_0@columns_0@unit	deg
+@files_0@columns_0@type	raw
+@files_0@columns_0@additional_data	Uncalibrated
+@files_0@columns_1@name	obs_deg
+@files_0@columns_1@unit	deg
+@files_0@columns_1@type	raw
+@files_0@columns_1@additional_data	Uncalibrated
+@files_0@columns_2@name	dwell
+@files_0@columns_2@unit	sec
+@files_0@columns_2@type	raw
+@files_0@columns_2@additional_data	Uncalibrated
+@files_0@columns_3@name	I0
+@files_0@columns_3@unit	count
+@files_0@columns_3@type	processed
+@files_0@columns_3@additional_data	Offset subtracted
+@files_0@columns_3@detection	transmission
+@files_0@columns_3@reference_to_detector	I0
+@files_0@columns_4@name	I1
+@files_0@columns_4@unit	count
+@files_0@columns_4@type	processed
+@files_0@columns_4@additional_data	Offset subtracted
+@files_0@columns_4@detection	transmission
+@files_0@columns_4@reference_to_detector	I1
+@files_0@columns_5@name	I2(Ref)
+@files_0@columns_5@unit	count
+@files_0@columns_5@type	processed
+@files_0@columns_5@additional_data	Offset subtracted
+@files_0@columns_5@detection	transmission
+@files_0@columns_5@reference_to_detector	I2
+@files_1@file_0@name	Y2O3-AichiSR-BL5S1-20200911
+@files_1@description	thumbnail
+@files_1@extension	png
+@files_1@format	image/png
+@instrument@arrangement	4WS0//M0//4WS1//DCM//4WS2//M1//4WS2//M2//4WS3
+@instrument@monochromator@name	DCM
+@instrument@monochromator@distance	11820
+@instrument@monochromator@distance_unit	mm
+@instrument@monochromator@type	DCM
+@instrument@monochromator@scan_mode	Quick XAFS
+@instrument@monochromator@detail@crystal_material	Si
+@instrument@monochromator@detail@crystal_plane	(111)
+@instrument@monochromator@detail@crystal_d	3.13553
+@instrument@monochromator@detail@crystal_d_unit	A
+@instrument@mirrors_0@name	M0
+@instrument@mirrors_0@distance	9450
+@instrument@mirrors_0@distance_unit	mm
+@instrument@mirrors_0@role	collimation
+@instrument@mirrors_0@type	single
+@instrument@mirrors_0@coating	Rh
+@instrument@mirrors_0@shape	bend
+@instrument@mirrors_1@name	M1
+@instrument@mirrors_1@distance	13180
+@instrument@mirrors_1@distance_unit	mm
+@instrument@mirrors_1@role	focusing
+@instrument@mirrors_1@type	single
+@instrument@mirrors_1@coating	Rh
+@instrument@mirrors_1@shape	bend cylindrical
+@instrument@slits_0@name	4WS0
+@instrument@slits_0@type	4D, water cooled
+@instrument@slits_0@distance	8220
+@instrument@slits_0@distance_unit	mm
+@instrument@slits_1@name	4WS1
+@instrument@slits_1@type	4D
+@instrument@slits_1@distance	10910
+@instrument@slits_1@distance_unit	mm
+@instrument@slits_2@name	4WS2
+@instrument@slits_2@type	4D
+@instrument@slits_2@distance	15345
+@instrument@slits_2@distance_unit	mm
+@instrument@slits_3@name	4WS3
+@instrument@slits_3@type	4D
+@instrument@slits_3@distance	19470
+@instrument@slits_3@distance_unit	mm
+@measurement@edges_0@element	Y
+@measurement@edges_0@edge	K
+@measurement@detectors_0@name	IC0
+@measurement@detectors_0@arrangement	IC//Current Amp.//V/F Converter//Counter
+@measurement@detectors_0@hardware@type	IC
+@measurement@detectors_0@hardware@manufacturer	OHYO KOKEN
+@measurement@detectors_0@hardware@model_number	S-1194B1
+@measurement@detectors_0@hardware@gases_number	None
+@measurement@detectors_0@hardware@gases_0@name	None
+@measurement@detectors_0@hardware@gases_0@proportion	None
+@measurement@detectors_0@hardware@gases_1@name	None
+@measurement@detectors_0@hardware@gases_1@proportion	None
+@measurement@detectors_0@hardware@applied_voltage	1500
+@measurement@detectors_0@hardware@applied_voltage_unit	V
+@measurement@detectors_0@processing_lines_0@conversion_factor	100000000
+@measurement@detectors_0@processing_lines_0@conversion_factor_unit	1/pA
+@measurement@detectors_0@processing_lines_0@processors_0@processor	Current Amp.
+@measurement@detectors_0@processing_lines_0@processors_0@type	Average
+@measurement@detectors_0@processing_lines_0@processors_0@manufacturer	NF
+@measurement@detectors_0@processing_lines_0@processors_0@model_number	CA5350
+@measurement@detectors_0@processing_lines_0@processors_0@gain	10
+@measurement@detectors_0@processing_lines_0@processors_0@gain_unit	V/A
+@measurement@detectors_0@processing_lines_0@processors_0@time_constant	3e-05
+@measurement@detectors_0@processing_lines_0@processors_0@time_constant_unit	s
+@measurement@detectors_0@processing_lines_0@processors_1@processor	V/F Converter
+@measurement@detectors_0@processing_lines_0@processors_1@type	Average
+@measurement@detectors_0@processing_lines_0@processors_1@manufacturer	TSUJICON
+@measurement@detectors_0@processing_lines_0@processors_1@model_number	N2VF-1H
+@measurement@detectors_0@processing_lines_0@processors_1@gain	10000000
+@measurement@detectors_0@processing_lines_0@processors_1@gain_unit	Hz/V
+@measurement@detectors_0@processing_lines_0@processors_1@unit_id	0
+@measurement@detectors_0@processing_lines_0@processors_2@processor	Counter
+@measurement@detectors_0@processing_lines_0@processors_2@type	Integral
+@measurement@detectors_0@processing_lines_0@processors_2@manufacturer	TSUJICON
+@measurement@detectors_0@processing_lines_0@processors_2@model_number	CT16-01F
+@measurement@detectors_0@processing_lines_0@processors_2@unit_id	15
+@measurement@detectors_1@name	IC1
+@measurement@detectors_1@arrangement	IC//Current Amp.//V/F Converter//Counter
+@measurement@detectors_1@hardware@type	IC
+@measurement@detectors_1@hardware@manufacturer	OHYO KOKEN
+@measurement@detectors_1@hardware@model_number	S-1196B1
+@measurement@detectors_1@hardware@gases_number	None
+@measurement@detectors_1@hardware@gases_0@name	None
+@measurement@detectors_1@hardware@gases_0@proportion	None
+@measurement@detectors_1@hardware@gases_1@name	None
+@measurement@detectors_1@hardware@gases_1@proportion	None
+@measurement@detectors_1@hardware@applied_voltage	1500
+@measurement@detectors_1@hardware@applied_voltage_unit	V
+@measurement@detectors_1@processing_lines_0@conversion_factor	100000000
+@measurement@detectors_1@processing_lines_0@conversion_factor_unit	1/pA
+@measurement@detectors_1@processing_lines_0@processors_0@processor	Current Amp.
+@measurement@detectors_1@processing_lines_0@processors_0@type	Average
+@measurement@detectors_1@processing_lines_0@processors_0@manufacturer	NF
+@measurement@detectors_1@processing_lines_0@processors_0@model_number	CA5350
+@measurement@detectors_1@processing_lines_0@processors_0@gain	10
+@measurement@detectors_1@processing_lines_0@processors_0@gain_unit	V/A
+@measurement@detectors_1@processing_lines_0@processors_0@time_constant	3e-05
+@measurement@detectors_1@processing_lines_0@processors_0@time_constant_unit	s
+@measurement@detectors_1@processing_lines_0@processors_1@processor	V/F Converter
+@measurement@detectors_1@processing_lines_0@processors_1@type	Average
+@measurement@detectors_1@processing_lines_0@processors_1@manufacturer	TSUJICON
+@measurement@detectors_1@processing_lines_0@processors_1@model_number	N2VF-1H
+@measurement@detectors_1@processing_lines_0@processors_1@gain	10000000
+@measurement@detectors_1@processing_lines_0@processors_1@gain_unit	Hz/V
+@measurement@detectors_1@processing_lines_0@processors_1@unit_id	1
+@measurement@detectors_1@processing_lines_0@processors_2@processor	Counter
+@measurement@detectors_1@processing_lines_0@processors_2@type	Integral
+@measurement@detectors_1@processing_lines_0@processors_2@manufacturer	TSUJICON
+@measurement@detectors_1@processing_lines_0@processors_2@model_number	CT16-01F
+@measurement@detectors_1@processing_lines_0@processors_2@unit_id	11
+@measurement@detectors_2@name	IC1
+@measurement@detectors_2@arrangement	IC//Current Amp.//V/F Converter//Counter
+@measurement@detectors_2@hardware@type	IC
+@measurement@detectors_2@hardware@manufacturer	OHYO KOKEN
+@measurement@detectors_2@hardware@model_number	S-1196B1
+@measurement@detectors_2@hardware@gases_number	None
+@measurement@detectors_2@hardware@gases_0@name	None
+@measurement@detectors_2@hardware@gases_0@proportion	None
+@measurement@detectors_2@hardware@gases_1@name	None
+@measurement@detectors_2@hardware@gases_1@proportion	None
+@measurement@detectors_2@hardware@applied_voltage	1500
+@measurement@detectors_2@hardware@applied_voltage_unit	V
+@measurement@detectors_2@processing_lines_0@conversion_factor	100000000
+@measurement@detectors_2@processing_lines_0@conversion_factor_unit	1/pA
+@measurement@detectors_2@processing_lines_0@processors_0@processor	Current Amp.
+@measurement@detectors_2@processing_lines_0@processors_0@type	Average
+@measurement@detectors_2@processing_lines_0@processors_0@manufacturer	NF
+@measurement@detectors_2@processing_lines_0@processors_0@model_number	CA5350
+@measurement@detectors_2@processing_lines_0@processors_0@gain	10
+@measurement@detectors_2@processing_lines_0@processors_0@gain_unit	V/A
+@measurement@detectors_2@processing_lines_0@processors_0@time_constant	3e-05
+@measurement@detectors_2@processing_lines_0@processors_0@time_constant_unit	s
+@measurement@detectors_2@processing_lines_0@processors_1@processor	V/F Converter
+@measurement@detectors_2@processing_lines_0@processors_1@type	Average
+@measurement@detectors_2@processing_lines_0@processors_1@manufacturer	TSUJICON
+@measurement@detectors_2@processing_lines_0@processors_1@model_number	N2VF-1H
+@measurement@detectors_2@processing_lines_0@processors_1@gain	10000000
+@measurement@detectors_2@processing_lines_0@processors_1@gain_unit	Hz/V
+@measurement@detectors_2@processing_lines_0@processors_1@unit_id	2
+@measurement@detectors_2@processing_lines_0@processors_2@processor	Counter
+@measurement@detectors_2@processing_lines_0@processors_2@type	Integral
+@measurement@detectors_2@processing_lines_0@processors_2@manufacturer	TSUJICON
+@measurement@detectors_2@processing_lines_0@processors_2@model_number	CT16-01F
+@measurement@detectors_2@processing_lines_0@processors_2@unit_id	8
+@measurement@measured_time@start_time	2020-09-11 09:12:57.582
+@measurement@measured_time@end_time	2020-09-11 09:13:59.577
+@measurement@energy_calibration@standard_sample	Cu
+@measurement@energy_calibration@calibration_position	Cu pre-edge peak apex calibrated to 12.7183 deg (8980.121 eV)
+@measurement@tune	None
+@measurement@section@number	1
+@measurement@section@blocks_0@start	16740.16
+@measurement@section@blocks_0@start_unit	eV
+@measurement@section@blocks_0@end	18140.16
+@measurement@section@blocks_0@end_unit	eV
+@measurement@section@blocks_0@delta	0.37
+@measurement@section@blocks_0@delta_unit	eV
+@measurement@section@blocks_0@dwell_time	0.01
+@measurement@section@blocks_0@dwell_time_unit	s
+@measurement@section@blocks_0@sampling_number	3785
+@measurement@section@data_points	3783
+@sample@chemical_formula	Y2O3
+@sample@name	yttrium oxide
+@sample@supplier	Koujundo
+@sample@model_number	YYO03PB
+@sample@lot_number	None
+@sample@CAS_number	None
+@sample@identifier@global_identifiers_0@global_identifier	None
+@sample@identifier@local_identifiers_0@local_identifier	None
+@sample@phase	None
+@sample@purity	None
+@sample@shape@type	pellet
+@sample@shape@size@type	thickness
+@sample@shape@size@value	0.5
+@sample@shape@size@unit	mm
+@sample@create_time	2020-08-24
+@sample@contact_name@organization	None
+@sample@contact_name@affiliation	None
+@sample@contact_name@name	None
+@sample@contact_name@role	None
+@sample@condition@temperature@value	25
+@sample@condition@temperature@unit	℃
+@sample@condition@conditions_0@name	None
+@sample@condition@conditions_0@types_0@type	None
+@sample@condition@conditions_0@value	None
+@sample@condition@conditions_0@unit	None
+@sample@condition@conditions_0@additional_data	None
+@reference@chemical_formula	None
+@reference@name	None
+@reference@supplier	None
+@reference@model_number	None
+@reference@lot_number	None
+@reference@CAS_number	None
+@reference@identifier@global_identifiers_0@global_identifier	None
+@reference@identifier@local_identifier_0@local_identifier	None
+@reference@phase	None
+@reference@purity	None
+@reference@shape@type	None
+@reference@shape@size@type	None
+@reference@shape@size@value	None
+@reference@shape@size@unit	None
+@reference@create_time	
+@reference@additional_data	None
