@@ -456,64 +456,66 @@
               </v-btn>
             </div>
 
-            <!-- 衝突テーブル -->
-            <v-table density="comfortable" class="border rounded font-mono text-caption">
-              <thead>
-                <tr class="bg-grey-lighten-4">
-                  <th class="font-weight-bold" style="min-width: 240px;">スキーマ項目 (項目名 / Key)</th>
-                  <th class="font-weight-bold" style="width: 25%;">現在の値 (既存)</th>
-                  <th class="font-weight-bold" style="width: 25%;">読込ファイルの値</th>
-                  <th class="font-weight-bold text-center" style="width: 150px;">処理方法</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr v-for="item in conflictList" :key="item.path">
-                  <td class="py-2">
-                    <div class="d-flex align-center mb-1">
-                      <v-chip 
-                        size="x-small" 
-                        :color="item.level === 'required' ? 'deep-orange' : (item.level === 'recommended' ? 'teal' : 'grey')" 
-                        class="mr-1 font-weight-bold"
+            <!-- 衝突テーブル (ネイティブ table を使用してブラウザのDOMパース破損を防止) -->
+            <div class="border rounded overflow-hidden" style="max-height: 400px; overflow-y: auto;">
+              <table class="w-100 font-mono text-caption" style="border-collapse: collapse;">
+                <thead>
+                  <tr class="bg-grey-lighten-4 border-b">
+                    <th class="text-left pa-3 font-weight-bold" style="min-width: 240px;">スキーマ項目 (項目名 / Key)</th>
+                    <th class="text-left pa-3 font-weight-bold" style="width: 25%;">現在の値 (既存)</th>
+                    <th class="text-left pa-3 font-weight-bold" style="width: 25%;">読込ファイルの値</th>
+                    <th class="text-center pa-3 font-weight-bold" style="width: 150px;">処理方法</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-for="item in conflictList" :key="item.path" class="border-b">
+                    <td class="pa-3">
+                      <div class="d-flex align-center mb-1">
+                        <v-chip 
+                          size="x-small" 
+                          :color="item.level === 'required' ? 'deep-orange' : (item.level === 'recommended' ? 'teal' : 'grey')" 
+                          class="mr-1 font-weight-bold"
+                        >
+                          {{ item.level === 'required' ? '必須' : (item.level === 'recommended' ? '推奨' : '任意') }}
+                        </v-chip>
+                        <span class="font-weight-bold text-body-2 text-grey-darken-3">{{ item.name_ja }}</span>
+                      </div>
+                      <div class="text-caption font-mono text-primary">{{ item.path }}</div>
+                    </td>
+                    <td class="pa-3">
+                      <div class="pa-2 bg-deep-orange-lighten-5 rounded border text-deep-orange-darken-3 font-weight-medium">
+                        {{ item.currentVal === '' ? '(空文字)' : item.currentVal }}
+                      </div>
+                    </td>
+                    <td class="pa-3">
+                      <div class="pa-2 bg-teal-lighten-5 rounded border text-teal-darken-3 font-weight-medium">
+                        <span v-if="item.incomingVal === null || item.incomingVal === '' || item.incomingVal === undefined" class="text-grey font-italic">
+                          (空値 / 削除)
+                        </span>
+                        <span v-else>{{ item.incomingVal }}</span>
+                      </div>
+                    </td>
+                    <td class="text-center pa-3">
+                      <v-btn-toggle
+                        v-model="item.action"
+                        mandatory
+                        density="compact"
+                        rounded="pill"
+                        color="primary"
+                        size="small"
                       >
-                        {{ item.level === 'required' ? '必須' : (item.level === 'recommended' ? '推奨' : '任意') }}
-                      </v-chip>
-                      <span class="font-weight-bold text-body-2 text-grey-darken-3">{{ item.name_ja }}</span>
-                    </div>
-                    <div class="text-caption font-mono text-primary">{{ item.path }}</div>
-                  </td>
-                  <td class="py-2">
-                    <div class="pa-2 bg-deep-orange-lighten-5 rounded border text-deep-orange-darken-3 font-weight-medium">
-                      {{ item.currentVal === '' ? '(空文字)' : item.currentVal }}
-                    </div>
-                  </td>
-                  <td class="py-2">
-                    <div class="pa-2 bg-teal-lighten-5 rounded border text-teal-darken-3 font-weight-medium">
-                      <span v-if="item.incomingVal === null || item.incomingVal === '' || item.incomingVal === undefined" class="text-grey font-italic">
-                        (空値 / 削除)
-                      </span>
-                      <span v-else>{{ item.incomingVal }}</span>
-                    </div>
-                  </td>
-                  <td class="text-center py-2">
-                    <v-btn-toggle
-                      v-model="item.action"
-                      mandatory
-                      density="compact"
-                      rounded="pill"
-                      color="primary"
-                      size="small"
-                    >
-                      <v-btn value="skip" size="small" class="px-2 font-weight-bold" :color="item.action === 'skip' ? 'grey-darken-2' : undefined">
-                        維持
-                      </v-btn>
-                      <v-btn value="overwrite" size="small" class="px-2 font-weight-bold" :color="item.action === 'overwrite' ? 'primary' : undefined">
-                        上書き
-                      </v-btn>
-                    </v-btn-toggle>
-                  </td>
-                </tr>
-              </tbody>
-            </v-table>
+                        <v-btn value="skip" size="small" class="px-2 font-weight-bold" :color="item.action === 'skip' ? 'grey-darken-2' : undefined">
+                          維持
+                        </v-btn>
+                        <v-btn value="overwrite" size="small" class="px-2 font-weight-bold" :color="item.action === 'overwrite' ? 'primary' : undefined">
+                          上書き
+                        </v-btn>
+                      </v-btn-toggle>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
           </v-card-text>
 
           <v-divider></v-divider>
