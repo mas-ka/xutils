@@ -123,7 +123,75 @@ const PathUtils = {
         result.push({ path: currentPath, value });
       }
     }
+
+    // スキーマ辞書の定義順でソート
+    result.sort((a, b) => {
+      const orderA = SchemaSorter.getOrder(a.path);
+      const orderB = SchemaSorter.getOrder(b.path);
+      if (orderA !== orderB) return orderA - orderB;
+      return a.path.localeCompare(b.path);
+    });
+
     return result;
+  }
+};
+
+// スキーマ順ソーター (Pretty-print)
+const SchemaSorter = {
+  // パス文字列のスキーマ辞書における順位を取得
+  getOrder(pathStr) {
+    if (!pathStr) return 999999;
+    const dictionary = window.SCHEMA_DICTIONARY || [];
+    
+    // [1], [2] などのインデックスを [0] に正規化し、@ と . を統一
+    let norm = pathStr.replace(/\[\d+\]/g, '[0]').replace(/@/g, '.');
+    if (!norm.startsWith('.')) norm = '.' + norm;
+
+    // 辞書内で完全一致または前方一致する項目のインデックスを検索
+    for (let i = 0; i < dictionary.length; i++) {
+      let dictNorm = dictionary[i].path.replace(/\[\d+\]/g, '[0]').replace(/@/g, '.');
+      if (!dictNorm.startsWith('.')) dictNorm = '.' + dictNorm;
+
+      if (dictNorm === norm || dictNorm.startsWith(norm + '.') || dictNorm.startsWith(norm + '[')) {
+        return i;
+      }
+    }
+
+    // 大分類トップレベルのフォールバック
+    const topCategories = ['data_info', 'facility', 'files', 'instrument', 'measurement', 'sample', 'reference', 'local'];
+    for (let c = 0; c < topCategories.length; c++) {
+      if (norm.startsWith('.' + topCategories[c])) {
+        return 10000 + c * 1000;
+      }
+    }
+
+    return 999999;
+  },
+
+  // オブジェクトをスキーマ定義順に再帰的に並べ替え
+  sortObject(obj, currentPath = '') {
+    if (obj === null || typeof obj !== 'object') return obj;
+
+    if (Array.isArray(obj)) {
+      return obj.map((item, idx) => this.sortObject(item, `${currentPath}[${idx}]`));
+    }
+
+    const keys = Object.keys(obj);
+    keys.sort((a, b) => {
+      const pathA = currentPath ? `${currentPath}.${a}` : `@${a}`;
+      const pathB = currentPath ? `${currentPath}.${b}` : `@${b}`;
+      const orderA = this.getOrder(pathA);
+      const orderB = this.getOrder(pathB);
+      if (orderA !== orderB) return orderA - orderB;
+      return a.localeCompare(b);
+    });
+
+    const sorted = {};
+    for (const key of keys) {
+      const nextPath = currentPath ? `${currentPath}.${key}` : `@${key}`;
+      sorted[key] = this.sortObject(obj[key], nextPath);
+    }
+    return sorted;
   }
 };
 
@@ -341,6 +409,8 @@ const app = createApp({
 
       // セット
       PathUtils.set(dataObject.value, selectedKeyPath.value, val);
+      // スキーマ定義順に自動ソート
+      dataObject.value = SchemaSorter.sortObject(dataObject.value);
       showToast(`「${selectedKeyPath.value}」を設定しました`);
     };
 
@@ -350,10 +420,17 @@ const app = createApp({
       if (!targetPath) return;
 
       PathUtils.delete(dataObject.value, targetPath);
+      dataObject.value = SchemaSorter.sortObject(dataObject.value);
       if (selectedKeyPath.value === targetPath) {
         inputValue.value = '';
       }
       showToast(`「${targetPath}」を削除しました`);
+    };
+
+    // スキーマ順に整列 (Pretty-print 手動実行)
+    const prettyPrintData = () => {
+      dataObject.value = SchemaSorter.sortObject(dataObject.value);
+      showToast('スキーマ定義順に整列しました');
     };
 
     // 一覧やチップスからKeyを選択
@@ -363,7 +440,7 @@ const app = createApp({
 
     // サンプルデータの投入（動作確認用）
     const loadSampleData = () => {
-      dataObject.value = {
+      const rawSample = {
         data_info: {
           title: "XAFS measurement of Cu foil",
           title_ja: "Cu金属箔のXAFS測定",
@@ -378,7 +455,7 @@ const app = createApp({
           deposite_time: {
             create_time: "2023-02-03"
           },
-          license: "CC BY-NC-SA"
+          license: "CC BY-NC-SA 4.0"
         },
         facility: {
           name: "Photon Factory",
@@ -395,10 +472,11 @@ const app = createApp({
         },
         measurement: {
           edges: [
-            { element: "Cu", edge: "K" }
+            { element: "Cu", edge: "K-edge" }
           ]
         }
       };
+      dataObject.value = SchemaSorter.sortObject(rawSample);
       showToast('サンプルデータをロードしました');
     };
 
@@ -441,6 +519,7 @@ const app = createApp({
       applyValue,
       deleteKey,
       selectKey,
+      prettyPrintData,
       loadSampleData,
       clearAll,
       copyYaml,
