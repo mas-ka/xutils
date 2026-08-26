@@ -162,11 +162,23 @@
         <v-chip 
           :color="recommendedStatus.isComplete ? 'success' : 'teal'" 
           variant="elevated" 
-          class="mr-1 font-weight-bold"
+          class="mr-2 font-weight-bold"
           size="small"
         >
           <v-icon :icon="recommendedStatus.isComplete ? 'mdi-check-circle' : 'mdi-lightbulb-outline'" start></v-icon>
           推奨: {{ recommendedStatus.progress }}
+        </v-chip>
+
+        <!-- 仕様外Key警告バッジ (仕様外項目が存在する場合のみ表示) -->
+        <v-chip 
+          v-if="customKeysStatus.count > 0"
+          color="amber-darken-4" 
+          variant="elevated" 
+          class="mr-1 font-weight-bold"
+          size="small"
+        >
+          <v-icon icon="mdi-alert" start></v-icon>
+          仕様外: {{ customKeysStatus.count }} 件
         </v-chip>
       </v-app-bar>
 
@@ -222,24 +234,35 @@
 
                   <!-- 選択中Keyのスキーマ属性ヒント表示 -->
                   <v-expand-transition>
-                    <div v-if="currentSchema" class="mb-3 pa-3 bg-grey-lighten-4 rounded border">
+                    <div 
+                      v-if="currentSchema" 
+                      class="mb-3 pa-3 rounded border"
+                      :class="currentSchema.isCustom ? 'bg-amber-lighten-5 border-amber-lighten-2' : (currentSchema.level === 'local' ? 'bg-blue-lighten-5 border-blue-lighten-2' : 'bg-grey-lighten-4 border-grey-lighten-2')"
+                    >
                       <div class="d-flex align-center mb-1">
-                        <span class="text-subtitle-2 font-weight-bold text-primary mr-2">
+                        <span 
+                          class="text-subtitle-2 font-weight-bold mr-2"
+                          :class="currentSchema.isCustom ? 'text-amber-darken-4' : 'text-primary'"
+                        >
+                          <v-icon v-if="currentSchema.isCustom" icon="mdi-alert" size="18" class="mr-1"></v-icon>
                           {{ currentSchema.name_ja }}
                         </span>
-                        <span class="text-caption text-grey mr-2">({{ currentSchema.name_en }})</span>
+                        <span v-if="currentSchema.name_en" class="text-caption text-grey mr-2">({{ currentSchema.name_en }})</span>
                         <v-chip 
                           size="x-small" 
-                          :color="currentSchema.level === 'required' ? 'deep-orange' : (currentSchema.level === 'recommended' ? 'teal' : 'secondary')" 
+                          :color="currentSchema.level === 'required' ? 'deep-orange' : (currentSchema.level === 'recommended' ? 'teal' : (currentSchema.isCustom ? 'amber-darken-3' : 'secondary'))" 
                           class="mr-1 font-weight-bold"
                         >
-                          {{ currentSchema.level === 'required' ? '必須' : (currentSchema.level === 'recommended' ? '推奨' : '任意') }}
+                          {{ currentSchema.level === 'required' ? '必須' : (currentSchema.level === 'recommended' ? '推奨' : (currentSchema.level === 'local' ? '独自拡張' : (currentSchema.isCustom ? '仕様外' : '任意'))) }}
                         </v-chip>
                         <v-chip size="x-small" variant="outlined" class="mr-1">
                           型: {{ currentSchema.type }}
                         </v-chip>
                       </div>
-                      <div class="text-caption text-grey-darken-2">
+                      <div 
+                        class="text-caption font-weight-medium"
+                        :class="currentSchema.isCustom ? 'text-amber-darken-4' : 'text-grey-darken-2'"
+                      >
                         {{ currentSchema.description }}
                       </div>
                       <div v-if="currentSchema.example !== undefined" class="text-caption text-blue-grey mt-1 font-mono">
@@ -375,8 +398,16 @@
                         :active="selectedKeyPath === item.path"
                         @click="selectKey(item.path)"
                       >
-                        <v-list-item-title class="font-weight-bold text-primary">
-                          {{ item.path }}
+                        <v-list-item-title class="d-flex align-center font-weight-bold text-primary mb-1">
+                          <v-chip 
+                            size="x-small" 
+                            :color="item.level === 'required' ? 'deep-orange' : (item.level === 'recommended' ? 'teal' : (item.isCustom ? 'amber-darken-4' : (item.level === 'local' ? 'blue-darken-2' : 'grey')))" 
+                            class="mr-2 font-weight-bold"
+                          >
+                            {{ item.level === 'required' ? '必須' : (item.level === 'recommended' ? '推奨' : (item.isCustom ? '仕様外' : (item.level === 'local' ? '独自拡張' : '任意'))) }}
+                          </v-chip>
+                          <span>{{ item.path }}</span>
+                          <span class="text-caption text-grey-darken-1 font-weight-regular ml-2">({{ item.name_ja }})</span>
                         </v-list-item-title>
                         <v-list-item-subtitle class="text-grey-darken-1">
                           値: <span class="text-body-2 font-weight-medium text-black">{{ item.value }}</span>

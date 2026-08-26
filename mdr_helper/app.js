@@ -237,17 +237,38 @@ const app = createApp({
     const currentSchema = computed(() => {
       if (!selectedKeyPath.value) return null;
       // 完全一致またはインデックス正規化一致で検索
-      const cleanPath = selectedKeyPath.value.replace(/\[\d+\]/g, '[0]');
-      return dictionary.find(d => {
-        const dClean = d.path.replace(/\[\d+\]/g, '[0]');
+      const cleanPath = selectedKeyPath.value.replace(/\[\d+\]/g, '[0]').replace(/\./g, '@');
+      const found = dictionary.find(d => {
+        const dClean = d.path.replace(/\[\d+\]/g, '[0]').replace(/\./g, '@');
         return dClean === cleanPath || d.path === selectedKeyPath.value;
-      }) || {
+      });
+
+      if (found) return found;
+
+      // @local で始まる場合は公式の独自拡張項目
+      if (selectedKeyPath.value.startsWith('@local') || selectedKeyPath.value.startsWith('local.')) {
+        return {
+          path: selectedKeyPath.value,
+          name_ja: "独自拡張パラメータ",
+          name_en: "local custom parameter",
+          type: "string",
+          level: "local",
+          isCustom: false,
+          required: false,
+          description: "JXS共通仕様公式の独自拡張パラメータ枠（@local）です。"
+        };
+      }
+
+      // それ以外の未定義Key（タイポの可能性あり）
+      return {
         path: selectedKeyPath.value,
-        name_ja: "カスタム項目",
-        name_en: "custom key",
+        name_ja: "⚠️ 仕様外カスタム項目",
+        name_en: "non-standard key",
         type: "string",
+        level: "custom",
+        isCustom: true,
         required: false,
-        description: "スキーマ辞書外の自由定義Key"
+        description: "JXS共通仕様に存在しないKeyです。タイポ（入力間違い）の可能性があります。"
       };
     });
 
@@ -304,9 +325,35 @@ const app = createApp({
       }));
     });
 
-    // 現在入力済みのKey-Value一覧
+    // 現在入力済みのKey-Value一覧（スキーマメタ情報付き）
     const existingKeys = computed(() => {
-      return PathUtils.flatten(dataObject.value);
+      const flat = PathUtils.flatten(dataObject.value);
+      return flat.map(item => {
+        const normPath = item.path.replace(/\[\d+\]/g, '[0]').replace(/\./g, '@');
+        const schemaDef = dictionary.find(d => {
+          const dictNorm = d.path.replace(/\[\d+\]/g, '[0]').replace(/\./g, '@');
+          return dictNorm === normPath;
+        });
+
+        const isLocal = item.path.startsWith('@local') || item.path.startsWith('local.');
+        const isCustom = !schemaDef && !isLocal;
+
+        return {
+          ...item,
+          name_ja: schemaDef ? schemaDef.name_ja : (isLocal ? '独自拡張項目' : '仕様外Key'),
+          level: schemaDef ? (schemaDef.level || (schemaDef.required ? 'required' : 'optional')) : (isLocal ? 'local' : 'custom'),
+          isCustom: isCustom
+        };
+      });
+    });
+
+    // 仕様外Keyの集計
+    const customKeysStatus = computed(() => {
+      const customItems = existingKeys.value.filter(item => item.isCustom);
+      return {
+        count: customItems.length,
+        list: customItems
+      };
     });
 
     // 必須項目の入力状況判定
@@ -721,6 +768,7 @@ const app = createApp({
       existingKeys,
       requiredStatus,
       recommendedStatus,
+      customKeysStatus,
       yamlOutput,
       highlightedYaml,
       applyValue,
