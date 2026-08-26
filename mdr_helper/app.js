@@ -427,12 +427,6 @@ const app = createApp({
       showToast(`「${targetPath}」を削除しました`);
     };
 
-    // スキーマ順に整列 (Pretty-print 手動実行)
-    const prettyPrintData = () => {
-      dataObject.value = SchemaSorter.sortObject(dataObject.value);
-      showToast('スキーマ定義順に整列しました');
-    };
-
     // 一覧やチップスからKeyを選択
     const selectKey = (path) => {
       selectedKeyPath.value = path;
@@ -519,7 +513,6 @@ const app = createApp({
       applyValue,
       deleteKey,
       selectKey,
-      prettyPrintData,
       loadSampleData,
       clearAll,
       copyYaml,

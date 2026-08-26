@@ -324,28 +324,15 @@
                       <v-icon icon="mdi-code-json" class="mr-2"></v-icon>
                       metadata.yml (Preview)
                     </v-card-title>
-                    <div class="d-flex align-center">
-                      <v-btn 
-                        variant="text" 
-                        size="small" 
-                        color="grey-lighten-2" 
-                        prepend-icon="mdi-format-line-spacing"
-                        class="mr-1"
-                        @click="prettyPrintData"
-                        title="スキーマ定義順に並び替え"
-                      >
-                        整列
-                      </v-btn>
-                      <v-btn 
-                        variant="text" 
-                        size="small" 
-                        color="white" 
-                        prepend-icon="mdi-content-copy"
-                        @click="copyYaml"
-                      >
-                        コピー
-                      </v-btn>
-                    </div>
+                    <v-btn 
+                      variant="text" 
+                      size="small" 
+                      color="white" 
+                      prepend-icon="mdi-content-copy"
+                      @click="copyYaml"
+                    >
+                      コピー
+                    </v-btn>
                   </div>
                 </v-card-item>
                 <v-card-text class="pa-3 bg-grey-darken-4">
