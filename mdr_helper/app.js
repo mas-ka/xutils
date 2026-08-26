@@ -517,8 +517,16 @@ const app = createApp({
               continue;
             } else {
               // 値が異なる（空値による上書き＝削除を含む）場合は衝突
+              const normPath = entry.path.replace(/\[\d+\]/g, '[0]').replace(/\./g, '@');
+              const schemaDef = dictionary.find(d => {
+                const dictNorm = d.path.replace(/\[\d+\]/g, '[0]').replace(/\./g, '@');
+                return dictNorm === normPath;
+              });
+
               conflicts.push({
                 path: entry.path,
+                name_ja: schemaDef ? schemaDef.name_ja : entry.path.split('.').pop(),
+                level: schemaDef ? (schemaDef.level || (schemaDef.required ? 'required' : 'optional')) : 'optional',
                 currentVal: currentVal,
                 incomingVal: entry.value,
                 action: 'overwrite' // デフォルトは上書き

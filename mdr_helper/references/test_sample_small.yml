@@ -1,0 +1,12 @@
+# テスト用 最小YAMLサンプル (大分類: facility, sample, measurement)
+facility:
+  name: SAGA-LS
+  beamline: BL11
+
+sample:
+  name: Iron(III) oxide
+
+measurement:
+  edges:
+    - element: Fe
+      edge: K-edge

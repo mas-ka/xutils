@@ -1,0 +1,10 @@
+# テスト用 空値による削除・更新・新規追加の複合テスト
+facility:
+  name: NanoTerasu # 上書きテスト
+
+sample:
+  phase: "" # 空値による上書き (削除) テスト
+
+data_info:
+  license: "CC0" # 推奨値の更新テスト
+  comment: "空値上書き・マージテスト用メタデータ" # 新規項目の追加テスト

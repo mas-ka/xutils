@@ -1,0 +1,17 @@
+# テスト用 施設・光学系テンプレート (部分マージ確認用)
+facility:
+  name: SPring-8
+  beamline: BL14B2
+  ring:
+    energy: 8.0
+    energy_unit: GeV
+    start_current: 99.5
+    start_current_unit: mA
+
+instrument:
+  monochromator:
+    name: DCM
+    scan_mode: quick scan
+    detail:
+      crystal_material: Si
+      crystal_plane: "111"
