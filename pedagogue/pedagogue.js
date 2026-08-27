@@ -232,6 +232,7 @@ const app = createApp({
     const snackbarText = ref('');
     const showSnackbar = ref(false);
     const filterCategory = ref('ALL');
+    const showYamlTooltips = ref(true);
 
     // 選択されたKeyのスキーマ定義を特定
     const currentSchema = computed(() => {
@@ -435,6 +436,172 @@ const app = createApp({
         }
       }
       return raw;
+    });
+
+    // YAML各行の解析とスキーマ逆引き (行クリック編集 & ホバーチップ表示用)
+    const yamlLines = computed(() => {
+      const raw = yamlOutput.value;
+      if (!raw || raw.startsWith('#')) {
+        return [{
+          index: 0,
+          rawText: raw,
+          highlightedHtml: window.hljs ? window.hljs.highlight(raw, { language: 'yaml' }).value : raw,
+          isClickable: false,
+          path: '',
+          schemaDef: null
+        }];
+      }
+
+      const lines = raw.split('\n');
+      const result = [];
+      const stack = []; // 各階層のスタック { indent, key, isArray, arrayIndex, isFromHyphen }
+
+      lines.forEach((line, idx) => {
+        if (!line.trim()) {
+          result.push({
+            index: idx,
+            rawText: '',
+            highlightedHtml: '&nbsp;',
+            isClickable: false,
+            path: '',
+            schemaDef: null
+          });
+          return;
+        }
+
+        const indent = line.search(/\S/);
+        const trimmed = line.trim();
+
+        // スタックの調整: 現在のインデント以上の深さのスタックを破棄
+        while (stack.length > 0 && stack[stack.length - 1].indent >= indent) {
+          stack.pop();
+        }
+
+        let key = '';
+        let value = '';
+        let isClickable = false;
+
+        if (trimmed.startsWith('- ')) {
+          // 配列要素 (例: "- element: Cu")
+          const content = trimmed.substring(2).trim();
+          const colonIdx = content.indexOf(':');
+
+          // 親の配列スタックのインデックスをカウントアップ
+          let parentArrayStack = null;
+          for (let s = stack.length - 1; s >= 0; s--) {
+            if (stack[s].isArray) {
+              parentArrayStack = stack[s];
+              break;
+            }
+          }
+          let currentArrayIndex = 0;
+          if (parentArrayStack) {
+            parentArrayStack.arrayIndex = (parentArrayStack.arrayIndex !== undefined ? parentArrayStack.arrayIndex : -1) + 1;
+            currentArrayIndex = parentArrayStack.arrayIndex;
+          }
+
+          if (colonIdx !== -1) {
+            key = content.substring(0, colonIdx).trim();
+            value = content.substring(colonIdx + 1).trim();
+            isClickable = (value !== '');
+            stack.push({
+              indent: indent,
+              key: key,
+              isArray: false,
+              arrayIndex: currentArrayIndex,
+              isFromHyphen: true
+            });
+          } else {
+            value = content;
+            isClickable = true;
+          }
+        } else {
+          const colonIdx = trimmed.indexOf(':');
+          if (colonIdx !== -1) {
+            key = trimmed.substring(0, colonIdx).trim();
+            value = trimmed.substring(colonIdx + 1).trim();
+            isClickable = (value !== '');
+            const isArrayContainer = (value === '');
+            stack.push({
+              indent: indent,
+              key: key,
+              isArray: isArrayContainer,
+              arrayIndex: -1,
+              isFromHyphen: false
+            });
+          }
+        }
+
+        // 平坦化パス（@facility@name 等）を構築
+        let fullPath = '';
+        if (stack.length > 0) {
+          const pathSegments = [];
+          for (let i = 0; i < stack.length; i++) {
+            const s = stack[i];
+            if (s.isFromHyphen) {
+              const prev = pathSegments.pop();
+              pathSegments.push(`${prev}[${s.arrayIndex}].${s.key}`);
+            } else {
+              pathSegments.push(s.key);
+            }
+          }
+          fullPath = '@' + pathSegments.join('@');
+        }
+
+        // スキーマ辞書との照合
+        let schemaDef = null;
+        let level = 'optional';
+        let name_ja = '';
+        let isCustom = false;
+
+        if (fullPath && isClickable) {
+          const cleanPath = fullPath.replace(/\[\d+\]/g, '[0]').replace(/\./g, '@');
+          schemaDef = dictionary.find(d => {
+            const dClean = d.path.replace(/\[\d+\]/g, '[0]').replace(/\./g, '@');
+            return dClean === cleanPath || d.path === fullPath;
+          });
+
+          if (schemaDef) {
+            level = schemaDef.level || (schemaDef.required ? 'required' : 'optional');
+            name_ja = schemaDef.name_ja;
+          } else {
+            const isLocal = fullPath.startsWith('@local') || fullPath.startsWith('local.');
+            if (isLocal) {
+              level = 'local';
+              name_ja = '独自拡張';
+            } else {
+              level = 'custom';
+              isCustom = true;
+              name_ja = '仕様外';
+            }
+          }
+        }
+
+        // 構文ハイライト
+        let highlighted = line;
+        if (window.hljs) {
+          try {
+            highlighted = window.hljs.highlight(line, { language: 'yaml' }).value;
+          } catch (e) {
+            highlighted = line;
+          }
+        }
+
+        result.push({
+          index: idx,
+          rawText: line,
+          highlightedHtml: highlighted,
+          isClickable: isClickable,
+          path: fullPath,
+          value: value,
+          schemaDef: (schemaDef || isClickable) ? { level, name_ja, isCustom } : null,
+          level: level,
+          name_ja: name_ja,
+          isCustom: isCustom
+        });
+      });
+
+      return result;
     });
 
     // 値の適用
@@ -771,6 +938,7 @@ const app = createApp({
       customKeysStatus,
       yamlOutput,
       highlightedYaml,
+      yamlLines,
       applyValue,
       deleteKey,
       selectKey,
@@ -781,6 +949,7 @@ const app = createApp({
       snackbarText,
       showSnackbar,
       filterCategory,
+      showYamlTooltips,
       // ロード・マージ・保存・D&D
       isDraggingOver,
       showConflictDialog,

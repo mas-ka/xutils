@@ -27,12 +27,33 @@
       background-color: #1e1e1e;
       color: #d4d4d4;
       border-radius: 6px;
-      padding: 16px;
+      padding: 12px;
       font-size: 0.875rem;
       line-height: 1.5;
       max-height: calc(100vh - 160px);
       overflow-y: auto;
       white-space: pre;
+    }
+    .yaml-line {
+      transition: background-color 0.15s ease;
+      border-radius: 3px;
+      min-height: 22px;
+      line-height: 1.5;
+    }
+    .yaml-line.clickable-line {
+      cursor: pointer;
+    }
+    .yaml-line.clickable-line:hover {
+      background-color: rgba(255, 255, 255, 0.12);
+    }
+    .yaml-line.active-line {
+      background-color: rgba(25, 118, 210, 0.35) !important;
+      border-left: 3px solid #64B5F6;
+    }
+    .v-overlay__content:has(.custom-tooltip-content) {
+      padding: 0 !important;
+      background: transparent !important;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
     }
     .drop-overlay {
       position: fixed;
@@ -328,12 +349,12 @@
                 </v-card-text>
               </v-card>
 
-              <!-- カード2 & 2.5: 必須・推奨の未入力 ToDo リスト (横並び左右分割) -->
+              <!-- カード2 & 2.5: 必須・推奨の未入力 ToDo リスト (横並び左右分割・全件表示固定長) -->
               <v-row class="mb-4" dense>
                 <!-- 左: ⚠️ 未入力の必須項目 -->
                 <v-col cols="12" sm="6">
-                  <v-card elevation="2" class="h-100 rounded-lg border overflow-hidden" :color="requiredStatus.isComplete ? 'green-lighten-5' : 'deep-orange-lighten-5'">
-                    <v-card-item class="py-2 px-3" :class="requiredStatus.isComplete ? 'bg-success text-white' : 'bg-deep-orange text-white'">
+                  <v-card elevation="2" class="rounded-lg border overflow-hidden" style="height: 600px;" :color="requiredStatus.isComplete ? 'green-lighten-5' : 'deep-orange-lighten-5'">
+                    <v-card-item class="py-2 px-3 border-b" :class="requiredStatus.isComplete ? 'bg-success text-white' : 'bg-deep-orange text-white'">
                       <v-card-title class="text-caption font-weight-bold d-flex align-center text-white">
                         <v-icon :icon="requiredStatus.isComplete ? 'mdi-check-circle' : 'mdi-alert-circle'" class="mr-1 text-white" size="18"></v-icon>
                         {{ requiredStatus.isComplete ? '必須項目はすべて完了' : `未入力の必須項目 (${requiredStatus.unfilledList.length})` }}
@@ -341,11 +362,12 @@
                     </v-card-item>
                     
                     <v-card-text class="pa-0">
-                      <v-list v-if="!requiredStatus.isComplete" density="compact" class="bg-transparent py-0" style="max-height: 180px; overflow-y: auto;">
+                      <v-list v-if="!requiredStatus.isComplete" density="compact" class="bg-transparent py-0" style="height: 550px; overflow-y: auto;">
                         <v-list-item
                           v-for="item in requiredStatus.unfilledList"
                           :key="item.path"
-                          class="border-b py-1 px-3 cursor-pointer"
+                          class="border-b px-3 cursor-pointer"
+                          style="min-height: 32px; padding-top: 2px !important; padding-bottom: 2px !important;"
                           @click="selectKey(item.path)"
                         >
                           <v-list-item-title class="font-mono text-body-2 font-weight-bold text-deep-orange-darken-4 text-truncate">
@@ -356,7 +378,7 @@
                           </v-list-item-subtitle>
                         </v-list-item>
                       </v-list>
-                      <div v-else class="text-caption text-success font-weight-bold text-center py-4">
+                      <div v-else class="text-caption text-success font-weight-bold text-center py-6">
                         ✓ すべての必須項目が完了しました
                       </div>
                     </v-card-text>
@@ -365,8 +387,8 @@
 
                 <!-- 右: 💡 未入力の推奨項目 -->
                 <v-col cols="12" sm="6">
-                  <v-card elevation="2" class="h-100 rounded-lg border overflow-hidden" :color="recommendedStatus.isComplete ? 'green-lighten-5' : 'teal-lighten-5'">
-                    <v-card-item class="py-2 px-3" :class="recommendedStatus.isComplete ? 'bg-success text-white' : 'bg-teal-darken-1 text-white'">
+                  <v-card elevation="2" class="rounded-lg border overflow-hidden" style="height: 600px;" :color="recommendedStatus.isComplete ? 'green-lighten-5' : 'teal-lighten-5'">
+                    <v-card-item class="py-2 px-3 border-b" :class="recommendedStatus.isComplete ? 'bg-success text-white' : 'bg-teal-darken-1 text-white'">
                       <v-card-title class="text-caption font-weight-bold d-flex align-center text-white">
                         <v-icon :icon="recommendedStatus.isComplete ? 'mdi-check-circle' : 'mdi-lightbulb-on-outline'" class="mr-1 text-white" size="18"></v-icon>
                         {{ recommendedStatus.isComplete ? '推奨項目はすべて完了' : `未入力の推奨項目 (${recommendedStatus.unfilledList.length})` }}
@@ -374,11 +396,12 @@
                     </v-card-item>
                     
                     <v-card-text class="pa-0">
-                      <v-list v-if="!recommendedStatus.isComplete" density="compact" class="bg-transparent py-0" style="max-height: 180px; overflow-y: auto;">
+                      <v-list v-if="!recommendedStatus.isComplete" density="compact" class="bg-transparent py-0" style="height: 550px; overflow-y: auto;">
                         <v-list-item
                           v-for="item in recommendedStatus.unfilledList"
                           :key="item.path"
-                          class="border-b py-1 px-3 cursor-pointer"
+                          class="border-b px-3 cursor-pointer"
+                          style="min-height: 32px; padding-top: 2px !important; padding-bottom: 2px !important;"
                           @click="selectKey(item.path)"
                         >
                           <v-list-item-title class="font-mono text-body-2 font-weight-bold text-teal-darken-4 text-truncate">
@@ -389,88 +412,91 @@
                           </v-list-item-subtitle>
                         </v-list-item>
                       </v-list>
-                      <div v-else class="text-caption text-success font-weight-bold text-center py-4">
+                      <div v-else class="text-caption text-success font-weight-bold text-center py-6">
                         ✓ すべての推奨項目が完了しました
                       </div>
                     </v-card-text>
                   </v-card>
                 </v-col>
               </v-row>
-
-              <!-- カード3: 設定済み Key-Value リスト -->
-              <v-card elevation="2">
-                <v-card-item class="bg-grey-lighten-4 py-2">
-                  <v-card-title class="text-subtitle-2 font-weight-bold text-grey-darken-3 d-flex align-center">
-                    <v-icon icon="mdi-format-list-bulleted" class="mr-2" color="secondary"></v-icon>
-                    現在設定されているKey一覧 ({{ existingKeys.length }} 件)
-                  </v-card-title>
-                </v-card-item>
-
-                <v-card-text class="pa-0">
-                  <v-list density="compact" class="py-0" style="max-height: 260px; overflow-y: auto;">
-                    <template v-if="existingKeys.length > 0">
-                      <v-list-item
-                        v-for="(item, idx) in existingKeys"
-                        :key="idx"
-                        class="border-b font-mono text-caption"
-                        :active="selectedKeyPath === item.path"
-                        @click="selectKey(item.path)"
-                      >
-                        <v-list-item-title class="d-flex align-center font-weight-bold text-primary mb-1">
-                          <v-chip 
-                            size="x-small" 
-                            :color="item.level === 'required' ? 'deep-orange' : (item.level === 'recommended' ? 'teal' : (item.isCustom ? 'amber-darken-4' : (item.level === 'local' ? 'blue-darken-2' : 'grey')))" 
-                            class="mr-2 font-weight-bold"
-                          >
-                            {{ item.level === 'required' ? '必須' : (item.level === 'recommended' ? '推奨' : (item.isCustom ? '仕様外' : (item.level === 'local' ? '独自拡張' : '任意'))) }}
-                          </v-chip>
-                          <span>{{ item.path }}</span>
-                          <span class="text-caption text-grey-darken-1 font-weight-regular ml-2">({{ item.name_ja }})</span>
-                        </v-list-item-title>
-                        <v-list-item-subtitle class="text-grey-darken-1">
-                          値: <span class="text-body-2 font-weight-medium text-black">{{ item.value }}</span>
-                        </v-list-item-subtitle>
-                        <template v-slot:append>
-                          <v-btn
-                            icon="mdi-close"
-                            size="x-small"
-                            variant="text"
-                            color="grey"
-                            @click.stop="deleteKey(item.path)"
-                          ></v-btn>
-                        </template>
-                      </v-list-item>
-                    </template>
-                    <v-list-item v-else class="text-caption text-grey text-center py-4">
-                      設定されているKeyはありません
-                    </v-list-item>
-                  </v-list>
-                </v-card-text>
-              </v-card>
             </v-col>
 
             <!-- 右ペイン: リアルタイムYAMLプレビュー (幅 45%) -->
             <v-col cols="12" md="5">
-              <v-card elevation="2" class="h-100">
-                <v-card-item class="bg-grey-darken-3 text-white py-2">
+              <v-card elevation="2" class="h-100 rounded-lg overflow-hidden">
+                <v-card-item class="bg-grey-darken-3 text-white py-2 px-3 border-b">
                   <div class="d-flex justify-space-between align-center">
-                    <v-card-title class="text-subtitle-1 font-weight-bold font-mono d-flex align-center">
+                    <v-card-title class="text-subtitle-2 font-weight-bold font-mono d-flex align-center">
                       <v-icon icon="mdi-code-json" class="mr-2"></v-icon>
                       metadata.yml (Preview)
                     </v-card-title>
-                    <v-btn 
-                      variant="text" 
-                      size="small" 
-                      color="white" 
-                      prepend-icon="mdi-content-copy"
-                      @click="copyYaml"
-                    >
-                      コピー
-                    </v-btn>
+                    <div class="d-flex align-center">
+                      <v-btn 
+                        variant="text" 
+                        size="small" 
+                        :color="showYamlTooltips ? 'amber-accent-2' : 'grey-lighten-1'" 
+                        :prepend-icon="showYamlTooltips ? 'mdi-lightbulb-on' : 'mdi-lightbulb-outline'"
+                        class="mr-2"
+                        @click="showYamlTooltips = !showYamlTooltips"
+                        :title="showYamlTooltips ? 'ホバーヒントを非表示にする' : 'ホバーヒントを表示する'"
+                      >
+                        ヒント: {{ showYamlTooltips ? 'ON' : 'OFF' }}
+                      </v-btn>
+                      <v-btn 
+                        variant="text" 
+                        size="small" 
+                        color="white" 
+                        prepend-icon="mdi-content-copy"
+                        @click="copyYaml"
+                      >
+                        コピー
+                      </v-btn>
+                    </div>
                   </div>
                 </v-card-item>
-                <v-card-text class="pa-3 bg-grey-darken-4">
-                  <div class="yaml-preview font-mono hljs" v-html="highlightedYaml"></div>
+                <v-card-text class="pa-2 bg-grey-darken-4">
+                  <div class="yaml-preview font-mono hljs">
+                    <template v-for="line in yamlLines" :key="line.index">
+                      <v-tooltip 
+                        v-if="line.isClickable"
+                        :disabled="!showYamlTooltips"
+                        :open-delay="400"
+                        location="top start"
+                      >
+                        <template v-slot:activator="{ props }">
+                          <div 
+                            v-bind="props"
+                            class="yaml-line px-2"
+                            :class="{ 
+                              'clickable-line': true, 
+                              'active-line': selectedKeyPath === line.path 
+                            }"
+                            @click="selectKey(line.path)"
+                            v-html="line.highlightedHtml"
+                          ></div>
+                        </template>
+                        <div 
+                          class="custom-tooltip-content pa-2 rounded-md text-white font-sans text-caption"
+                          :class="line.level === 'required' ? 'bg-deep-orange-darken-1' : (line.level === 'recommended' ? 'bg-teal-darken-1' : (line.isCustom ? 'bg-amber-darken-4' : (line.level === 'local' ? 'bg-blue-darken-2' : 'bg-grey-darken-3')))"
+                        >
+                          <div class="font-weight-bold d-flex align-center mb-0-5">
+                            <span class="mr-1 font-weight-black">[{{ line.level === 'required' ? '必須' : (line.level === 'recommended' ? '推奨' : (line.isCustom ? '⚠️ 仕様外' : (line.level === 'local' ? '💡 独自拡張' : '任意')))}}]</span>
+                            <span>{{ line.name_ja }}</span>
+                          </div>
+                          <div class="font-mono text-white opacity-80" style="font-size: 11px;">
+                            {{ line.path }}
+                          </div>
+                        </div>
+                      </v-tooltip>
+
+                      <!-- クリック不可な親行・空行 -->
+                      <div 
+                        v-else
+                        class="yaml-line px-2"
+                        v-html="line.highlightedHtml"
+                      ></div>
+                    </template>
+                  </div>
                 </v-card-text>
               </v-card>
             </v-col>
