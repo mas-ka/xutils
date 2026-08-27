@@ -23,6 +23,16 @@
     .font-mono {
       font-family: 'Roboto Mono', monospace !important;
     }
+    .yaml-preview-card {
+      min-height: 500px;
+      height: 100%;
+    }
+    @media (max-width: 959.98px) {
+      .yaml-preview-card {
+        height: 550px !important;
+        min-height: 550px !important;
+      }
+    }
     .yaml-preview {
       background-color: #1e1e1e;
       color: #d4d4d4;
@@ -30,8 +40,11 @@
       padding: 12px;
       font-size: 0.875rem;
       line-height: 1.5;
-      flex-grow: 1;
-      height: 100%;
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      left: 0;
+      right: 0;
       overflow-y: auto;
       white-space: pre;
     }
@@ -101,10 +114,49 @@
 
       <!-- Top App Bar with Integrated Menu Bar -->
       <v-app-bar color="primary" density="compact" elevation="2">
-        <v-app-bar-title class="font-weight-bold d-flex align-center flex-grow-0 mr-4">
-          <v-icon icon="mdi-school-outline" class="mr-2"></v-icon>
-          Pedagogue
-        </v-app-bar-title>
+        <!-- アプリ名 / ブランドメニュー (Pedagogue) -->
+        <v-menu transition="slide-y-transition">
+          <template v-slot:activator="{ props }">
+            <v-btn 
+              variant="text" 
+              v-bind="props" 
+              class="text-none font-weight-bold mr-1 px-2 text-white"
+              style="font-size: 1.05rem;"
+            >
+              <v-icon icon="mdi-school-outline" class="mr-1" size="22"></v-icon>
+              Pedagogue
+              <v-icon icon="mdi-chevron-down" end size="16"></v-icon>
+            </v-btn>
+          </template>
+          <v-list density="compact" class="py-1" min-width="260">
+            <v-list-item prepend-icon="mdi-information-outline" @click="showHelpDialog = true">
+              <v-list-item-title>MDR XAFS DB について</v-list-item-title>
+            </v-list-item>
+            <v-list-item prepend-icon="mdi-tag-outline" @click="showAboutDialog = true">
+              <v-list-item-title>バージョン情報</v-list-item-title>
+              <v-list-item-subtitle class="text-caption text-grey">v0.3.0 (JXS 20230203準拠)</v-list-item-subtitle>
+            </v-list-item>
+            <v-divider class="my-1"></v-divider>
+            <v-list-item 
+              prepend-icon="mdi-open-in-new" 
+              href="https://mdr.nims.go.jp/collections/qz20st57x" 
+              target="_blank" 
+              rel="noopener"
+            >
+              <v-list-item-title>NIMS MDR XAFS DB</v-list-item-title>
+              <v-list-item-subtitle class="text-caption text-grey">公式リポジトリ</v-list-item-subtitle>
+            </v-list-item>
+            <v-list-item 
+              prepend-icon="mdi-open-in-new" 
+              href="https://www.jxafs.org/xafs-database/" 
+              target="_blank" 
+              rel="noopener"
+            >
+              <v-list-item-title>日本XAFS研究会 (JXS)</v-list-item-title>
+              <v-list-item-subtitle class="text-caption text-grey">メタデータ共通仕様</v-list-item-subtitle>
+            </v-list-item>
+          </v-list>
+        </v-menu>
 
         <!-- メニューバー: ファイル (File) -->
         <v-menu transition="slide-y-transition">
@@ -182,24 +234,6 @@
           </v-list>
         </v-menu>
 
-        <!-- メニューバー: ヘルプ (Help) -->
-        <v-menu transition="slide-y-transition">
-          <template v-slot:activator="{ props }">
-            <v-btn variant="text" size="small" v-bind="props" class="text-none font-weight-medium">
-              ヘルプ
-              <v-icon icon="mdi-chevron-down" end size="16"></v-icon>
-            </v-btn>
-          </template>
-          <v-list density="compact" class="py-1">
-            <v-list-item prepend-icon="mdi-information-outline" @click="showHelpDialog = true">
-              <v-list-item-title>MDR XAFS DB について</v-list-item-title>
-            </v-list-item>
-            <v-list-item prepend-icon="mdi-tag-outline" @click="showAboutDialog = true">
-              <v-list-item-title>バージョン情報</v-list-item-title>
-            </v-list-item>
-          </v-list>
-        </v-menu>
-
         <v-spacer></v-spacer>
 
         <!-- 必須項目進捗バッジ -->
@@ -235,6 +269,13 @@
           <v-icon icon="mdi-alert" start></v-icon>
           仕様外: {{ customKeysStatus.count }} 件
         </v-chip>
+
+        <!-- 縦区切り線 -->
+        <v-divider 
+          vertical 
+          class="mx-2 my-auto" 
+          style="height: 20px; border-color: rgba(255, 255, 255, 0.4); opacity: 0.8;"
+        ></v-divider>
 
         <!-- 設定済み項目数バッジ (グレー / 右端) -->
         <v-chip 
@@ -467,9 +508,9 @@
             </v-col>
 
             <!-- 右ペイン: リアルタイムYAMLプレビュー (幅 45%) -->
-            <v-col cols="12" md="5">
-              <v-card elevation="2" class="h-100 rounded-lg overflow-hidden d-flex flex-column bg-grey-darken-4">
-                <v-card-item class="bg-grey-darken-3 text-white py-2 px-3 border-b">
+            <v-col cols="12" md="5" class="d-flex flex-column pb-4">
+              <v-card elevation="2" class="yaml-preview-card rounded-lg overflow-hidden d-flex flex-column bg-grey-darken-4 flex-grow-1">
+                <v-card-item class="bg-grey-darken-3 text-white py-2 px-3 border-b flex-shrink-0">
                   <div class="d-flex justify-space-between align-center">
                     <v-card-title class="text-subtitle-2 font-weight-bold font-mono d-flex align-center">
                       <v-icon icon="mdi-code-json" class="mr-2"></v-icon>
@@ -506,7 +547,7 @@
                     </div>
                   </div>
                 </v-card-item>
-                <v-card-text class="pa-0 flex-grow-1 overflow-hidden d-flex flex-column bg-grey-darken-4">
+                <v-card-text class="pa-0 flex-grow-1 overflow-hidden d-flex flex-column bg-grey-darken-4" style="min-height: 0; position: relative;">
                   <div class="yaml-preview font-mono hljs">
                     <template v-for="line in yamlLines" :key="line.index">
                       <v-tooltip 
@@ -702,7 +743,7 @@
             <div class="font-weight-bold mb-1">■ 関連リンク</div>
             <ul class="pl-4">
               <li><a href="https://mdr.nims.go.jp/collections/qz20st57x" target="_blank" rel="noopener">NIMS MDR XAFS Database</a></li>
-              <li><a href="http://www.vxafs.sakura.ne.jp/JXS/" target="_blank" rel="noopener">日本XAFS研究会 公式サイト</a></li>
+              <li><a href="https://www.jxafs.org/xafs-database/" target="_blank" rel="noopener">日本XAFS研究会 公式サイト (XAFS DB仕様)</a></li>
             </ul>
           </v-card-text>
           <v-card-actions>
