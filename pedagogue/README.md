@@ -1,4 +1,4 @@
-# MDR XAFS Metadata Helper (`mdr_helper`)
+# Pedagogue (MDR XAFS Metadata Helper)
 
 物質・材料研究機構（NIMS）が運営する「[MDR XAFS DB](https://mdr.nims.go.jp/collections/qz20st57x)」および日本XAFS研究会（JXS）「XAFSメタデータ共通仕様（20230203リリース版）」に準拠したメタデータの生成・閲覧・編集・保存を支援する軽量Webツールです。
 
@@ -85,7 +85,7 @@
 | ファイル | 役割・内容 |
 | :--- | :--- |
 | **`index.html`** | メイン画面（Vuetify 3 構成。メニューバー、Key-Value入力、必須/推奨チップス、衝突モーダル、YAMLプレビュー） |
-| **`app.js`** | アプリケーションロジック（パスパーサー、サジェスト、ロード＆衝突マージ、ファイルエクスポート、自動整列） |
+| **`pedagogue.js`** | アプリケーションロジック（パスパーサー、サジェスト、ロード＆衝突マージ、ファイルエクスポート、自動整列） |
 | **`schema_dictionary.js`** | JXS共通仕様（20230203版）のスキーマ辞書（全Key、型、3段階レベル、Enum、日本語説明、例） |
 | **`references/`** | JXS仕様書、MDR登録手順書、実測データサンプル、および動作確認用テストYAML一式 |
 | ├─ `test_sample_small.yml` | 最小必須項目（`facility`, `sample`, `measurement`）のテストYAML |
@@ -99,14 +99,14 @@
 
 Node.js や Python などのローカルサーバー環境は不要です。
 
-- **直接起動**: [index.html](file:///d:/workspace/SAGA-LS/xutils/mdr_helper/index.html) をブラウザでダブルクリックして開く（`file:///` プロトコル対応）。
+- **直接起動**: [index.html](file:///d:/workspace/SAGA-LS/xutils/pedagogue/index.html) をブラウザでダブルクリックして開く（`file:///` プロトコル対応）。
 - **IDE環境**: Antigravity IDE の Live Browser 拡張機能等でプレビュー起動。
 
 ---
 
 ## 6. 周辺ツール（RetroCog等）との連携パイプライン設計
 
-MDR XAFS DB へのデータ登録を効率化するため、生データ解析ツール（**`RetroCog`**）と本エディタ（**`mdr_helper`**）の明確な責務分担・連携パイプラインを想定しています。
+MDR XAFS DB へのデータ登録を効率化するため、生データ解析ツール（**`RetroCog`**）と本エディタ（**`Pedagogue`**）の明確な責務分担・連携パイプラインを想定しています。
 
 ```
 【データ登録パイプラインの全体フロー】
@@ -123,7 +123,7 @@ MDR XAFS DB へのデータ登録を効率化するため、生データ解析�
                  │ (ドラッグ＆ドロップ)         │
                  ▼                              │
   ┌──────────────────────────────────────────┐  │
-  │  mdr_helper (本ツール: メタデータGUI編集)│  │
+  │  Pedagogue (本ツール: メタデータGUI編集) │  │
   │  ・初期YAMLの取り込み ＆ マージ          │  │
   │  ・人間による情報補完 (タイトル/登録者/  │  │
   │    試料化学式/相/ライセンスなど)         │  │
@@ -143,5 +143,5 @@ MDR XAFS DB へのデータ登録を効率化するため、生データ解析�
 
 1. **`RetroCog` の役割（機械的抽出・可視化）**:
    - 9809形式の生データから抽出可能なハードウェア/測定パラメータを自動取得し、ドラフトYAMLとサムネイル画像を出力。
-2. **`mdr_helper` の役割（人間系の情報補完・検証）**:
+2. **`Pedagogue` の役割（人間系の情報補完・検証）**:
    - ドラフトYAMLを読み込み、機械的には特定できない試料詳細やメタデータを短時間で補完し、仕様準拠の完成版YAMLを生成。

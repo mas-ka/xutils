@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>MDR XAFS Metadata Helper</title>
+  <title>Pedagogue - MDR XAFS Metadata Helper</title>
   
   <!-- Fonts & Icons -->
   <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;500&family=Roboto:wght@300;400;500;700&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
@@ -80,8 +80,8 @@
       <!-- Top App Bar with Integrated Menu Bar -->
       <v-app-bar color="primary" density="compact" elevation="2">
         <v-app-bar-title class="font-weight-bold d-flex align-center flex-grow-0 mr-4">
-          <v-icon icon="mdi-database-edit-outline" class="mr-2"></v-icon>
-          MDR XAFS Helper
+          <v-icon icon="mdi-school-outline" class="mr-2"></v-icon>
+          Pedagogue
         </v-app-bar-title>
 
         <!-- メニューバー: ファイル (File) -->
@@ -592,13 +592,14 @@
       <v-dialog v-model="showAboutDialog" max-width="450px">
         <v-card>
           <v-card-title class="bg-blue-grey-darken-3 text-white d-flex align-center">
-            <v-icon icon="mdi-tag-outline" class="mr-2"></v-icon>
-            MDR XAFS Metadata Helper
+            <v-icon icon="mdi-school-outline" class="mr-2"></v-icon>
+            Pedagogue について
           </v-card-title>
           <v-card-text class="pa-4 text-center">
-            <v-icon icon="mdi-database-edit-outline" size="48" color="primary" class="my-2"></v-icon>
-            <div class="text-subtitle-1 font-weight-bold">MDR XAFS Metadata Helper</div>
-            <div class="text-caption text-grey mb-3">Version 0.2.0 (Prototype)</div>
+            <v-icon icon="mdi-school-outline" size="48" color="primary" class="my-2"></v-icon>
+            <div class="text-subtitle-1 font-weight-bold">Pedagogue</div>
+            <div class="text-caption text-grey mb-1">MDR XAFS Metadata Helper</div>
+            <div class="text-caption text-grey mb-3">Version 0.3.0</div>
             <div class="text-body-2 text-grey-darken-2">JXS XAFS Metadata Schema 20230203 Compliant</div>
           </v-card-text>
           <v-card-actions>
@@ -624,6 +625,6 @@
 
   <!-- Application Scripts -->
   <script src="schema_dictionary.js"></script>
-  <script src="app.js"></script>
+  <script src="pedagogue.js"></script>
 </body>
 </html>
