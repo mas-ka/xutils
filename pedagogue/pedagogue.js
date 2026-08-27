@@ -233,6 +233,79 @@ const app = createApp({
     const showSnackbar = ref(false);
     const filterCategory = ref('ALL');
     const showYamlTooltips = ref(true);
+    const isDirty = ref(false);
+    const showConfirmClearDialog = ref(false);
+
+    // 履歴管理 (Undo / Redo)
+    const undoStack = ref([]);
+    const redoStack = ref([]);
+    const MAX_HISTORY = 30;
+
+    const saveHistory = () => {
+      const snapshot = JSON.stringify(dataObject.value);
+      if (undoStack.value.length > 0 && undoStack.value[undoStack.value.length - 1] === snapshot) {
+        return;
+      }
+      undoStack.value.push(snapshot);
+      if (undoStack.value.length > MAX_HISTORY) {
+        undoStack.value.shift();
+      }
+      redoStack.value = [];
+    };
+
+    const undo = () => {
+      if (undoStack.value.length === 0) {
+        showToast('これ以上戻せません');
+        return;
+      }
+      const currentSnapshot = JSON.stringify(dataObject.value);
+      redoStack.value.push(currentSnapshot);
+
+      const previousSnapshot = undoStack.value.pop();
+      dataObject.value = JSON.parse(previousSnapshot);
+      isDirty.value = true;
+      showToast('操作を取り消しました (Undo)');
+    };
+
+    const redo = () => {
+      if (redoStack.value.length === 0) {
+        showToast('これ以上やり直せません');
+        return;
+      }
+      const currentSnapshot = JSON.stringify(dataObject.value);
+      undoStack.value.push(currentSnapshot);
+
+      const nextSnapshot = redoStack.value.pop();
+      dataObject.value = JSON.parse(nextSnapshot);
+      isDirty.value = true;
+      showToast('操作をやり直しました (Redo)');
+    };
+
+    const canUndo = computed(() => undoStack.value.length > 0);
+    const canRedo = computed(() => redoStack.value.length > 0);
+
+    // グローバルキーボードショートカット (Ctrl+Z / Ctrl+Y / Ctrl+Shift+Z)
+    if (typeof window !== 'undefined') {
+      window.addEventListener('keydown', (e) => {
+        const targetTag = e.target && e.target.tagName ? e.target.tagName.toLowerCase() : '';
+        if (targetTag === 'input' || targetTag === 'textarea') {
+          return;
+        }
+
+        if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z') {
+          if (e.shiftKey) {
+            e.preventDefault();
+            redo();
+          } else {
+            e.preventDefault();
+            undo();
+          }
+        } else if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'y') {
+          e.preventDefault();
+          redo();
+        }
+      });
+    }
 
     // 選択されたKeyのスキーマ定義を特定
     const currentSchema = computed(() => {
@@ -621,10 +694,12 @@ const app = createApp({
         }
       }
 
+      saveHistory();
       // セット
       PathUtils.set(dataObject.value, selectedKeyPath.value, val);
       // スキーマ定義順に自動ソート
       dataObject.value = SchemaSorter.sortObject(dataObject.value);
+      isDirty.value = true;
       showToast(`「${selectedKeyPath.value}」を設定しました`);
     };
 
@@ -633,11 +708,13 @@ const app = createApp({
       const targetPath = path || selectedKeyPath.value;
       if (!targetPath) return;
 
+      saveHistory();
       PathUtils.delete(dataObject.value, targetPath);
       dataObject.value = SchemaSorter.sortObject(dataObject.value);
       if (selectedKeyPath.value === targetPath) {
         inputValue.value = '';
       }
+      isDirty.value = true;
       showToast(`「${targetPath}」を削除しました`);
     };
 
@@ -684,7 +761,9 @@ const app = createApp({
           ]
         }
       };
+      saveHistory();
       dataObject.value = SchemaSorter.sortObject(rawSample);
+      isDirty.value = true;
       showToast('サンプルデータをロードしました');
     };
 
@@ -751,10 +830,12 @@ const app = createApp({
 
         if (conflicts.length === 0) {
           // 衝突なし: すべて自動マージ
+          saveHistory();
           for (const item of nonConflicts) {
             PathUtils.set(dataObject.value, item.path, item.value);
           }
           dataObject.value = SchemaSorter.sortObject(dataObject.value);
+          isDirty.value = true;
           showToast(`「${fileName}」から ${nonConflicts.length} 項目を取り込みました`);
         } else {
           // 衝突あり: ダイアログ表示
@@ -776,6 +857,8 @@ const app = createApp({
 
     // 衝突解消の適用
     const applyConflictResolution = () => {
+      saveHistory();
+
       // 1. 非衝突項目を適用
       for (const item of pendingNonConflicts.value) {
         PathUtils.set(dataObject.value, item.path, item.value);
@@ -799,6 +882,7 @@ const app = createApp({
       }
 
       dataObject.value = SchemaSorter.sortObject(dataObject.value);
+      isDirty.value = true;
       showConflictDialog.value = false;
       showToast(`マージ完了: ${overwrittenCount + pendingNonConflicts.value.length} 項目を反映、${skippedCount} 項目をスキップしました`);
     };
@@ -857,6 +941,7 @@ const app = createApp({
       }
       const yamlStr = jsyaml.dump(dataObject.value, { indent: 2, lineWidth: -1, noRefs: true });
       downloadFile(yamlStr, 'metadata.yml', 'text/yaml;charset=utf-8;');
+      isDirty.value = false;
       showToast('「metadata.yml」を保存しました');
     };
 
@@ -867,33 +952,21 @@ const app = createApp({
       }
       const jsonStr = JSON.stringify(dataObject.value, null, 2);
       downloadFile(jsonStr, 'metadata.json', 'application/json;charset=utf-8;');
+      isDirty.value = false;
       showToast('「metadata.json」を保存しました');
     };
 
-    // MDR Web登録フォーム用テキストコピー
-    const copyMdrText = async () => {
-      const getVal = (path) => PathUtils.get(dataObject.value, path) || '未設定';
-      const mdrSummary = [
-        `【MDR XAFS DB Webフォーム入力用サマリー】`,
-        `・タイトル (Title): ${getVal('@data_info@title')}`,
-        `・日本語タイトル: ${getVal('@data_info@title_ja')}`,
-        `・登録者氏名 (Creator): ${getVal('@data_info@data_depositor@name')}`,
-        `・所属組織 (Affiliation): ${getVal('@data_info@data_depositor@organization')}`,
-        `・測定元素 (Element): ${getVal('@measurement@edges[0].element')}`,
-        `・吸収端 (Edge): ${getVal('@measurement@edges[0].edge')}`,
-        `・施設名 (Facility): ${getVal('@facility@name')}`,
-        `・ビームライン (Beamline): ${getVal('@facility@beamline')}`,
-        `・物質名 (Sample Name): ${getVal('@sample@name')}`,
-        `・化学式 (Formula): ${getVal('@sample@chemical_formula')}`,
-        `・相状態 (Phase): ${getVal('@sample@phase')}`,
-        `・ライセンス (License): ${getVal('@data_info@license')}`
-      ].join('\n');
-
+    // クリップボードから取り込み (YAML/JSON 貼り付け)
+    const pasteFromClipboard = async () => {
       try {
-        await navigator.clipboard.writeText(mdrSummary);
-        showToast('MDR登録用サマリーをクリップボードにコピーしました');
+        const text = await navigator.clipboard.readText();
+        if (!text || text.trim() === '') {
+          showToast('クリップボードが空です');
+          return;
+        }
+        processFileContent(text, 'クリップボード');
       } catch (err) {
-        showToast('コピーに失敗しました');
+        showToast(`クリップボードの読み込みに失敗しました: ${err.message}`);
       }
     };
 
@@ -901,11 +974,24 @@ const app = createApp({
     const showHelpDialog = ref(false);
     const showAboutDialog = ref(false);
 
-    // データの全クリア
+    // データの全クリア（未保存確認つき）
     const clearAll = () => {
+      const hasData = dataObject.value && Object.keys(dataObject.value).length > 0;
+      if (isDirty.value && hasData) {
+        showConfirmClearDialog.value = true;
+      } else {
+        executeClear();
+      }
+    };
+
+    // 実際のクリア実行
+    const executeClear = () => {
+      saveHistory();
       dataObject.value = {};
       selectedKeyPath.value = '';
       inputValue.value = '';
+      isDirty.value = false;
+      showConfirmClearDialog.value = false;
       showToast('データをクリアしました');
     };
 
@@ -944,7 +1030,15 @@ const app = createApp({
       selectKey,
       loadSampleData,
       clearAll,
+      executeClear,
+      isDirty,
+      showConfirmClearDialog,
+      undo,
+      redo,
+      canUndo,
+      canRedo,
       copyYaml,
+      pasteFromClipboard,
       setCurrentDate,
       snackbarText,
       showSnackbar,
@@ -962,7 +1056,6 @@ const app = createApp({
       handleDrop,
       saveYamlFile,
       saveJsonFile,
-      copyMdrText,
       showHelpDialog,
       showAboutDialog
     };

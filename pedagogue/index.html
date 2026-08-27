@@ -26,11 +26,12 @@
     .yaml-preview {
       background-color: #1e1e1e;
       color: #d4d4d4;
-      border-radius: 6px;
+      border-radius: 0;
       padding: 12px;
       font-size: 0.875rem;
       line-height: 1.5;
-      max-height: calc(100vh - 160px);
+      flex-grow: 1;
+      height: 100%;
       overflow-y: auto;
       white-space: pre;
     }
@@ -114,15 +115,27 @@
             </v-btn>
           </template>
           <v-list density="compact" class="py-1">
-            <v-list-item prepend-icon="mdi-folder-open-outline" @click="$refs.fileInputRef ? $refs.fileInputRef.click() : document.getElementById('fileInput').click()">
-              <v-list-item-title>ファイルを開く (YAML/JSON)...</v-list-item-title>
+            <v-list-item prepend-icon="mdi-file-import-outline" @click="$refs.fileInputRef ? $refs.fileInputRef.click() : document.getElementById('fileInput').click()">
+              <v-list-item-title>ファイルから取り込み (YAML/JSON)...</v-list-item-title>
             </v-list-item>
-            <v-list-item prepend-icon="mdi-file-download-outline" @click="saveYamlFile">
-              <v-list-item-title>YAMLとして保存 (metadata.yml)</v-list-item-title>
-            </v-list-item>
-            <v-list-item prepend-icon="mdi-code-json" @click="saveJsonFile">
-              <v-list-item-title>JSONとして保存 (metadata.json)</v-list-item-title>
-            </v-list-item>
+
+            <!-- 保存サブメニュー (階層化) -->
+            <v-menu location="end" open-on-hover :open-delay="60" :close-delay="100" submenu>
+              <template v-slot:activator="{ props }">
+                <v-list-item v-bind="props" prepend-icon="mdi-content-save-outline" append-icon="mdi-chevron-right">
+                  <v-list-item-title>保存</v-list-item-title>
+                </v-list-item>
+              </template>
+              <v-list density="compact" class="py-1">
+                <v-list-item prepend-icon="mdi-file-code-outline" @click="saveYamlFile">
+                  <v-list-item-title>YAML形式 (metadata.yml)</v-list-item-title>
+                </v-list-item>
+                <v-list-item prepend-icon="mdi-code-json" @click="saveJsonFile">
+                  <v-list-item-title>JSON形式 (metadata.json)</v-list-item-title>
+                </v-list-item>
+              </v-list>
+            </v-menu>
+
             <v-divider class="my-1"></v-divider>
             <v-list-item prepend-icon="mdi-trash-can-outline" base-color="error" @click="clearAll">
               <v-list-item-title>新規作成 (全クリア)</v-list-item-title>
@@ -139,9 +152,30 @@
             </v-btn>
           </template>
           <v-list density="compact" class="py-1">
-            <v-list-item prepend-icon="mdi-clipboard-text-outline" @click="copyMdrText">
-              <v-list-item-title>MDR登録用サマリーをコピー</v-list-item-title>
+            <v-list-item prepend-icon="mdi-undo" :disabled="!canUndo" @click="undo">
+              <v-list-item-title class="d-flex justify-space-between align-center">
+                <span>元に戻す (Undo)</span>
+                <span class="text-caption text-grey ml-4">Ctrl+Z</span>
+              </v-list-item-title>
             </v-list-item>
+            <v-list-item prepend-icon="mdi-redo" :disabled="!canRedo" @click="redo">
+              <v-list-item-title class="d-flex justify-space-between align-center">
+                <span>やり直す (Redo)</span>
+                <span class="text-caption text-grey ml-4">Ctrl+Y</span>
+              </v-list-item-title>
+            </v-list-item>
+
+            <v-divider class="my-1"></v-divider>
+
+            <v-list-item prepend-icon="mdi-content-copy" @click="copyYaml">
+              <v-list-item-title>YAMLをコピー</v-list-item-title>
+            </v-list-item>
+            <v-list-item prepend-icon="mdi-clipboard-arrow-down-outline" @click="pasteFromClipboard">
+              <v-list-item-title>クリップボードから取り込み (貼付)...</v-list-item-title>
+            </v-list-item>
+
+            <v-divider class="my-1"></v-divider>
+
             <v-list-item prepend-icon="mdi-flask-outline" @click="loadSampleData">
               <v-list-item-title>サンプルデータを投入 (テスト用)</v-list-item-title>
             </v-list-item>
@@ -195,11 +229,22 @@
           v-if="customKeysStatus.count > 0"
           color="amber-darken-4" 
           variant="elevated" 
-          class="mr-1 font-weight-bold"
+          class="mr-2 font-weight-bold"
           size="small"
         >
           <v-icon icon="mdi-alert" start></v-icon>
           仕様外: {{ customKeysStatus.count }} 件
+        </v-chip>
+
+        <!-- 設定済み項目数バッジ (グレー / 右端) -->
+        <v-chip 
+          color="grey-darken-2" 
+          variant="elevated" 
+          class="mr-3 font-weight-bold text-white"
+          size="small"
+        >
+          <v-icon icon="mdi-format-list-bulleted" start></v-icon>
+          設定済: {{ existingKeys.length }} 件
         </v-chip>
       </v-app-bar>
 
@@ -226,7 +271,7 @@
                     item-title="title"
                     item-value="value"
                     :return-object="false"
-                    label="平坦化Keyの指定 (例: @facility@name, @measurement@edges[0].element)"
+                    label="Key (例: @facility@name, @measurement@edges[0].element)"
                     placeholder="Keyを入力または選択 (日本語・英語で検索可能)"
                     prepend-inner-icon="mdi-key-variant"
                     variant="outlined"
@@ -423,12 +468,19 @@
 
             <!-- 右ペイン: リアルタイムYAMLプレビュー (幅 45%) -->
             <v-col cols="12" md="5">
-              <v-card elevation="2" class="h-100 rounded-lg overflow-hidden">
+              <v-card elevation="2" class="h-100 rounded-lg overflow-hidden d-flex flex-column bg-grey-darken-4">
                 <v-card-item class="bg-grey-darken-3 text-white py-2 px-3 border-b">
                   <div class="d-flex justify-space-between align-center">
                     <v-card-title class="text-subtitle-2 font-weight-bold font-mono d-flex align-center">
                       <v-icon icon="mdi-code-json" class="mr-2"></v-icon>
-                      metadata.yml (Preview)
+                      <span>metadata.yml</span>
+                      <span 
+                        v-if="isDirty" 
+                        class="text-amber-accent-2 ml-1 font-weight-black" 
+                        title="未保存の変更があります"
+                        style="font-size: 1.1rem; line-height: 1;"
+                      >*</span>
+                      <span class="text-grey ml-1 font-sans text-caption">(Preview)</span>
                     </v-card-title>
                     <div class="d-flex align-center">
                       <v-btn 
@@ -454,7 +506,7 @@
                     </div>
                   </div>
                 </v-card-item>
-                <v-card-text class="pa-2 bg-grey-darken-4">
+                <v-card-text class="pa-0 flex-grow-1 overflow-hidden d-flex flex-column bg-grey-darken-4">
                   <div class="yaml-preview font-mono hljs">
                     <template v-for="line in yamlLines" :key="line.index">
                       <v-tooltip 
@@ -503,6 +555,34 @@
           </v-row>
         </v-container>
       </v-main>
+
+      <!-- ------------------------------------------------------------- -->
+      <!-- 新規作成 (全クリア) 未保存確認ダイアログ -->
+      <!-- ------------------------------------------------------------- -->
+      <v-dialog v-model="showConfirmClearDialog" max-width="480px" persistent>
+        <v-card>
+          <v-card-item class="bg-amber-lighten-5 py-3 border-b">
+            <v-card-title class="text-subtitle-1 font-weight-bold text-amber-darken-4 d-flex align-center">
+              <v-icon icon="mdi-alert-circle" class="mr-2" color="amber-darken-3"></v-icon>
+              未保存の変更があります
+            </v-card-title>
+          </v-card-item>
+
+          <v-card-text class="pa-4 text-body-2 text-grey-darken-3">
+            現在編集中のメタデータ（全 {{ existingKeys.length }} 項目）は保存されていません。<br>
+            データを全クリアして新規作成しますか？（未保存の変更は失われます）
+          </v-card-text>
+
+          <v-card-actions class="pa-3 bg-grey-lighten-4 border-t justify-end">
+            <v-btn variant="outlined" color="grey-darken-1" @click="showConfirmClearDialog = false">
+              キャンセル
+            </v-btn>
+            <v-btn variant="flat" color="error" class="ml-2 font-weight-bold" prepend-icon="mdi-trash-can-outline" @click="executeClear">
+              破棄して新規作成
+            </v-btn>
+          </v-card-actions>
+        </v-card>
+      </v-dialog>
 
       <!-- ------------------------------------------------------------- -->
       <!-- 重複・衝突解決ダイアログ (Modal) -->
