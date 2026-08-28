@@ -332,11 +332,8 @@
             </v-btn>
           </template>
           <v-list density="compact" class="py-1" min-width="240">
-            <v-list-item prepend-icon="mdi-book-open-page-variant-outline" @click="showHelpDrawer = true; helpTab = 'guide'">
-              <v-list-item-title>操作マニュアル ＆ ガイド</v-list-item-title>
-            </v-list-item>
-            <v-list-item prepend-icon="mdi-format-list-checks" @click="showHelpDrawer = true; helpTab = 'schema'">
-              <v-list-item-title>JXSスキーマリファレンス</v-list-item-title>
+            <v-list-item prepend-icon="mdi-help-circle-outline" @click="showHelpDrawer = true">
+              <v-list-item-title>ヘルプ ＆ 仕様リファレンス</v-list-item-title>
             </v-list-item>
             <v-divider class="my-1"></v-divider>
             <v-list-item prepend-icon="mdi-information-outline" @click="showHelpDialog = true">
@@ -398,17 +395,6 @@
           <v-icon icon="mdi-format-list-bulleted" start></v-icon>
           設定済: {{ existingKeys.length }} 件
         </v-chip>
-
-        <!-- ヘルプドロワー開閉クイックボタン -->
-        <v-btn 
-          icon="mdi-help-circle-outline" 
-          variant="text" 
-          color="white" 
-          class="mr-2" 
-          density="comfortable"
-          title="ヘルプ・仕様リファレンス" 
-          @click="showHelpDrawer = !showHelpDrawer"
-        ></v-btn>
       </v-app-bar>
 
       <!-- ------------------------------------------------------------- -->
@@ -574,18 +560,19 @@
                   <!-- Key 入力 (Combobox サジェスト付き) -->
                   <v-combobox
                     v-model="selectedKeyPath"
+                    v-model:search="keySearch"
                     :items="keySuggestions"
                     item-title="title"
                     item-value="value"
                     :return-object="false"
                     label="Key (例: @facility@name, @measurement@edges[0].element)"
                     placeholder="Keyを入力または選択 (日本語・英語で検索可能)"
-                    prepend-inner-icon="mdi-key-variant"
                     variant="outlined"
                     density="comfortable"
                     clearable
                     class="font-mono mb-3"
                     hide-details="auto"
+                    @keydown.tab="handleKeyTabComplete"
                   >
                     <template v-slot:item="{ props, item }">
                       <v-list-item v-bind="props" class="py-1">
@@ -646,18 +633,19 @@
 
                   <!-- Value 入力 -->
                   <div class="d-flex align-center gap-2">
-                    <!-- Enum の場合はセレクトボックス -->
-                    <v-select
+                    <!-- Enum の場合はコンボボックス (候補選択 + 自由入力) -->
+                    <v-combobox
                       v-if="currentSchema && currentSchema.enum"
                       v-model="inputValue"
                       :items="currentSchema.enum"
-                      label="設定値 (Value 選択)"
+                      label="設定値 (Value 選択・入力)"
+                      placeholder="候補から選択するか、直接入力"
                       variant="outlined"
                       density="comfortable"
                       class="flex-grow-1 font-mono"
                       hide-details="auto"
                       @keydown.enter="applyValue"
-                    ></v-select>
+                    ></v-combobox>
 
                     <!-- 通常はテキストフィールド (日付型の場合はカレンダーアイコン付き) -->
                     <v-text-field
@@ -892,14 +880,14 @@
       </v-dialog>
 
       <!-- ------------------------------------------------------------- -->
-      <!-- 重複・衝突解決ダイアログ (Modal) -->
+      <!-- 衝突解決ダイアログ (Modal) -->
       <!-- ------------------------------------------------------------- -->
       <v-dialog v-model="showConflictDialog" max-width="850px" persistent>
         <v-card>
           <v-card-item class="bg-amber-lighten-5 py-3 border-b">
             <v-card-title class="text-subtitle-1 font-weight-bold text-amber-darken-4 d-flex align-center">
               <v-icon icon="mdi-alert-circle" class="mr-2" color="amber-darken-3"></v-icon>
-              データの重複・衝突が検出されました (計 {{ conflictList.length }} 件)
+              データの衝突が検出されました (計 {{ conflictList.length }} 件)
             </v-card-title>
             <v-card-subtitle class="text-caption text-grey-darken-2">
               「{{ loadedFileName }}」内の項目に、既存データと値が異なる項目があります。既存を維持するか上書きするかを選択してください。

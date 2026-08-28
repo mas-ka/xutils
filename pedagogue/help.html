@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
@@ -13,16 +13,51 @@
             color: #1e293b;
             line-height: 1.85;
             margin: 0;
-            padding: 24px;
+            padding: 24px 16px;
         }
         .container {
-            max-width: 960px;
+            max-width: 980px;
             margin: 0 auto;
             background: #ffffff;
             padding: 36px 40px;
             border-radius: 8px;
             box-shadow: 0 4px 6px -1px rgba(0,0,0,0.08);
         }
+        /* 上部タブバー */
+        .tab-bar {
+            display: flex;
+            border-bottom: 2px solid #e2e8f0;
+            margin-bottom: 28px;
+            gap: 8px;
+        }
+        .tab-btn {
+            background: none;
+            border: none;
+            padding: 12px 20px;
+            font-size: 1rem;
+            font-weight: bold;
+            color: #64748b;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s;
+        }
+        .tab-btn:hover {
+            color: #1976D2;
+        }
+        .tab-btn.active {
+            color: #1976D2;
+            border-bottom-color: #1976D2;
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+
         h1 {
             color: #1976D2;
             border-bottom: 2px solid #1976D2;
@@ -128,28 +163,90 @@
             font-weight: bold;
             color: #1e293b;
         }
-        /* ドロワー埋め込み用スタイル */
-        #help_text {
-            font-size: 0.92rem;
-            line-height: 1.85;
-            padding: 4px 6px;
-        }
         .help-section {
             margin-bottom: 28px;
+        }
+
+        /* スキーマリファレンス用UI */
+        .filter-controls {
+            background: #f1f5f9;
+            padding: 16px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+        }
+        .search-input {
+            width: 100%;
+            padding: 8px 12px;
+            font-size: 0.95rem;
+            border: 1px solid #cbd5e1;
+            border-radius: 4px;
+            box-sizing: border-box;
+            margin-bottom: 12px;
+        }
+        .chip-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+        .filter-chip {
+            background: #ffffff;
+            border: 1px solid #cbd5e1;
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            font-weight: 500;
+        }
+        .filter-chip.active {
+            background: #1976D2;
+            color: #ffffff;
+            border-color: #1976D2;
+        }
+        .schema-card {
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            padding: 14px 16px;
+            margin-bottom: 12px;
+            background: #ffffff;
+            transition: box-shadow 0.2s;
+        }
+        .schema-card:hover {
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
         }
     </style>
 </head>
 <body>
 <div class="container" id="help_root">
 
-    <div id="help_text">
+    <!-- タブ切り替えヘッダー -->
+    <div class="tab-bar">
+        <button id="btn-tab-guide" class="tab-btn active" onclick="switchTab('guide')">
+            <i class="mdi mdi-book-open-page-variant-outline"></i> 操作ガイド
+        </button>
+        <button id="btn-tab-schema" class="tab-btn" onclick="switchTab('schema')">
+            <i class="mdi mdi-format-list-checks"></i> JXSスキーマリファレンス
+        </button>
+    </div>
+
+    <!-- ================================================================= -->
+    <!-- タブ1: 操作ガイド (index.html のドロワー / AIタグへ抽出される本体) -->
+    <!-- ================================================================= -->
+    <div id="help_text" class="tab-content active">
         <!-- 概要 -->
         <div id="introduction" class="help-section">
             <h1>Pedagogue - 操作マニュアル ＆ 仕様リファレンス</h1>
             
             <p>　<strong>Pedagogue（ペダゴーグ）</strong> は、物質・材料研究機構（NIMS）が運営する「<a href="https://mdr.nims.go.jp/collections/qz20st57x" target="_blank">MDR XAFS DB</a>」および日本XAFS研究会（JXS）「XAFSメタデータ共通仕様（20230203リリース版）」に準拠したメタデータ（<code>metadata.yml</code> / <code>metadata.json</code>）の作成・閲覧・編集・保存を支援するWebエディタです。</p>
             
-            <p>　平坦化Key（キーパス）による直感的な入力コンソールと、構文ハイライト付きリアルタイムYAMLプレビューを連動させ、仕様外Keyの警告や安全なマージ・衝突解決機能により、高品質なメタデータをスムーズに作成できます。</p>
+            <p>　項目（Key）と設定値（Value）を安全に入力できる編集コンソールに加え、構文ハイライト付きリアルタイムYAMLプレビューを備えています。</p>
+
+            <div class="note">
+                <strong>💡 安全なデータ取り込みとマージ（統合）:</strong><br />
+                　外部のYAML/JSONファイルを読み込む（取り込む）際、現在編集中のデータと突き合わせて自動で <b>マージ（統合）</b> します。<br />
+                　もし同じ項目に異なる値が設定されていた場合は <b>「衝突（コンフリクト）」</b> を自動検知し、どちらの値を優先するか項目ごとに選べるため、既存のデータを不用意に上書き消去してしまう心配がありません。
+            </div>
         </div>
 
         <hr />
@@ -162,17 +259,19 @@
 
             <ul style="padding-left: 1.4em;">
                 <li>
-                    <b>Pedagogue（ブランドメニュー）</b>:
-                    <p>クリックすると「Pedagogue について」ダイアログが開きます。バージョン（ビルド日付）、JXS仕様準拠表記、Pedagogue 本体の MIT ライセンス全文、および使用しているオープンソースライブラリ（Vue, Vuetify, js-yaml 等）の許諾条文一覧を確認できます。</p>
+                    <b>Pedagogue メニュー</b>:
+                    <ul style="margin-top: 8px;">
+                        <li><b>Pedagogue について</b>: バージョン（ビルド日付）、JXS仕様準拠表記、Pedagogue 本体の MIT ライセンス全文、および使用しているオープンソースライブラリ（Vue, Vuetify, js-yaml 等）の許諾条文一覧をダイアログ表示します。</li>
+                    </ul>
                 </li>
 
                 <li>
                     <b>ファイル (File)</b>:
                     <ul style="margin-top: 8px;">
-                        <li><b>ファイルから取り込み (YAML/JSON)...</b>: 既存の <code>.yml</code> / <code>.yaml</code> / <code>.json</code> ファイルを読み込みます（衝突判定付き）。</li>
+                        <li><b>ファイルから取り込み (YAML/JSON)...</b>: ローカルの <code>.yml</code> / <code>.yaml</code> / <code>.json</code> ファイルを読み込みます。</li>
                         <li><b>保存 ＞ YAML形式 (metadata.yml)</b>: MDR XAFS DB 登録用標準フォーマットである <code>metadata.yml</code> としてダウンロード保存します。</li>
                         <li><b>保存 ＞ JSON形式 (metadata.json)</b>: <code>metadata.json</code> 形式でダウンロード保存します。</li>
-                        <li><b>新規作成 (全クリア)</b>: エディタ内のデータを初期化します（未保存の変更がある場合は警告ダイアログを表示）。</li>
+                        <li><b>新規作成 (全クリア)</b>: エディタ内のデータを初期化（全消去）します。</li>
                     </ul>
                 </li>
 
@@ -182,15 +281,14 @@
                         <li><b>元に戻す (Undo / Ctrl+Z)</b>: 直前の編集操作を1段階取り消します（最大30件）。</li>
                         <li><b>やり直す (Redo / Ctrl+Y)</b>: 取り消した操作をやり直します。</li>
                         <li><b>YAMLをコピー</b>: 現在のプレビュー内容をクリップボードに一括コピーします。</li>
-                        <li><b>クリップボードから取り込み (貼付)...</b>: クリップボード内のYAML/JSONテキストを解析し、既存データとマージします。</li>
+                        <li><b>クリップボードから取り込み (貼付)...</b>: クリップボード内のYAML/JSONテキストを読み込み、現在編集中のデータとマージします。</li>
                     </ul>
                 </li>
 
                 <li>
                     <b>ヘルプ (Help)</b>:
                     <ul style="margin-top: 8px;">
-                        <li><b>操作マニュアル ＆ ガイド</b>: 右サイドドロワーを展開して本マニュアルを表示します。</li>
-                        <li><b>JXSスキーマリファレンス</b>: スキーマ辞書タブへ直接切り替えます。</li>
+                        <li><b>ヘルプ ＆ 仕様リファレンス</b>: 右サイドドロワーを展開して本マニュアルおよびスキーマ辞書を表示します。</li>
                         <li><b>MDR XAFS DB について</b>: NIMS MDR リポジトリの仕様説明および関連公式リンク（MDR / JXS）を表示します。</li>
                     </ul>
                 </li>
@@ -200,7 +298,7 @@
                     <ul style="margin-top: 8px;">
                         <li><span class="badge-req">必須: ○ / 11</span>: JXS仕様で必須と定められた11項目の入力完了状況。全項目を満たすと緑色のチェック表示に変化します。</li>
                         <li><span class="badge-rec">推奨: ○ / 12</span>: データの検索性や再利用性を高めるための推奨12項目の入力状況。</li>
-                        <li><span style="background-color: #d97706; color: white; padding: 2px 6px; border-radius: 4px; font-weight: bold; font-size: 0.75rem;">⚠️ 仕様外: ○件</span>: スキーマ辞書に定義されていない未定義Keyが存在する場合にのみ警告表示されます（タイポの早期発見）。</li>
+                        <li><span style="background-color: #d97706; color: white; padding: 2px 6px; border-radius: 4px; font-weight: bold; font-size: 0.75rem;">⚠️ 仕様外: ○件</span>: スキーマ辞書に定義されていない未定義項目が存在する場合にのみ警告表示されます（タイポの早期発見）。</li>
                         <li><span style="background-color: #475569; color: white; padding: 2px 6px; border-radius: 4px; font-weight: bold; font-size: 0.75rem;">設定済: ○件</span>: 現在メタデータ内に値が設定されている全項目数。</li>
                     </ul>
                 </li>
@@ -213,41 +311,61 @@
         <div id="editor_console" class="help-section">
             <h2><i class="mdi mdi-form-select"></i> 2. メタデータ編集コンソール (左ペイン)</h2>
             
-            <p>　画面左側のパネルで、平坦化Key（キーパス）を指定してメタデータを1項目ずつ安全に入力・更新します。</p>
+            <p>　画面左側のパネルで、編集したい項目（Key）を指定し、設定値（Value）を1項目ずつ安全に入力・更新します。</p>
+
+            <h3 style="margin-top: 1.2em; margin-bottom: 0.6em; color: #1e293b; font-size: 1.05rem;">
+                <i class="mdi mdi-file-document-edit-outline" style="color: #2563eb;"></i> メタデータ編集フォーム (上部)
+            </h3>
 
             <ul style="padding-left: 1.4em;">
                 <li>
-                    <b>カテゴリ絞り込み</b>:
-                    <p>上部のチップス（<code>すべて</code>, <code>data_info</code>, <code>sample</code>, <code>facility</code>, <code>instrument</code>, <code>measurement</code>, <code>files</code>）で、サジェストに表示されるKeyをカテゴリごとに絞り込めます。</p>
-                </li>
-
-                <li>
-                    <b>平坦化Key（キーパス）の指定</b>:
-                    <p>オートコンプリート入力欄に <code>@</code> から始まるKey名を入力・選択します。文字を入力すると日本語名やKey名でリアルタイムにインクリメンタル検索されます。</p>
+                    <b>Key 入力フォーム（項目の選択）</b>:
+                    <p>　<code>Key</code> 入力欄から編集したい項目を選択します。ドロップダウン一覧から選択できるほか、文字を入力して検索することも可能です。</p>
                     
                     <div class="note">
-                        <strong>💡 平坦化Keyの記法ルール:</strong><br />
+                        <strong>💡 便利なインクリメンタル検索（サジェスト機能）:</strong><br />
+                        　「試料」「温度」「結晶」といった <b>日本語</b> や、「sample」「title」などの <b>英字Key名</b> を入力すると、該当する項目がリアルタイムに絞り込まれます。
+                    </div>
+
+                    <div class="note">
+                        <strong>💡 Tab キーによる自動補完（シェル方式）:</strong><br />
+                        　Key入力中に <kbd>Tab</kbd> キーを押すと、共通する階層（例: <code>@faci</code> → <code>@facility</code>）まで自動補完されます。候補が1件に絞られた状態で <kbd>Tab</kbd> を押すと、Key名全体が一発で確定します。
+                    </div>
+
+                    <div class="note">
+                        <strong>💡 Keyの記法ルール（直接入力・階層指定時）:</strong><br />
                         ・オブジェクト階層: <code>@category@sub.key</code> または <code>@category@sub@key</code><br />
                         ・配列インデックス: <code>@measurement@edges[0].element</code> または <code>@files[0].file[0].name</code><br />
-                        ・独自パラメータ: JXS仕様外の独自パラメータも <code>@local@custom_key</code> のように自由に追加・保持できます。
+                        ・独自パラメータ: JXS仕様外の独自項目も <code>@local@custom_key</code> のように自由に追加できます。
                     </div>
                 </li>
 
                 <li>
-                    <b>項目説明カード (ヒント ＆ 型制約)</b>:
-                    <p>Keyを選択すると、日本語項目名、重要度バッジ（必須・推奨・任意）、型、許容値（Enum候補）、説明文、および入力例が表示されます。</p>
-                    <p>※ <code>deposite_time</code> や <code>measured_time</code> などの日付・日時項目では、<b>「今日の日付を入力」「現在日時を入力」</b> ボタンが自動表示され、ワンクリックで現在時刻をISO形式で補完できます。</p>
+                    <b>項目説明カード (ヒント)</b>:
+                    <p>　Keyを選択すると、日本語項目名、重要度バッジ（必須・推奨・任意）、型、許容値（Enum候補）、説明文、および入力例が表示されます。</p>
                 </li>
 
                 <li>
-                    <b>値の入力と反映・削除</b>:
-                    <p>Enum（選択肢）が定義されている項目はドロップダウン選択、複数行テキストはテキストエリア、その他は1行入力欄に自動で切り替わります。</p>
-                    <p>値を入力して <b>「反映 (Enter)」</b> ボタンを押すと右ペインのYAMLに即時反映されます。また <b>「削除」</b> ボタンで項目をクリアできます。</p>
+                    <b>設定値（Value）の入力と適用・削除</b>:
+                    <p>　設定値の型に応じて、Enum（選択肢）は候補選択と自由入力ができるコンボボックス、日付項目は現在日時自動入力アイコン付きの入力欄、その他は通常入力欄に自動で切り替わります。</p>
+                    <p>　値を入力して <b>「適用 (Enter)」</b> ボタンを押すと右ペインのYAMLに即時反映されます。また <b>「ゴミ箱アイコン（削除）」</b> ボタンで項目をクリアできます。</p>
+                </li>
+            </ul>
+
+            <h3 style="margin-top: 1.5em; margin-bottom: 0.6em; color: #1e293b; font-size: 1.05rem;">
+                <i class="mdi mdi-clipboard-check-outline" style="color: #059669;"></i> 入力サポート ＆ ToDo リスト (下部)
+            </h3>
+
+            <ul style="padding-left: 1.4em;">
+                <li>
+                    <b>未入力 ToDo リスト（必須 ＆ 推奨）</b>:
+                    <p>　「未入力の必須項目」および「未入力の推奨項目」が2列カードで常時一覧表示されます。</p>
+                    <p>　一覧内の項目をクリックすると、その項目が <b>Key入力欄に直接セット</b> され、順番に入力を進めることができます（全項目が埋まると完了表示に変化します）。</p>
                 </li>
 
                 <li>
-                    <b>必須・推奨・設定済み一覧 (ToDoチップス)</b>:
-                    <p>入力欄の下部に、現在の入力状況がタブ形式で整理されています。未入力の必須項目や推奨項目をクリックすると、そのKeyが入力欄に直接セットされ、順番に入力を進めることができます。</p>
+                    <b>設定済みの全項目一覧</b>:
+                    <p>　現在メタデータ内に設定されているすべての項目が一覧表示されます。修正したい項目をクリックすることで、いつでも即座に入力フォームへ呼び出して再編集できます。</p>
                 </li>
             </ul>
         </div>
@@ -258,22 +376,22 @@
         <div id="yaml_preview" class="help-section">
             <h2><i class="mdi mdi-code-json"></i> 3. YAMLプレビュー (右ペイン)</h2>
             
-            <p>　画面右側で、生成される <code>metadata.yml</code> の構文ハイライト付きリアルタイムプレビューを確認できます。</p>
+            <p>　画面右側で、生成される <code>metadata.yml</code> の構文ハイライト付きリアルタイムプレビューを確認できます（未保存の変更がある場合はファイル名に <code>*</code> アスタリスクが表示されます）。</p>
 
             <ul style="padding-left: 1.4em;">
                 <li>
-                    <b>リアルタイム自動整列 (Pretty-print)</b>:
-                    <p>左ペインで値を変更するたびに、JXS仕様書で定義された標準の並び順（<code>data_info</code> → <code>sample</code> → <code>facility</code> → <code>instrument</code> → <code>measurement</code> → <code>files</code> → <code>local</code>）へ自動整列して表示されます。</p>
-                </li>
-
-                <li>
                     <b>双方向ジャンプ編集（行クリック機能）</b>:
-                    <p>プレビュー内の任意の行をクリックすると、その行に対応する平坦化Keyが <b>左ペインの入力コンソールに即座に選択・展開</b> されます。編集したい場所をプレビューから直接狙って修正できます。</p>
+                    <p>　プレビュー内の任意の行をクリックすると、その行に対応する項目（Key）が <b>左ペインの入力コンソールに即座に選択・展開</b> されます。編集したい場所をプレビューから直接狙って修正できます。</p>
                 </li>
 
                 <li>
-                    <b>未保存インジケーター</b>:
-                    <p>データに変更が加わると、プレビューヘッダーに <code>metadata.yml *</code>（アスタリスク）が表示されます。ファイルを保存（YAML/JSON）するか新規作成を実行すると解除されます。</p>
+                    <b>ホバーヒント切替 (ON / OFF)</b>:
+                    <p>　ヘッダー右側の <b>「ヒント: ON/OFF」</b> ボタンで、YAMLプレビュー行にマウスを重ねた際に表示されるツールチップ（日本語項目名・型・説明）の表示／非表示を切り替えられます。</p>
+                </li>
+
+                <li>
+                    <b>YAMLのコピー</b>:
+                    <p>　ヘッダー右側の <b>「コピー」</b> ボタンを押すと、現在表示されているYAML全文をワンクリックでクリップボードにコピーできます。</p>
                 </li>
             </ul>
         </div>
@@ -284,21 +402,21 @@
         <div id="conflict_resolution" class="help-section">
             <h2><i class="mdi mdi-merge"></i> 4. ファイル取り込み ＆ 衝突解決 (Conflict Resolution)</h2>
             
-            <p>　既存の編集状態を維持しながら、外部YAML/JSONファイルを安全に読み込んでマージできます。</p>
+            <p>　現在編集中のデータを保持したまま、外部のYAML/JSONファイルを読み込んで <b>マージ</b> できます。共通のテンプレート（施設情報など）を取り込んで既存データに足し合わせる作業が安全に行えます。</p>
 
             <ul style="padding-left: 1.4em;">
                 <li>
-                    <b>ドラッグ＆ドロップ (D&D) 対応</b>:
-                    <p>画面上のどこでも <code>.yml</code> / <code>.yaml</code> / <code>.json</code> ファイルをドロップするだけで即座に取り込み処理が開始されます。</p>
+                    <b>ドラッグ＆ドロップ (D&D) による取り込み</b>:
+                    <p>画面上のどこでも <code>.yml</code> / <code>.yaml</code> / <code>.json</code> ファイルをドロップするだけで即座に取り込み・マージ処理が開始されます。</p>
                 </li>
 
                 <li>
-                    <b>衝突（コンフリクト）判定ダイアログ</b>:
-                    <p>読み込んだファイルの中に、現在編集中の値と異なる項目がある場合、自動的に「重複・衝突検出ダイアログ」が開きます。</p>
+                    <b>衝突（コンフリクト）の検知と解決</b>:
+                    <p>取り込んだデータの中に、現在編集中の値と異なる項目がある場合、自動的に「衝突解決ダイアログ」が開きます。</p>
                     
                     <ul style="margin-top: 8px;">
-                        <li><b>比較テーブル</b>: 日本語項目名、重要度、平坦化Key、既存の値、読込ファイルの値が一覧表示されます。</li>
-                        <li><b>直感的な操作順序</b>: 各行で <b>左:「維持 (既存優先)」 / 右:「上書き (ファイル優先)」</b> を個別に選択できます。</li>
+                        <li><b>比較テーブル</b>: 日本語項目名、重要度、項目（Key）、既存の設定値、読込ファイルの設定値が一覧表示されます。</li>
+                        <li><b>個別選択</b>: 各行で <b>左:「維持 (既存優先)」 / 右:「上書き (ファイル優先)」</b> を個別に選択できます。</li>
                         <li><b>一括操作</b>: 上部の「すべて維持」「すべて上書き」ボタンで全項目を一括切り替えできます。</li>
                     </ul>
                 </li>
@@ -313,52 +431,32 @@
             
             <p>　日本XAFS研究会（JXS）「XAFSメタデータ共通仕様（20230203リリース版）」に準拠するための重要ルールです。</p>
 
-            <h3>① 必須項目 (Required / 11項目)</h3>
-            <table class="ref-table">
-                <thead>
-                    <tr><th style="width: 28%;">平坦化Key</th><th style="width: 25%;">日本語項目名</th><th>説明・備考</th></tr>
-                </thead>
-                <tbody>
-                    <tr><td><code>@data_info@title</code></td><td>データセット題名 (英語)</td><td>課題名や測定の目的など（MDR検索の主タイトル）</td></tr>
-                    <tr><td><code>@data_info@data_depositor@name</code></td><td>データ登録者氏名</td><td>データをリポジトリに登録する担当者名</td></tr>
-                    <tr><td><code>@data_info@data_depositor@organization</code></td><td>データ登録者の組織</td><td>登録者の所属研究機関・大学・企業名</td></tr>
-                    <tr><td><code>@data_info@contact_name@name</code></td><td>問合せ先氏名</td><td>データに関する問合せ先担当者名</td></tr>
-                    <tr><td><code>@data_info@contact_name@organization</code></td><td>問合せ先組織</td><td>問合せ先担当者の所属組織名</td></tr>
-                    <tr><td><code>@data_info@deposite_time@create_time</code></td><td>メタデータ作成日時</td><td>ISO 8601形式（例: 2026-08-28）</td></tr>
-                    <tr><td><code>@facility@name</code></td><td>施設名</td><td>放射光施設名（例: SAGA-LS, SPring-8, PF）</td></tr>
-                    <tr><td><code>@facility@beamline</code></td><td>ビームライン名</td><td>測定を行ったビームライン（例: BL06, BL14B2）</td></tr>
-                    <tr><td><code>@sample@name</code></td><td>試料名</td><td>測定対象の試料名・材料名</td></tr>
-                    <tr><td><code>@measurement@edges[0].element</code></td><td>測定元素</td><td>元素記号（例: Cu, Fe, Pt, Ti）</td></tr>
-                    <tr><td><code>@measurement@edges[0].edge</code></td><td>吸収端</td><td><code>K-edge</code>, <code>L3-edge</code> 等（-edge付きで統一）</td></tr>
-                </tbody>
-            </table>
+            <div class="note">
+                <strong>📑 必須・推奨項目の確認方法:</strong><br />
+                　必須11項目および推奨12項目の詳細仕様（日本語項目名・型・Enum選択肢・説明文・入力例）は、上部の <b>「JXSスキーマ辞書」タブ</b> を開き、重要度フィルタ（<code>必須 (11)</code> / <code>推奨 (12)</code>）をクリックしてご確認ください。<br />
+                　カードをクリックすると、左ペインの入力フォームに対象の項目（Key）が自動セットされます。
+            </div>
 
-            <h3>② 推奨項目 (Recommended / 12項目)</h3>
-            <table class="ref-table">
-                <thead>
-                    <tr><th style="width: 32%;">平坦化Key</th><th style="width: 25%;">日本語項目名</th><th>推奨値 / 選択肢</th></tr>
-                </thead>
-                <tbody>
-                    <tr><td><code>@data_info@license</code></td><td>二次利用ライセンス</td><td>MDR推奨: <code>CC BY-NC-SA 4.0</code></td></tr>
-                    <tr><td><code>@data_info@title_ja</code></td><td>データセット題名 (日本語)</td><td>日本語でのタイトル（国内検索用）</td></tr>
-                    <tr><td><code>@data_info@data_depositor@affiliation</code></td><td>データ登録者の部署</td><td>学部・専攻・研究グループ等</td></tr>
-                    <tr><td><code>@sample@chemical_formula</code></td><td>化学式</td><td>例: <code>CuO</code>, <code>LiCoO2</code>, <code>Fe2O3</code></td></tr>
-                    <tr><td><code>@sample@phase</code></td><td>試料の相</td><td><code>solid</code>, <code>powder</code>, <code>film</code>, <code>liquid</code>, <code>gas</code></td></tr>
-                    <tr><td><code>@sample@condition@temperature@value</code></td><td>測定時温度</td><td>数値（例: <code>298.15</code>, <code>77</code>）</td></tr>
-                    <tr><td><code>@sample@condition@temperature@unit</code></td><td>温度単位</td><td><code>K</code>, <code>degC</code></td></tr>
-                    <tr><td><code>@files[0].file[0].name</code></td><td>実測生データファイル名</td><td>例: <code>cu_foli_001.dat</code></td></tr>
-                    <tr><td><code>@files[0].format</code></td><td>生データファイル形式</td><td>例: <code>9809</code>, <code>text/plain</code></td></tr>
-                    <tr><td><code>@measurement@measured_time@start_time</code></td><td>測定開始日時</td><td>ISO 8601形式（例: 2026-08-28T10:00:00）</td></tr>
-                    <tr><td><code>@instrument@monochromator@detail@crystal_material</code></td><td>分光結晶材料</td><td>例: <code>Si</code>, <code>Ge</code></td></tr>
-                    <tr><td><code>@instrument@monochromator@detail@crystal_plane</code></td><td>結晶面</td><td><code>111</code>, <code>311</code>, <code>220</code>, <code>511</code>（括弧なし）</td></tr>
-                </tbody>
-            </table>
-
-            <h3>③ 表記統一ルール</h3>
-            <ul>
-                <li><b>吸収端 (edge)</b>: <code>["K-edge", "L1-edge", "L2-edge", "L3-edge", "M-edge"]</code>（<code>-edge</code> を付ける表記に統一）</li>
-                <li><b>結晶面 (crystal_plane)</b>: <code>["111", "311", "220", "511"]</code>（括弧 <code>(111)</code> なしの数字のみに統一）</li>
-                <li><b>面間隔単位 (crystal_d_unit)</b>: <code>angstrom</code>（オングストローム標準）</li>
+            <h3>表記統一ルール（重要な書式制約）</h3>
+            <ul style="padding-left: 1.4em;">
+                <li>
+                    <b>吸収端 (edge)</b>:
+                    <p><code>["K-edge", "L1-edge", "L2-edge", "L3-edge", "M-edge"]</code><br />
+                    ※ すべて <code>-edge</code> を付ける表記で統一されています（例: <code>K</code> ではなく <code>K-edge</code>）。</p>
+                </li>
+                <li>
+                    <b>分光結晶面 (crystal_plane)</b>:
+                    <p><code>["111", "311", "220", "511"]</code><br />
+                    ※ 括弧 <code>(111)</code> なしの数字のみで統一されています。</p>
+                </li>
+                <li>
+                    <b>面間隔単位 (crystal_d_unit)</b>:
+                    <p><code>angstrom</code>（オングストローム標準）</p>
+                </li>
+                <li>
+                    <b>二次利用ライセンス (license)</b>:
+                    <p>MDR推奨値: <code>CC BY-NC-SA 4.0</code></p>
+                </li>
             </ul>
         </div>
 
@@ -373,9 +471,10 @@
                     <tr><th style="width: 220px;">キー操作</th><th>動作・機能</th></tr>
                 </thead>
                 <tbody>
+                    <tr><td><kbd>Tab</kbd> (Key入力欄)</td><td>Key名の自動補完（階層・共通プレフィックス補完）</td></tr>
+                    <tr><td><kbd>Enter</kbd> (設定値入力欄)</td><td>入力値をYAMLへ反映</td></tr>
                     <tr><td><kbd>Ctrl</kbd> + <kbd>Z</kbd></td><td>元に戻す (Undo)</td></tr>
                     <tr><td><kbd>Ctrl</kbd> + <kbd>Y</kbd></td><td>やり直す (Redo)</td></tr>
-                    <tr><td><kbd>Enter</kbd> (値入力欄)</td><td>入力値をYAMLへ反映</td></tr>
                     <tr><td>プレビュー行クリック</td><td>該当Keyを左ペインで直接選択（双方向ジャンプ）</td></tr>
                 </tbody>
             </table>
@@ -394,6 +493,145 @@
         </div>
     </div>
 
+    <!-- ================================================================= -->
+    <!-- タブ2: JXSスキーマリファレンス (単体表示用辞書ビューアー) -->
+    <!-- ================================================================= -->
+    <div id="help_schema" class="tab-content">
+        <h1>JXS XAFS メタデータ スキーマ辞書</h1>
+        <p>日本XAFS研究会「XAFSメタデータ共通仕様（20230203リリース版）」で定義された全項目の仕様一覧です。</p>
+
+        <div class="filter-controls">
+            <input type="text" id="schema-search" class="search-input" placeholder="Key・日本語名・説明を検索..." oninput="renderSchemaList()">
+            
+            <div class="chip-group">
+                <span style="font-size: 0.85rem; font-weight: bold; margin-right: 6px;">カテゴリ:</span>
+                <span class="filter-chip active" onclick="setCategoryFilter('ALL', this)">すべて</span>
+                <span class="filter-chip" onclick="setCategoryFilter('data_info', this)">data_info</span>
+                <span class="filter-chip" onclick="setCategoryFilter('sample', this)">sample</span>
+                <span class="filter-chip" onclick="setCategoryFilter('facility', this)">facility</span>
+                <span class="filter-chip" onclick="setCategoryFilter('instrument', this)">instrument</span>
+                <span class="filter-chip" onclick="setCategoryFilter('measurement', this)">measurement</span>
+                <span class="filter-chip" onclick="setCategoryFilter('files', this)">files</span>
+            </div>
+
+            <div class="chip-group">
+                <span style="font-size: 0.85rem; font-weight: bold; margin-right: 6px;">重要度:</span>
+                <span class="filter-chip active" onclick="setLevelFilter('ALL', this)">すべて</span>
+                <span class="filter-chip" onclick="setLevelFilter('required', this)">必須 (11)</span>
+                <span class="filter-chip" onclick="setLevelFilter('recommended', this)">推奨 (12)</span>
+                <span class="filter-chip" onclick="setLevelFilter('optional', this)">任意</span>
+            </div>
+        </div>
+
+        <div id="schema-list-container">
+            <!-- JSで動的レンダリング -->
+        </div>
+    </div>
+
 </div>
+
+<!-- スクリプト (単体表示時のタブ切り替え ＆ スキーマ辞書レンダリング) -->
+<script src="schema_dictionary.js"></script>
+<script>
+    let currentCategory = 'ALL';
+    let currentLevel = 'ALL';
+
+    function switchTab(tabName) {
+        document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+
+        if (tabName === 'schema') {
+            document.getElementById('btn-tab-schema').classList.add('active');
+            document.getElementById('help_schema').classList.add('active');
+            renderSchemaList();
+            history.replaceState(null, null, '#schema');
+        } else {
+            document.getElementById('btn-tab-guide').classList.add('active');
+            document.getElementById('help_text').classList.add('active');
+            history.replaceState(null, null, '#guide');
+        }
+    }
+
+    function setCategoryFilter(cat, elem) {
+        currentCategory = cat;
+        elem.parentElement.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+        elem.classList.add('active');
+        renderSchemaList();
+    }
+
+    function setLevelFilter(lvl, elem) {
+        currentLevel = lvl;
+        elem.parentElement.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+        elem.classList.add('active');
+        renderSchemaList();
+    }
+
+    function renderSchemaList() {
+        const container = document.getElementById('schema-list-container');
+        if (!container) return;
+        const query = (document.getElementById('schema-search')?.value || '').toLowerCase().trim();
+        const dictionary = window.SCHEMA_DICTIONARY || [];
+
+        const filtered = dictionary.filter(item => {
+            if (currentCategory !== 'ALL' && item.category !== currentCategory) return false;
+            if (currentLevel !== 'ALL' && item.level !== currentLevel) return false;
+            if (query) {
+                const matchPath = item.path.toLowerCase().includes(query);
+                const matchJa = (item.name_ja || '').toLowerCase().includes(query);
+                const matchEn = (item.name_en || '').toLowerCase().includes(query);
+                const matchDesc = (item.description || '').toLowerCase().includes(query);
+                if (!matchPath && !matchJa && !matchEn && !matchDesc) return false;
+            }
+            return true;
+        });
+
+        if (filtered.length === 0) {
+            container.innerHTML = '<div style="text-align:center; padding: 32px; color: #94a3b8;">条件に一致するスキーマ項目がありません</div>';
+            return;
+        }
+
+        let html = '';
+        filtered.forEach(item => {
+            const badgeClass = item.level === 'required' ? 'badge-req' : (item.level === 'recommended' ? 'badge-rec' : 'badge-opt');
+            const badgeLabel = item.level === 'required' ? '必須' : (item.level === 'recommended' ? '推奨' : '任意');
+            
+            html += `
+            <div class="schema-card">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 6px;">
+                    <div>
+                        <span class="${badgeClass}">${badgeLabel}</span>
+                        <strong style="font-size: 1rem; color: #1e293b; margin-left: 6px;">${item.name_ja || item.path}</strong>
+                    </div>
+                    <span style="font-family: 'Roboto Mono', monospace; font-size: 0.8rem; background: #e2e8f0; padding: 2px 6px; border-radius: 4px;">${item.type}</span>
+                </div>
+                <div style="font-family: 'Roboto Mono', monospace; color: #1976D2; font-size: 0.88rem; margin-bottom: 6px; font-weight: 500;">${item.path}</div>
+                <div style="font-size: 0.88rem; color: #475569; margin-bottom: 6px;">${item.description || ''}</div>
+                ${item.enum ? `<div style="font-size: 0.82rem; color: #64748b; margin-bottom: 4px;"><b>選択肢:</b> <code>${item.enum.join(', ')}</code></div>` : ''}
+                ${item.example ? `<div style="font-size: 0.82rem; color: #64748b;"><b>例:</b> <code>${item.example}</code></div>` : ''}
+            </div>
+            `;
+        });
+        container.innerHTML = html;
+    }
+
+    // 初期化時のハッシュ判定
+    window.addEventListener('DOMContentLoaded', () => {
+        const hash = window.location.hash;
+        if (hash === '#schema' || hash === '#jxs_schema_summary') {
+            switchTab('schema');
+        } else {
+            switchTab('guide');
+        }
+    });
+
+    window.addEventListener('hashchange', () => {
+        const hash = window.location.hash;
+        if (hash === '#schema') {
+            switchTab('schema');
+        } else if (hash === '#guide') {
+            switchTab('guide');
+        }
+    });
+</script>
 </body>
 </html>

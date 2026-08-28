@@ -300,11 +300,13 @@ const app = createApp({
     };
 
     const openHelpInNewTab = () => {
-      window.open('./help.html', '_blank');
+      const targetHash = helpTab.value === 'schema' ? '#schema' : '#guide';
+      window.open(`./help.html${targetHash}`, '_blank');
     };
 
     // 入力フォームの状態
     const selectedKeyPath = ref('');
+    const keySearch = ref('');
     const inputValue = ref('');
     const snackbarText = ref('');
     const showSnackbar = ref(false);
@@ -438,6 +440,7 @@ const app = createApp({
 
     // Key選択時の初期値読み込み＆自動補完
     watch(selectedKeyPath, (newPath) => {
+      keySearch.value = newPath || '';
       if (newPath) {
         const val = PathUtils.get(dataObject.value, newPath);
         if (val !== undefined && val !== null && val !== '') {
@@ -460,6 +463,78 @@ const app = createApp({
     // 現在日付/日時のセットボタン用アクション
     const setCurrentDate = (includeTime = false) => {
       inputValue.value = getCurrentDateString(includeTime);
+    };
+
+    // 最長共通プレフィックス（LCP）を計算
+    const getLongestCommonPrefix = (strings) => {
+      if (!strings || strings.length === 0) return '';
+      if (strings.length === 1) return strings[0];
+      let prefix = strings[0];
+      for (let i = 1; i < strings.length; i++) {
+        while (!strings[i].toLowerCase().startsWith(prefix.toLowerCase())) {
+          prefix = prefix.substring(0, prefix.length - 1);
+          if (prefix === '') return '';
+        }
+      }
+      return prefix;
+    };
+
+    // Key 入力欄での Tab キー補完 (シェル方式: 共通プレフィックス補完 ＋ 絞り込み)
+    const handleKeyTabComplete = (event) => {
+      const inputEl = event.target;
+      const rawVal = inputEl ? inputEl.value : '';
+      const current = (rawVal || keySearch.value || (typeof selectedKeyPath.value === 'string' ? selectedKeyPath.value : '')).trim();
+      if (!current) return;
+
+      const allPaths = dictionary.map(d => d.path);
+      const searchPrefix = current.startsWith('@') ? current : `@${current}`;
+      
+      // 1. 前方一致の候補を検索
+      let matches = allPaths.filter(p => p.toLowerCase().startsWith(searchPrefix.toLowerCase()));
+      
+      // 2. 前方一致がなければ部分一致および日本語名を検索
+      if (matches.length === 0) {
+        const matchedDict = dictionary.filter(d => 
+          d.path.toLowerCase().includes(current.toLowerCase()) || 
+          (d.name_ja && d.name_ja.includes(current))
+        );
+        matches = matchedDict.map(d => d.path);
+      }
+
+      if (matches.length === 0) return;
+
+      event.preventDefault(); // デフォルトのフォーカス移動を抑止
+
+      let nextVal = '';
+      if (matches.length === 1) {
+        // 1件のみマッチ: 完全補完
+        nextVal = matches[0];
+      } else {
+        // 複数件マッチ: 最長共通プレフィックスを計算
+        let lcp = getLongestCommonPrefix(matches);
+        // 末尾が '@' の場合（完全なKeyでない中間共通部分の場合）、サジェスト絞り込みを正常に働かせるため末尾 '@' を除去
+        if (lcp.endsWith('@') && lcp !== '@') {
+          lcp = lcp.slice(0, -1);
+        }
+
+        if (lcp.length > current.length) {
+          // 共通部分まで補完 (例: @faci -> @facility)
+          nextVal = lcp;
+        } else {
+          // すでに共通部分終端（例: @facility）の場合、第1候補をセット
+          nextVal = matches[0];
+        }
+      }
+
+      if (nextVal) {
+        selectedKeyPath.value = nextVal;
+        keySearch.value = nextVal;
+        if (inputEl) {
+          inputEl.value = nextVal;
+          // ネイティブの input イベントを発火して Vuetify の内部サジェストフィルターを確実にトリガー
+          inputEl.dispatchEvent(new Event('input', { bubbles: true }));
+        }
+      }
     };
 
     // サジェスト候補リスト（検索用フォーマット）
@@ -1159,6 +1234,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
       dictionary,
       dataObject,
       selectedKeyPath,
+      keySearch,
       inputValue,
       currentSchema,
       keySuggestions,
@@ -1184,6 +1260,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
       copyYaml,
       pasteFromClipboard,
       setCurrentDate,
+      handleKeyTabComplete,
       snackbarText,
       showSnackbar,
       filterCategory,
