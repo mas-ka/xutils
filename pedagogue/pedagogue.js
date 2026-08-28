@@ -230,9 +230,19 @@ const app = createApp({
     // メイン内部データ（空からスタート）
     const dataObject = ref({});
 
-    // 本アプリの LICENSE テキスト取得
+    // 本アプリの LICENSE および help.html テキスト取得
     const appLicenseText = ref('Loading LICENSE...');
+    const helpContent = ref('Loading Help...');
+    const showHelpDrawer = ref(false);
+    const helpTab = ref('guide');
+
+    // スキーマリファレンス検索・絞り込み
+    const schemaSearchQuery = ref('');
+    const schemaFilterCategory = ref('ALL');
+    const schemaFilterLevel = ref('ALL');
+
     onMounted(async () => {
+      // LICENSE 取得
       try {
         const res = await fetch('./LICENSE');
         if (res.ok) {
@@ -243,7 +253,55 @@ const app = createApp({
       } catch (err) {
         appLicenseText.value = 'Failed to load LICENSE file.';
       }
+
+      // help.html 取得
+      try {
+        const helpRes = await fetch('./help.html');
+        if (helpRes.ok) {
+          const fullHtml = await helpRes.text();
+          const parser = new DOMParser();
+          const doc = parser.parseFromString(fullHtml, 'text/html');
+          const helpElem = doc.getElementById('help_text');
+          helpContent.value = helpElem ? helpElem.innerHTML : fullHtml;
+        } else {
+          helpContent.value = '<p>ヘルプの読み込みに失敗しました。</p>';
+        }
+      } catch (err) {
+        helpContent.value = '<p>ヘルプの読み込みに失敗しました。</p>';
+      }
     });
+
+    // スキーマリファレンス算出プロパティ
+    const filteredSchemaList = computed(() => {
+      return dictionary.filter(item => {
+        if (schemaFilterCategory.value !== 'ALL' && item.category !== schemaFilterCategory.value) {
+          return false;
+        }
+        if (schemaFilterLevel.value !== 'ALL' && item.level !== schemaFilterLevel.value) {
+          return false;
+        }
+        if (schemaSearchQuery.value.trim()) {
+          const q = schemaSearchQuery.value.toLowerCase().trim();
+          const matchPath = item.path.toLowerCase().includes(q);
+          const matchNameJa = (item.name_ja || '').toLowerCase().includes(q);
+          const matchNameEn = (item.name_en || '').toLowerCase().includes(q);
+          const matchDesc = (item.description || '').toLowerCase().includes(q);
+          if (!matchPath && !matchNameJa && !matchNameEn && !matchDesc) {
+            return false;
+          }
+        }
+        return true;
+      });
+    });
+
+    const selectSchemaKeyFromHelp = (path) => {
+      selectKey(path);
+      showToast(`Keyを選択しました: ${path}`);
+    };
+
+    const openHelpInNewTab = () => {
+      window.open('./help.html', '_blank');
+    };
 
     // 入力フォームの状態
     const selectedKeyPath = ref('');
@@ -1147,6 +1205,16 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
       aboutTab,
       ossLicenses,
       appLicenseText,
+      // ヘルプドロワー＆スキーマリファレンス
+      showHelpDrawer,
+      helpTab,
+      helpContent,
+      schemaSearchQuery,
+      schemaFilterCategory,
+      schemaFilterLevel,
+      filteredSchemaList,
+      selectSchemaKeyFromHelp,
+      openHelpInNewTab,
       appVersion: APP_VERSION
     };
   }

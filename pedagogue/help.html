@@ -1,0 +1,399 @@
+﻿<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pedagogue - Help & Schema Reference</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;500&family=Roboto:wght@300;400;500;700&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/@mdi/font@7.x/css/materialdesignicons.min.css" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Roboto', 'Noto Sans JP', sans-serif;
+            background-color: #f8fafc;
+            color: #1e293b;
+            line-height: 1.85;
+            margin: 0;
+            padding: 24px;
+        }
+        .container {
+            max-width: 960px;
+            margin: 0 auto;
+            background: #ffffff;
+            padding: 36px 40px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.08);
+        }
+        h1 {
+            color: #1976D2;
+            border-bottom: 2px solid #1976D2;
+            padding-bottom: 12px;
+            margin-top: 0;
+            margin-bottom: 20px;
+            font-size: 1.65rem;
+        }
+        h2 {
+            color: #334155;
+            border-left: 4px solid #1976D2;
+            padding-left: 12px;
+            margin-top: 36px;
+            margin-bottom: 16px;
+            font-size: 1.25rem;
+        }
+        h3 {
+            color: #475569;
+            margin-top: 28px;
+            margin-bottom: 12px;
+            font-size: 1.05rem;
+        }
+        p {
+            margin: 12px 0 16px 0;
+            color: #334155;
+        }
+        ul {
+            padding-left: 1.6em;
+            margin: 14px 0 20px 0;
+        }
+        li {
+            margin-bottom: 14px;
+        }
+        code, pre {
+            font-family: 'Roboto Mono', monospace;
+            background-color: #f1f5f9;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.88em;
+            color: #0f172a;
+        }
+        .badge-req {
+            background-color: #ff5722;
+            color: white;
+            padding: 3px 7px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: bold;
+        }
+        .badge-rec {
+            background-color: #009688;
+            color: white;
+            padding: 3px 7px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: bold;
+        }
+        .badge-opt {
+            background-color: #64748b;
+            color: white;
+            padding: 3px 7px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: bold;
+        }
+        .note {
+            background-color: #f0fdf4;
+            border-left: 4px solid #22c55e;
+            padding: 14px 18px;
+            margin: 18px 0 22px 0;
+            border-radius: 0 6px 6px 0;
+            font-size: 0.92rem;
+            line-height: 1.75;
+        }
+        .warn {
+            background-color: #fffbeb;
+            border-left: 4px solid #f59e0b;
+            padding: 14px 18px;
+            margin: 18px 0 22px 0;
+            border-radius: 0 6px 6px 0;
+            font-size: 0.92rem;
+            line-height: 1.75;
+        }
+        hr {
+            border: none;
+            border-top: 1px solid #e2e8f0;
+            margin: 32px 0;
+        }
+        table.ref-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 16px 0 24px 0;
+            font-size: 0.875rem;
+        }
+        table.ref-table th, table.ref-table td {
+            border: 1px solid #cbd5e1;
+            padding: 10px 12px;
+            text-align: left;
+            vertical-align: top;
+        }
+        table.ref-table th {
+            background-color: #f1f5f9;
+            font-weight: bold;
+            color: #1e293b;
+        }
+        /* ドロワー埋め込み用スタイル */
+        #help_text {
+            font-size: 0.92rem;
+            line-height: 1.85;
+            padding: 4px 6px;
+        }
+        .help-section {
+            margin-bottom: 28px;
+        }
+    </style>
+</head>
+<body>
+<div class="container" id="help_root">
+
+    <div id="help_text">
+        <!-- 概要 -->
+        <div id="introduction" class="help-section">
+            <h1>Pedagogue - 操作マニュアル ＆ 仕様リファレンス</h1>
+            
+            <p>　<strong>Pedagogue（ペダゴーグ）</strong> は、物質・材料研究機構（NIMS）が運営する「<a href="https://mdr.nims.go.jp/collections/qz20st57x" target="_blank">MDR XAFS DB</a>」および日本XAFS研究会（JXS）「XAFSメタデータ共通仕様（20230203リリース版）」に準拠したメタデータ（<code>metadata.yml</code> / <code>metadata.json</code>）の作成・閲覧・編集・保存を支援するWebエディタです。</p>
+            
+            <p>　平坦化Key（キーパス）による直感的な入力コンソールと、構文ハイライト付きリアルタイムYAMLプレビューを連動させ、仕様外Keyの警告や安全なマージ・衝突解決機能により、高品質なメタデータをスムーズに作成できます。</p>
+        </div>
+
+        <hr />
+
+        <!-- 1. トップバー ＆ メニューバー -->
+        <div id="top_bar" class="help-section">
+            <h2><i class="mdi mdi-page-layout-header"></i> 1. トップバー ＆ メニューバー</h2>
+            
+            <p>　画面最上部のナビゲーションバーから、ファイル操作、編集履歴、各種ガイドの表示、および必須項目の入力進捗の確認が行えます。</p>
+
+            <ul style="padding-left: 1.4em;">
+                <li>
+                    <b>Pedagogue（ブランドメニュー）</b>:
+                    <p>クリックすると「Pedagogue について」ダイアログが開きます。バージョン（ビルド日付）、JXS仕様準拠表記、Pedagogue 本体の MIT ライセンス全文、および使用しているオープンソースライブラリ（Vue, Vuetify, js-yaml 等）の許諾条文一覧を確認できます。</p>
+                </li>
+
+                <li>
+                    <b>ファイル (File)</b>:
+                    <ul style="margin-top: 8px;">
+                        <li><b>ファイルから取り込み (YAML/JSON)...</b>: 既存の <code>.yml</code> / <code>.yaml</code> / <code>.json</code> ファイルを読み込みます（衝突判定付き）。</li>
+                        <li><b>保存 ＞ YAML形式 (metadata.yml)</b>: MDR XAFS DB 登録用標準フォーマットである <code>metadata.yml</code> としてダウンロード保存します。</li>
+                        <li><b>保存 ＞ JSON形式 (metadata.json)</b>: <code>metadata.json</code> 形式でダウンロード保存します。</li>
+                        <li><b>新規作成 (全クリア)</b>: エディタ内のデータを初期化します（未保存の変更がある場合は警告ダイアログを表示）。</li>
+                    </ul>
+                </li>
+
+                <li>
+                    <b>編集 (Edit)</b>:
+                    <ul style="margin-top: 8px;">
+                        <li><b>元に戻す (Undo / Ctrl+Z)</b>: 直前の編集操作を1段階取り消します（最大30件）。</li>
+                        <li><b>やり直す (Redo / Ctrl+Y)</b>: 取り消した操作をやり直します。</li>
+                        <li><b>YAMLをコピー</b>: 現在のプレビュー内容をクリップボードに一括コピーします。</li>
+                        <li><b>クリップボードから取り込み (貼付)...</b>: クリップボード内のYAML/JSONテキストを解析し、既存データとマージします。</li>
+                    </ul>
+                </li>
+
+                <li>
+                    <b>ヘルプ (Help)</b>:
+                    <ul style="margin-top: 8px;">
+                        <li><b>操作マニュアル ＆ ガイド</b>: 右サイドドロワーを展開して本マニュアルを表示します。</li>
+                        <li><b>JXSスキーマリファレンス</b>: スキーマ辞書タブへ直接切り替えます。</li>
+                        <li><b>MDR XAFS DB について</b>: NIMS MDR リポジトリの仕様説明および関連公式リンク（MDR / JXS）を表示します。</li>
+                    </ul>
+                </li>
+
+                <li>
+                    <b>ステータスバッジ（進捗・警告表示）</b>:
+                    <ul style="margin-top: 8px;">
+                        <li><span class="badge-req">必須: ○ / 11</span>: JXS仕様で必須と定められた11項目の入力完了状況。全項目を満たすと緑色のチェック表示に変化します。</li>
+                        <li><span class="badge-rec">推奨: ○ / 12</span>: データの検索性や再利用性を高めるための推奨12項目の入力状況。</li>
+                        <li><span style="background-color: #d97706; color: white; padding: 2px 6px; border-radius: 4px; font-weight: bold; font-size: 0.75rem;">⚠️ 仕様外: ○件</span>: スキーマ辞書に定義されていない未定義Keyが存在する場合にのみ警告表示されます（タイポの早期発見）。</li>
+                        <li><span style="background-color: #475569; color: white; padding: 2px 6px; border-radius: 4px; font-weight: bold; font-size: 0.75rem;">設定済: ○件</span>: 現在メタデータ内に値が設定されている全項目数。</li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+
+        <hr />
+
+        <!-- 2. メタデータ編集コンソール (左ペイン) -->
+        <div id="editor_console" class="help-section">
+            <h2><i class="mdi mdi-form-select"></i> 2. メタデータ編集コンソール (左ペイン)</h2>
+            
+            <p>　画面左側のパネルで、平坦化Key（キーパス）を指定してメタデータを1項目ずつ安全に入力・更新します。</p>
+
+            <ul style="padding-left: 1.4em;">
+                <li>
+                    <b>カテゴリ絞り込み</b>:
+                    <p>上部のチップス（<code>すべて</code>, <code>data_info</code>, <code>sample</code>, <code>facility</code>, <code>instrument</code>, <code>measurement</code>, <code>files</code>）で、サジェストに表示されるKeyをカテゴリごとに絞り込めます。</p>
+                </li>
+
+                <li>
+                    <b>平坦化Key（キーパス）の指定</b>:
+                    <p>オートコンプリート入力欄に <code>@</code> から始まるKey名を入力・選択します。文字を入力すると日本語名やKey名でリアルタイムにインクリメンタル検索されます。</p>
+                    
+                    <div class="note">
+                        <strong>💡 平坦化Keyの記法ルール:</strong><br />
+                        ・オブジェクト階層: <code>@category@sub.key</code> または <code>@category@sub@key</code><br />
+                        ・配列インデックス: <code>@measurement@edges[0].element</code> または <code>@files[0].file[0].name</code><br />
+                        ・独自パラメータ: JXS仕様外の独自パラメータも <code>@local@custom_key</code> のように自由に追加・保持できます。
+                    </div>
+                </li>
+
+                <li>
+                    <b>項目説明カード (ヒント ＆ 型制約)</b>:
+                    <p>Keyを選択すると、日本語項目名、重要度バッジ（必須・推奨・任意）、型、許容値（Enum候補）、説明文、および入力例が表示されます。</p>
+                    <p>※ <code>deposite_time</code> や <code>measured_time</code> などの日付・日時項目では、<b>「今日の日付を入力」「現在日時を入力」</b> ボタンが自動表示され、ワンクリックで現在時刻をISO形式で補完できます。</p>
+                </li>
+
+                <li>
+                    <b>値の入力と反映・削除</b>:
+                    <p>Enum（選択肢）が定義されている項目はドロップダウン選択、複数行テキストはテキストエリア、その他は1行入力欄に自動で切り替わります。</p>
+                    <p>値を入力して <b>「反映 (Enter)」</b> ボタンを押すと右ペインのYAMLに即時反映されます。また <b>「削除」</b> ボタンで項目をクリアできます。</p>
+                </li>
+
+                <li>
+                    <b>必須・推奨・設定済み一覧 (ToDoチップス)</b>:
+                    <p>入力欄の下部に、現在の入力状況がタブ形式で整理されています。未入力の必須項目や推奨項目をクリックすると、そのKeyが入力欄に直接セットされ、順番に入力を進めることができます。</p>
+                </li>
+            </ul>
+        </div>
+
+        <hr />
+
+        <!-- 3. YAMLプレビュー (右ペイン) -->
+        <div id="yaml_preview" class="help-section">
+            <h2><i class="mdi mdi-code-json"></i> 3. YAMLプレビュー (右ペイン)</h2>
+            
+            <p>　画面右側で、生成される <code>metadata.yml</code> の構文ハイライト付きリアルタイムプレビューを確認できます。</p>
+
+            <ul style="padding-left: 1.4em;">
+                <li>
+                    <b>リアルタイム自動整列 (Pretty-print)</b>:
+                    <p>左ペインで値を変更するたびに、JXS仕様書で定義された標準の並び順（<code>data_info</code> → <code>sample</code> → <code>facility</code> → <code>instrument</code> → <code>measurement</code> → <code>files</code> → <code>local</code>）へ自動整列して表示されます。</p>
+                </li>
+
+                <li>
+                    <b>双方向ジャンプ編集（行クリック機能）</b>:
+                    <p>プレビュー内の任意の行をクリックすると、その行に対応する平坦化Keyが <b>左ペインの入力コンソールに即座に選択・展開</b> されます。編集したい場所をプレビューから直接狙って修正できます。</p>
+                </li>
+
+                <li>
+                    <b>未保存インジケーター</b>:
+                    <p>データに変更が加わると、プレビューヘッダーに <code>metadata.yml *</code>（アスタリスク）が表示されます。ファイルを保存（YAML/JSON）するか新規作成を実行すると解除されます。</p>
+                </li>
+            </ul>
+        </div>
+
+        <hr />
+
+        <!-- 4. ファイル取り込み ＆ 衝突解決 -->
+        <div id="conflict_resolution" class="help-section">
+            <h2><i class="mdi mdi-merge"></i> 4. ファイル取り込み ＆ 衝突解決 (Conflict Resolution)</h2>
+            
+            <p>　既存の編集状態を維持しながら、外部YAML/JSONファイルを安全に読み込んでマージできます。</p>
+
+            <ul style="padding-left: 1.4em;">
+                <li>
+                    <b>ドラッグ＆ドロップ (D&D) 対応</b>:
+                    <p>画面上のどこでも <code>.yml</code> / <code>.yaml</code> / <code>.json</code> ファイルをドロップするだけで即座に取り込み処理が開始されます。</p>
+                </li>
+
+                <li>
+                    <b>衝突（コンフリクト）判定ダイアログ</b>:
+                    <p>読み込んだファイルの中に、現在編集中の値と異なる項目がある場合、自動的に「重複・衝突検出ダイアログ」が開きます。</p>
+                    
+                    <ul style="margin-top: 8px;">
+                        <li><b>比較テーブル</b>: 日本語項目名、重要度、平坦化Key、既存の値、読込ファイルの値が一覧表示されます。</li>
+                        <li><b>直感的な操作順序</b>: 各行で <b>左:「維持 (既存優先)」 / 右:「上書き (ファイル優先)」</b> を個別に選択できます。</li>
+                        <li><b>一括操作</b>: 上部の「すべて維持」「すべて上書き」ボタンで全項目を一括切り替えできます。</li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+
+        <hr />
+
+        <!-- 5. JXS XAFS メタデータ仕様の要点 -->
+        <div id="jxs_schema_summary" class="help-section">
+            <h2><i class="mdi mdi-book-open-outline"></i> 5. JXS XAFS メタデータ仕様の要点</h2>
+            
+            <p>　日本XAFS研究会（JXS）「XAFSメタデータ共通仕様（20230203リリース版）」に準拠するための重要ルールです。</p>
+
+            <h3>① 必須項目 (Required / 11項目)</h3>
+            <table class="ref-table">
+                <thead>
+                    <tr><th style="width: 28%;">平坦化Key</th><th style="width: 25%;">日本語項目名</th><th>説明・備考</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td><code>@data_info@title</code></td><td>データセット題名 (英語)</td><td>課題名や測定の目的など（MDR検索の主タイトル）</td></tr>
+                    <tr><td><code>@data_info@data_depositor@name</code></td><td>データ登録者氏名</td><td>データをリポジトリに登録する担当者名</td></tr>
+                    <tr><td><code>@data_info@data_depositor@organization</code></td><td>データ登録者の組織</td><td>登録者の所属研究機関・大学・企業名</td></tr>
+                    <tr><td><code>@data_info@contact_name@name</code></td><td>問合せ先氏名</td><td>データに関する問合せ先担当者名</td></tr>
+                    <tr><td><code>@data_info@contact_name@organization</code></td><td>問合せ先組織</td><td>問合せ先担当者の所属組織名</td></tr>
+                    <tr><td><code>@data_info@deposite_time@create_time</code></td><td>メタデータ作成日時</td><td>ISO 8601形式（例: 2026-08-28）</td></tr>
+                    <tr><td><code>@facility@name</code></td><td>施設名</td><td>放射光施設名（例: SAGA-LS, SPring-8, PF）</td></tr>
+                    <tr><td><code>@facility@beamline</code></td><td>ビームライン名</td><td>測定を行ったビームライン（例: BL06, BL14B2）</td></tr>
+                    <tr><td><code>@sample@name</code></td><td>試料名</td><td>測定対象の試料名・材料名</td></tr>
+                    <tr><td><code>@measurement@edges[0].element</code></td><td>測定元素</td><td>元素記号（例: Cu, Fe, Pt, Ti）</td></tr>
+                    <tr><td><code>@measurement@edges[0].edge</code></td><td>吸収端</td><td><code>K-edge</code>, <code>L3-edge</code> 等（-edge付きで統一）</td></tr>
+                </tbody>
+            </table>
+
+            <h3>② 推奨項目 (Recommended / 12項目)</h3>
+            <table class="ref-table">
+                <thead>
+                    <tr><th style="width: 32%;">平坦化Key</th><th style="width: 25%;">日本語項目名</th><th>推奨値 / 選択肢</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td><code>@data_info@license</code></td><td>二次利用ライセンス</td><td>MDR推奨: <code>CC BY-NC-SA 4.0</code></td></tr>
+                    <tr><td><code>@data_info@title_ja</code></td><td>データセット題名 (日本語)</td><td>日本語でのタイトル（国内検索用）</td></tr>
+                    <tr><td><code>@data_info@data_depositor@affiliation</code></td><td>データ登録者の部署</td><td>学部・専攻・研究グループ等</td></tr>
+                    <tr><td><code>@sample@chemical_formula</code></td><td>化学式</td><td>例: <code>CuO</code>, <code>LiCoO2</code>, <code>Fe2O3</code></td></tr>
+                    <tr><td><code>@sample@phase</code></td><td>試料の相</td><td><code>solid</code>, <code>powder</code>, <code>film</code>, <code>liquid</code>, <code>gas</code></td></tr>
+                    <tr><td><code>@sample@condition@temperature@value</code></td><td>測定時温度</td><td>数値（例: <code>298.15</code>, <code>77</code>）</td></tr>
+                    <tr><td><code>@sample@condition@temperature@unit</code></td><td>温度単位</td><td><code>K</code>, <code>degC</code></td></tr>
+                    <tr><td><code>@files[0].file[0].name</code></td><td>実測生データファイル名</td><td>例: <code>cu_foli_001.dat</code></td></tr>
+                    <tr><td><code>@files[0].format</code></td><td>生データファイル形式</td><td>例: <code>9809</code>, <code>text/plain</code></td></tr>
+                    <tr><td><code>@measurement@measured_time@start_time</code></td><td>測定開始日時</td><td>ISO 8601形式（例: 2026-08-28T10:00:00）</td></tr>
+                    <tr><td><code>@instrument@monochromator@detail@crystal_material</code></td><td>分光結晶材料</td><td>例: <code>Si</code>, <code>Ge</code></td></tr>
+                    <tr><td><code>@instrument@monochromator@detail@crystal_plane</code></td><td>結晶面</td><td><code>111</code>, <code>311</code>, <code>220</code>, <code>511</code>（括弧なし）</td></tr>
+                </tbody>
+            </table>
+
+            <h3>③ 表記統一ルール</h3>
+            <ul>
+                <li><b>吸収端 (edge)</b>: <code>["K-edge", "L1-edge", "L2-edge", "L3-edge", "M-edge"]</code>（<code>-edge</code> を付ける表記に統一）</li>
+                <li><b>結晶面 (crystal_plane)</b>: <code>["111", "311", "220", "511"]</code>（括弧 <code>(111)</code> なしの数字のみに統一）</li>
+                <li><b>面間隔単位 (crystal_d_unit)</b>: <code>angstrom</code>（オングストローム標準）</li>
+            </ul>
+        </div>
+
+        <hr />
+
+        <!-- 6. キーボードショートカット一覧 -->
+        <div id="shortcuts" class="help-section">
+            <h2><i class="mdi mdi-keyboard-outline"></i> 6. ショートカットキー一覧</h2>
+            
+            <table class="ref-table">
+                <thead>
+                    <tr><th style="width: 220px;">キー操作</th><th>動作・機能</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td><kbd>Ctrl</kbd> + <kbd>Z</kbd></td><td>元に戻す (Undo)</td></tr>
+                    <tr><td><kbd>Ctrl</kbd> + <kbd>Y</kbd></td><td>やり直す (Redo)</td></tr>
+                    <tr><td><kbd>Enter</kbd> (値入力欄)</td><td>入力値をYAMLへ反映</td></tr>
+                    <tr><td>プレビュー行クリック</td><td>該当Keyを左ペインで直接選択（双方向ジャンプ）</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <hr />
+
+        <!-- 7. ライセンス -->
+        <div id="license" class="help-section">
+            <h2><i class="mdi mdi-license"></i> 7. ソフトウェアライセンス</h2>
+            
+            <p>　<strong>Pedagogue</strong> は MIT License に基づいて公開されています。</p>
+            <p>　Copyright (c) 2024-present KAWAMOTO masahide</p>
+            
+            <p>※使用している外部ライブラリの詳細な許諾条文は、アプリ内の「Pedagogue について」ダイアログ ＞「オープンソースライセンス」タブをご確認ください。</p>
+        </div>
+    </div>
+
+</div>
+</body>
+</html>
