@@ -40,7 +40,7 @@
     </style>
     <!-- Page Title & Meta -->
     <title>xutils - X-ray Analysis & Synchrotron Experiment Utilities</title>
-    <meta name="description" content="xutils: Web utilities for X-ray absorption (XAFS) and scattering (SAXS) measurement and analysis, including samxam, p4xms, p4xmq, RetroCog, Epiphany, and calq.">
+    <meta name="description" content="xutils: Web utilities for X-ray absorption (XAFS) and scattering (SAXS) measurement, parameter design, data analysis, and repository metadata editing, including samxam, p4xms, p4xmq, RetroCog, Epiphany, Pedagogue, and calq.">
 
     <!-- JSON-LD Structured Data for SEO / AI Crawlers -->
     <script type="application/ld+json">
@@ -48,7 +48,7 @@
         "@context": "https://schema.org",
         "@type": "WebApplication",
         "name": "xutils",
-        "description": "Web utilities for X-ray absorption (XAS/XAFS) and scattering (SAXS) measurement and analysis",
+        "description": "Web utilities for X-ray absorption (XAS/XAFS) and scattering (SAXS) measurement, analysis, and repository metadata editing",
         "applicationCategory": "ScientificApplication",
         "hasPart": [
             {
@@ -88,6 +88,13 @@
             },
             {
                 "@type": "WebApplication",
+                "name": "Pedagogue",
+                "description": "MDR XAFS DB / JXS Metadata Editor",
+                "url": "pedagogue/index.html",
+                "applicationCategory": "ScientificApplication"
+            },
+            {
+                "@type": "WebApplication",
                 "name": "calq",
                 "description": "Calculator for Q range in SAXS measurement",
                 "url": "calq/index.html",
@@ -103,7 +110,7 @@
     <noscript>
         <div style="padding: 20px; font-family: sans-serif;">
             <h1>xutils - X-ray Analysis & Synchrotron Experiment Utilities</h1>
-            <p>Web utilities for X-ray absorption (XAFS) and scattering (SAXS) measurement and analysis.</p>
+            <p>Web utilities for X-ray absorption (XAFS) and scattering (SAXS) measurement, parameter design, data analysis, and repository metadata editing.</p>
             <h2>XAFS Tools</h2>
             <ul>
                 <li><a href="samxam/index.html">SAMXAM - Sample preparation for XAS measurement</a></li>
@@ -115,6 +122,10 @@
             <h2>SAXS Tools</h2>
             <ul>
                 <li><a href="calq/index.html">calq - Calculator for Q range in SAXS measurement</a></li>
+            </ul>
+            <h2>DATA Tools</h2>
+            <ul>
+                <li><a href="pedagogue/index.html">Pedagogue - MDR XAFS DB / JXS Metadata Editor</a></li>
             </ul>
         </div>
     </noscript>
@@ -228,6 +239,26 @@
                             </v-tooltip>
                         </v-btn>
                     </v-list-item>
+
+                    <!-- DATA セクション -->
+                    <v-list-subheader
+                        class="bg-indigo-lighten-2 text-subtitle-2 text-white font-weight-bold rounded mb-2 mt-3"
+                        style="cursor: default;">
+                        D A T A
+                    </v-list-subheader>
+
+                    <v-list-item>
+                        <v-btn block :color="currentAppKey === 'pedagogue' ? 'indigo-lighten-4' : 'primary'"
+                            :variant="currentAppKey === 'pedagogue' ? 'flat' : 'text'"
+                            href="pedagogue/index.html" target="main_column"
+                            @click="onSelectApp('pedagogue', $event)"
+                            class="justify-start">
+                            Pedagogue
+                            <v-tooltip activator="parent" location="right">
+                                MDR XAFS DB / JXS Metadata Editor
+                            </v-tooltip>
+                        </v-btn>
+                    </v-list-item>
                 </v-list>
             </v-navigation-drawer>
 
@@ -258,6 +289,7 @@
             'retrocog': 'retrocog/index.html',
             'epiphany': 'epiphany/index.html',
             'calq': 'calq/index.html',
+            'pedagogue': 'pedagogue/index.html',
         };
 
         const vuetify = createVuetify();
