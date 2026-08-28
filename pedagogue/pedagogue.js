@@ -959,50 +959,6 @@ const app = createApp({
       selectedKeyPath.value = path;
     };
 
-    // サンプルデータの投入（動作確認用）
-    const loadSampleData = () => {
-      const rawSample = {
-        data_info: {
-          title: "XAFS measurement of Cu foil",
-          title_ja: "Cu金属箔のXAFS測定",
-          data_depositor: {
-            name: "Taro KEK",
-            organization: "KEK-PF"
-          },
-          contact_name: {
-            name: "Taro KEK",
-            organization: "KEK-PF"
-          },
-          deposite_time: {
-            create_time: "2023-02-03"
-          },
-          license: "CC BY-NC-SA 4.0"
-        },
-        facility: {
-          name: "Photon Factory",
-          beamline: "BL-9A",
-          ring: {
-            energy: 2.5,
-            energy_unit: "GeV"
-          }
-        },
-        sample: {
-          name: "Copper foil",
-          chemical_formula: "Cu",
-          phase: "foil"
-        },
-        measurement: {
-          edges: [
-            { element: "Cu", edge: "K-edge" }
-          ]
-        }
-      };
-      saveHistory();
-      dataObject.value = SchemaSorter.sortObject(rawSample);
-      isDirty.value = true;
-      showToast('サンプルデータをロードしました');
-    };
-
     // -------------------------------------------------------------
     // ファイル読み込み・マージ・衝突解決ロジック
     // -------------------------------------------------------------
@@ -1333,7 +1289,6 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
       applyValue,
       deleteKey,
       selectKey,
-      loadSampleData,
       clearAll,
       executeClear,
       isDirty,
