@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Pedagogue - MDR XAFS Metadata Helper</title>
+  <title>Pedagogue - MDR XAFS Metadata Editor</title>
   
   <!-- Fonts & Icons -->
   <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;500&family=Roboto:wght@300;400;500;700&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
@@ -123,37 +123,14 @@
               class="text-none font-weight-bold mr-1 px-2 text-white"
               style="font-size: 1.05rem;"
             >
-              <v-icon icon="mdi-school-outline" class="mr-1" size="22"></v-icon>
               Pedagogue
               <v-icon icon="mdi-chevron-down" end size="16"></v-icon>
             </v-btn>
           </template>
           <v-list density="compact" class="py-1" min-width="260">
-            <v-list-item prepend-icon="mdi-information-outline" @click="showHelpDialog = true">
-              <v-list-item-title>MDR XAFS DB について</v-list-item-title>
-            </v-list-item>
-            <v-list-item prepend-icon="mdi-tag-outline" @click="showAboutDialog = true">
-              <v-list-item-title>バージョン情報</v-list-item-title>
-              <v-list-item-subtitle class="text-caption text-grey">v0.3.0 (JXS 20230203準拠)</v-list-item-subtitle>
-            </v-list-item>
-            <v-divider class="my-1"></v-divider>
-            <v-list-item 
-              prepend-icon="mdi-open-in-new" 
-              href="https://mdr.nims.go.jp/collections/qz20st57x" 
-              target="_blank" 
-              rel="noopener"
-            >
-              <v-list-item-title>NIMS MDR XAFS DB</v-list-item-title>
-              <v-list-item-subtitle class="text-caption text-grey">公式リポジトリ</v-list-item-subtitle>
-            </v-list-item>
-            <v-list-item 
-              prepend-icon="mdi-open-in-new" 
-              href="https://www.jxafs.org/xafs-database/" 
-              target="_blank" 
-              rel="noopener"
-            >
-              <v-list-item-title>日本XAFS研究会 (JXS)</v-list-item-title>
-              <v-list-item-subtitle class="text-caption text-grey">メタデータ共通仕様</v-list-item-subtitle>
+            <v-list-item prepend-icon="mdi-information-outline" @click="showAboutDialog = true; aboutTab = 'overview'">
+              <v-list-item-title>Pedagogue について</v-list-item-title>
+              <v-list-item-subtitle class="text-caption text-grey">{{ appVersion }} (JXS 20230203準拠)</v-list-item-subtitle>
             </v-list-item>
           </v-list>
         </v-menu>
@@ -230,6 +207,21 @@
 
             <v-list-item prepend-icon="mdi-flask-outline" @click="loadSampleData">
               <v-list-item-title>サンプルデータを投入 (テスト用)</v-list-item-title>
+            </v-list-item>
+          </v-list>
+        </v-menu>
+
+        <!-- メニューバー: ヘルプ (Help) -->
+        <v-menu transition="slide-y-transition">
+          <template v-slot:activator="{ props }">
+            <v-btn variant="text" size="small" v-bind="props" class="text-none font-weight-medium">
+              ヘルプ
+              <v-icon icon="mdi-chevron-down" end size="16"></v-icon>
+            </v-btn>
+          </template>
+          <v-list density="compact" class="py-1" min-width="240">
+            <v-list-item prepend-icon="mdi-book-open-page-variant-outline" @click="showHelpDialog = true">
+              <v-list-item-title>MDR XAFS DB について</v-list-item-title>
             </v-list-item>
           </v-list>
         </v-menu>
@@ -636,7 +628,7 @@
               データの重複・衝突が検出されました (計 {{ conflictList.length }} 件)
             </v-card-title>
             <v-card-subtitle class="text-caption text-grey-darken-2">
-              「{{ loadedFileName }}」内の項目に、既存データと値が異なる項目があります。上書きするかスキップ（既存維持）するかを選択してください。
+              「{{ loadedFileName }}」内の項目に、既存データと値が異なる項目があります。既存を維持するか上書きするかを選択してください。
             </v-card-subtitle>
           </v-card-item>
 
@@ -653,14 +645,14 @@
             </div>
 
             <!-- 衝突テーブル (ネイティブ table を使用してブラウザのDOMパース破損を防止) -->
-            <div class="border rounded overflow-hidden" style="max-height: 400px; overflow-y: auto;">
+            <div class="border rounded" style="max-height: 450px; overflow-y: auto;">
               <table class="w-100 font-mono text-caption" style="border-collapse: collapse;">
-                <thead>
+                <thead style="position: sticky; top: 0; z-index: 2;">
                   <tr class="bg-grey-lighten-4 border-b">
-                    <th class="text-left pa-3 font-weight-bold" style="min-width: 240px;">スキーマ項目 (項目名 / Key)</th>
-                    <th class="text-left pa-3 font-weight-bold" style="width: 25%;">現在の値 (既存)</th>
-                    <th class="text-left pa-3 font-weight-bold" style="width: 25%;">読込ファイルの値</th>
-                    <th class="text-center pa-3 font-weight-bold" style="width: 150px;">処理方法</th>
+                    <th class="text-left pa-3 font-weight-bold bg-grey-lighten-4" style="min-width: 240px;">スキーマ項目 (項目名 / Key)</th>
+                    <th class="text-left pa-3 font-weight-bold bg-grey-lighten-4" style="width: 25%;">現在の値 (既存)</th>
+                    <th class="text-left pa-3 font-weight-bold bg-grey-lighten-4" style="width: 25%;">読込ファイルの値</th>
+                    <th class="text-center pa-3 font-weight-bold bg-grey-lighten-4" style="width: 150px;">処理方法</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -753,21 +745,81 @@
         </v-card>
       </v-dialog>
 
-      <!-- バージョン情報ダイアログ -->
-      <v-dialog v-model="showAboutDialog" max-width="450px">
+      <!-- Pedagogue について (バージョン・ライセンス) ダイアログ -->
+      <v-dialog v-model="showAboutDialog" max-width="620px">
         <v-card>
-          <v-card-title class="bg-blue-grey-darken-3 text-white d-flex align-center">
-            <v-icon icon="mdi-school-outline" class="mr-2"></v-icon>
-            Pedagogue について
+          <v-card-title class="bg-blue-grey-darken-3 text-white d-flex align-center justify-space-between py-2 px-4">
+            <span class="text-subtitle-1 font-weight-bold">Pedagogue について</span>
+            <v-btn icon="mdi-close" variant="text" size="small" density="compact" color="white" @click="showAboutDialog = false"></v-btn>
           </v-card-title>
-          <v-card-text class="pa-4 text-center">
-            <v-icon icon="mdi-school-outline" size="48" color="primary" class="my-2"></v-icon>
-            <div class="text-subtitle-1 font-weight-bold">Pedagogue</div>
-            <div class="text-caption text-grey mb-1">MDR XAFS Metadata Helper</div>
-            <div class="text-caption text-grey mb-3">Version 0.3.0</div>
-            <div class="text-body-2 text-grey-darken-2">JXS XAFS Metadata Schema 20230203 Compliant</div>
-          </v-card-text>
-          <v-card-actions>
+
+          <!-- タブヘッダー -->
+          <v-tabs v-model="aboutTab" bg-color="grey-lighten-4" color="primary" density="compact">
+            <v-tab value="overview" class="text-none font-weight-medium">
+              <v-icon icon="mdi-information-outline" size="18" class="mr-1"></v-icon>
+              概要
+            </v-tab>
+            <v-tab value="license" class="text-none font-weight-medium">
+              <v-icon icon="mdi-certificate-outline" size="18" class="mr-1"></v-icon>
+              オープンソースライセンス
+            </v-tab>
+          </v-tabs>
+
+          <v-window v-model="aboutTab">
+            <!-- タブ1: 概要 -->
+            <v-window-item value="overview">
+              <v-card-text class="pa-6 text-center">
+                <div class="text-h5 font-weight-bold text-primary mb-1 tracking-wide">Pedagogue</div>
+                <div class="text-caption text-grey-darken-1 mb-2">MDR XAFS Metadata Editor</div>
+                <v-chip size="small" variant="tonal" color="primary" class="font-weight-medium mb-3">Version: {{ appVersion }}</v-chip>
+                <div class="text-body-2 text-grey-darken-2 mb-4">JXS XAFS Metadata Schema 20230203 Compliant</div>
+
+                <v-divider class="my-4"></v-divider>
+
+                <!-- Pedagogue 自身のライセンス表示 -->
+                <v-card variant="outlined" class="pa-3 text-left bg-grey-lighten-5">
+                  <div class="d-flex align-center justify-space-between mb-2">
+                    <div>
+                      <span class="font-weight-bold text-caption text-grey-darken-3">Pedagogue (本ツール)</span>
+                      <div class="text-caption text-grey-darken-2" style="font-size: 0.75rem;">
+                        Copyright (c) 2024-present KAWAMOTO masahide
+                      </div>
+                    </div>
+                    <v-chip size="x-small" color="primary" variant="flat" class="font-weight-bold">MIT License</v-chip>
+                  </div>
+                  <pre class="pa-2 bg-white rounded border font-mono text-caption text-grey-darken-2" style="font-size: 0.7rem; white-space: pre-wrap; word-break: break-all; max-height: 140px; overflow-y: auto;">{{ appLicenseText }}</pre>
+                </v-card>
+              </v-card-text>
+            </v-window-item>
+
+            <!-- タブ2: OSSライセンス -->
+            <v-window-item value="license">
+              <v-card-text class="pa-4">
+                <div class="text-caption text-grey-darken-1 mb-3">
+                  本ソフトウェアは、以下のオープンソースライブラリおよびフォントアセットを使用しています。
+                </div>
+                <div style="max-height: 380px; overflow-y: auto;" class="pr-1">
+                  <v-card 
+                    v-for="lib in ossLicenses" 
+                    :key="lib.name" 
+                    variant="outlined" 
+                    class="mb-3 pa-3 bg-grey-lighten-5"
+                  >
+                    <div class="d-flex align-center justify-space-between mb-1">
+                      <span class="font-weight-bold text-body-2">{{ lib.name }} <span class="text-caption text-grey font-mono">{{ lib.version }}</span></span>
+                      <v-chip size="x-small" variant="tonal" color="grey-darken-3" class="font-weight-medium">{{ lib.license }}</v-chip>
+                    </div>
+                    <div class="text-caption text-grey-darken-3 font-weight-medium mb-1">{{ lib.copyright }}</div>
+                    <pre class="pa-2 bg-white rounded border font-mono text-caption text-grey-darken-2" style="font-size: 0.7rem; white-space: pre-wrap; word-break: break-all; max-height: 120px; overflow-y: auto;">{{ lib.text }}</pre>
+                  </v-card>
+                </div>
+              </v-card-text>
+            </v-window-item>
+          </v-window>
+
+          <v-divider></v-divider>
+
+          <v-card-actions class="pa-3">
             <v-spacer></v-spacer>
             <v-btn color="primary" variant="text" @click="showAboutDialog = false">閉じる</v-btn>
           </v-card-actions>

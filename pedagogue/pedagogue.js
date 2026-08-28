@@ -1,7 +1,11 @@
 /**
- * MDR XAFS Metadata Helper - Main Application Logic
+ * MDR XAFS Metadata Editor - Main Application Logic
  * Vue 3 (Global Build) + js-yaml
  */
+
+// ビルド日付・バージョン定義 (CIにより自動置換)
+const BUILD_DATE = '__BUILD_DATE__';
+const APP_VERSION = BUILD_DATE.startsWith('__') ? 'Local Dev' : BUILD_DATE;
 
 // パスユーティリティ
 const PathUtils = {
@@ -196,7 +200,7 @@ const SchemaSorter = {
 };
 
 // Vue アプリケーション初期化
-const { createApp, ref, computed, watch } = Vue;
+const { createApp, ref, computed, watch, onMounted } = Vue;
 const { createVuetify } = Vuetify;
 
 const vuetify = createVuetify({
@@ -225,6 +229,21 @@ const app = createApp({
 
     // メイン内部データ（空からスタート）
     const dataObject = ref({});
+
+    // 本アプリの LICENSE テキスト取得
+    const appLicenseText = ref('Loading LICENSE...');
+    onMounted(async () => {
+      try {
+        const res = await fetch('./LICENSE');
+        if (res.ok) {
+          appLicenseText.value = await res.text();
+        } else {
+          appLicenseText.value = 'Failed to load LICENSE file.';
+        }
+      } catch (err) {
+        appLicenseText.value = 'Failed to load LICENSE file.';
+      }
+    });
 
     // 入力フォームの状態
     const selectedKeyPath = ref('');
@@ -1011,6 +1030,73 @@ const app = createApp({
       showSnackbar.value = true;
     };
 
+    // バージョン・ライセンスダイアログ用タブ
+    const aboutTab = ref('overview');
+
+    // サードパーティ OSS ライセンス定義
+    const ossLicenses = [
+      {
+        name: 'Vue.js',
+        version: '3.4.19',
+        license: 'MIT License',
+        copyright: 'Copyright (c) 2018-present Yuxi (Evan) You',
+        text: `Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.`
+      },
+      {
+        name: 'Vuetify',
+        version: '3.5.9',
+        license: 'MIT License',
+        copyright: 'Copyright (c) 2016-2024 John Jeremy Leider',
+        text: `Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.`
+      },
+      {
+        name: 'js-yaml',
+        version: '4.1.0',
+        license: 'MIT License',
+        copyright: 'Copyright (c) 2011-2015 by Vitaly Puzrin',
+        text: `Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.`
+      },
+      {
+        name: 'highlight.js',
+        version: '11.9.0',
+        license: 'BSD 3-Clause License',
+        copyright: 'Copyright (c) 2006, Ivan Sagalaev',
+        text: `Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
+
+1. Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
+2. Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.
+3. Neither the name of the copyright holder nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.`
+      },
+      {
+        name: 'Material Design Icons',
+        version: '7.x (@mdi/font)',
+        license: 'Apache 2.0 / SIL OFL 1.1',
+        copyright: 'Copyright (c) Pictogrammers',
+        text: 'Icons licensed under Apache License 2.0. Fonts licensed under SIL Open Font License 1.1.'
+      },
+      {
+        name: 'Google Fonts (Roboto, Roboto Mono, Noto Sans JP)',
+        version: 'Web Fonts',
+        license: 'Apache 2.0 / SIL OFL 1.1',
+        copyright: 'Copyright (c) Google LLC',
+        text: 'Roboto & Roboto Mono licensed under Apache License 2.0. Noto Sans JP licensed under SIL Open Font License 1.1.'
+      }
+    ];
+
     return {
       dictionary,
       dataObject,
@@ -1057,7 +1143,11 @@ const app = createApp({
       saveYamlFile,
       saveJsonFile,
       showHelpDialog,
-      showAboutDialog
+      showAboutDialog,
+      aboutTab,
+      ossLicenses,
+      appLicenseText,
+      appVersion: APP_VERSION
     };
   }
 });
