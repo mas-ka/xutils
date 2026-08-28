@@ -32,7 +32,9 @@ jobs:
           # 直近コミット日付 (YYYY.MM.DD) を取得して置換
           BUILD_DATE=$(git log -1 --format=%cd --date=format:'%Y.%m.%d')
           echo "Build Date: ${BUILD_DATE}"
-          sed -i "s/__BUILD_DATE__/${BUILD_DATE}/g" pedagogue.js
+          if [ -f "pedagogue/pedagogue.js" ]; then
+            sed -i "s/__BUILD_DATE__/${BUILD_DATE}/g" pedagogue/pedagogue.js
+          fi
 
       - name: Setup Pages
         uses: actions/configure-pages@v5
