@@ -564,6 +564,7 @@
                     :items="keySuggestions"
                     item-title="title"
                     item-value="value"
+                    :custom-filter="customKeyFilter"
                     :return-object="false"
                     label="Key (例: @facility@name, @measurement@edges[0].element)"
                     placeholder="Keyを入力または選択 (日本語・英語で検索可能)"
@@ -585,6 +586,9 @@
                             {{ item.raw.level === 'required' ? '必須' : (item.raw.level === 'recommended' ? '推奨' : '任意') }}
                           </v-chip>
                         </template>
+                        <v-list-item-title class="font-mono text-body-2 font-weight-medium">
+                          {{ item.raw.path }} <span class="text-grey-darken-2 font-sans font-weight-regular" style="font-size: 0.85em;">({{ item.raw.name_ja }})</span>
+                        </v-list-item-title>
                         <v-list-item-subtitle class="text-caption">
                           型: {{ item.raw.type }} | 例: {{ item.raw.example }}
                         </v-list-item-subtitle>
@@ -647,20 +651,34 @@
                       @keydown.enter="applyValue"
                     ></v-combobox>
 
-                    <!-- 通常はテキストフィールド (日付型の場合はカレンダーアイコン付き) -->
+                    <!-- 通常はテキストフィールド (日付型の場合はカレンダーピッカー ＆ 現在日時補完ボタン付き) -->
                     <v-text-field
                       v-else
                       v-model="inputValue"
-                      :label="currentSchema && currentSchema.type === 'date' ? '設定値 (日付: YYYY-MM-DD)' : '設定値 (Value)'"
-                      :placeholder="currentSchema && currentSchema.type === 'date' ? 'YYYY-MM-DD' : '値を入力してください'"
-                      :append-inner-icon="currentSchema && currentSchema.type === 'date' ? 'mdi-calendar-clock' : undefined"
+                      :label="currentSchema && currentSchema.type === 'date' ? (currentSchema.path.includes('measured_time') ? '設定値 (日時: YYYY-MM-DD HH:mm:ss)' : '設定値 (日付: YYYY-MM-DD)') : '設定値 (Value)'"
+                      :placeholder="currentSchema && currentSchema.type === 'date' ? (currentSchema.path.includes('measured_time') ? 'YYYY-MM-DD HH:mm:ss' : 'YYYY-MM-DD') : '値を入力してください'"
                       variant="outlined"
                       density="comfortable"
                       class="flex-grow-1 font-mono"
                       hide-details="auto"
-                      @click:append-inner="setCurrentDate(currentSchema && currentSchema.path.includes('measured_time'))"
                       @keydown.enter="applyValue"
-                    ></v-text-field>
+                    >
+                      <template v-if="currentSchema && currentSchema.type === 'date'" v-slot:append-inner>
+                        <!-- 日時・日付選択ダイアログ起動ボタン -->
+                        <v-btn
+                          size="small"
+                          variant="tonal"
+                          color="primary"
+                          class="px-2 font-weight-bold"
+                          style="height: 32px;"
+                          :title="currentSchema.path.includes('measured_time') ? '測定日時（過去・現在）の選択ダイアログを開く' : '日付の選択ダイアログを開く'"
+                          @click.stop="openDateTimePicker"
+                        >
+                          <v-icon :icon="currentSchema.path.includes('measured_time') ? 'mdi-calendar-clock' : 'mdi-calendar-month'" class="mr-1"></v-icon>
+                          {{ currentSchema.path.includes('measured_time') ? '日時選択' : '日付選択' }}
+                        </v-btn>
+                      </template>
+                    </v-text-field>
 
                     <!-- 適用・削除ボタン -->
                     <v-btn 
@@ -976,7 +994,116 @@
               キャンセル
             </v-btn>
             <v-btn variant="flat" color="primary" class="font-weight-bold px-4" prepend-icon="mdi-check" @click="applyConflictResolution">
-              決定して反映
+              決定
+            </v-btn>
+          </v-card-actions>
+        </v-card>
+      </v-dialog>
+
+      <!-- ------------------------------------------------------------- -->
+      <!-- 日時・日付選択ダイアログ (過去の日時・日付を精密に指定可能) -->
+      <!-- ------------------------------------------------------------- -->
+      <v-dialog v-model="showDateTimePickerDialog" max-width="440px">
+        <v-card class="rounded-lg">
+          <v-toolbar color="primary" density="comfortable">
+            <v-icon :icon="isTimeMode ? 'mdi-calendar-clock' : 'mdi-calendar-month'" class="ml-3 mr-2 text-white"></v-icon>
+            <v-toolbar-title class="text-subtitle-1 font-weight-bold text-white">
+              {{ isTimeMode ? '測定日時の選択' : '日付の選択' }}
+            </v-toolbar-title>
+            <v-spacer></v-spacer>
+            <v-btn icon="mdi-close" variant="text" size="small" color="white" @click="showDateTimePickerDialog = false"></v-btn>
+          </v-toolbar>
+
+          <v-card-text class="pa-4">
+            <!-- 日付入力欄 (HTML5 標準のネイティブ date ピッカー) -->
+            <div class="mb-3">
+              <label class="text-caption font-weight-bold text-grey-darken-2 d-block mb-1">
+                <v-icon icon="mdi-calendar" size="16" class="mr-1"></v-icon>日付 (YYYY-MM-DD):
+              </label>
+              <v-text-field
+                type="date"
+                v-model="pickerDate"
+                variant="outlined"
+                density="comfortable"
+                hide-details="auto"
+                class="font-mono"
+              ></v-text-field>
+            </div>
+
+            <!-- 時刻入力欄 (isTimeMode の場合のみ表示) -->
+            <div v-if="isTimeMode" class="mb-3">
+              <label class="text-caption font-weight-bold text-grey-darken-2 d-block mb-1">
+                <v-icon icon="mdi-clock-outline" size="16" class="mr-1"></v-icon>時刻 (HH:mm:ss):
+              </label>
+              <div class="d-flex align-center">
+                <v-select
+                  v-model="pickerHour"
+                  :items="hoursList"
+                  label="時 (HH)"
+                  variant="outlined"
+                  density="compact"
+                  hide-details="auto"
+                  class="font-mono"
+                  style="flex: 1;"
+                ></v-select>
+                <span class="font-weight-bold mx-1 text-grey-darken-2">:</span>
+                <v-select
+                  v-model="pickerMinute"
+                  :items="minutesList"
+                  label="分 (mm)"
+                  variant="outlined"
+                  density="compact"
+                  hide-details="auto"
+                  class="font-mono"
+                  style="flex: 1;"
+                ></v-select>
+                <span class="font-weight-bold mx-1 text-grey-darken-2">:</span>
+                <v-select
+                  v-model="pickerSecond"
+                  :items="secondsList"
+                  label="秒 (ss)"
+                  variant="outlined"
+                  density="compact"
+                  hide-details="auto"
+                  class="font-mono"
+                  style="flex: 1;"
+                ></v-select>
+              </div>
+            </div>
+
+            <!-- 現在日時にリセット＆プレビュー -->
+            <div class="d-flex justify-space-between align-center mt-2 pa-2 bg-grey-lighten-4 rounded border">
+              <v-btn
+                size="small"
+                variant="text"
+                color="primary"
+                class="font-weight-bold"
+                prepend-icon="mdi-history"
+                @click="setPickerToNow"
+              >
+                現在の日時をセット
+              </v-btn>
+              <div class="font-mono text-caption text-grey-darken-3 font-weight-bold">
+                設定値: {{ isTimeMode ? `${pickerDate} ${pickerHour}:${pickerMinute}:${pickerSecond}` : pickerDate }}
+              </div>
+            </div>
+          </v-card-text>
+
+          <v-divider></v-divider>
+
+          <v-card-actions class="pa-3">
+            <v-spacer></v-spacer>
+            <v-btn variant="text" color="grey-darken-1" @click="showDateTimePickerDialog = false">
+              キャンセル
+            </v-btn>
+            <v-btn
+              color="primary"
+              variant="flat"
+              class="font-weight-bold px-4"
+              prepend-icon="mdi-check"
+              @click="applyDateTimePicker"
+            >
+              決定
             </v-btn>
           </v-card-actions>
         </v-card>

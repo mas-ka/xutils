@@ -462,7 +462,82 @@ const app = createApp({
 
     // 現在日付/日時のセットボタン用アクション
     const setCurrentDate = (includeTime = false) => {
-      inputValue.value = getCurrentDateString(includeTime);
+      const isTime = typeof includeTime === 'boolean' ? includeTime : false;
+      inputValue.value = getCurrentDateString(isTime);
+      showToast(isTime ? '現在日時を入力しました' : '今日の日付を入力しました');
+    };
+
+    // 日時選択ダイアログの状態とロジック
+    const showDateTimePickerDialog = ref(false);
+    const pickerDate = ref('');
+    const pickerHour = ref('00');
+    const pickerMinute = ref('00');
+    const pickerSecond = ref('00');
+    const isTimeMode = ref(false);
+
+    const hoursList = Array.from({ length: 24 }, (_, i) => String(i).padStart(2, '0'));
+    const minutesList = Array.from({ length: 60 }, (_, i) => String(i).padStart(2, '0'));
+    const secondsList = Array.from({ length: 60 }, (_, i) => String(i).padStart(2, '0'));
+
+    const openDateTimePicker = () => {
+      isTimeMode.value = currentSchema.value ? currentSchema.value.path.includes('measured_time') : false;
+      const currentVal = (inputValue.value || '').trim();
+
+      if (currentVal) {
+        if (currentVal.includes(' ')) {
+          const parts = currentVal.split(' ');
+          pickerDate.value = parts[0];
+          if (parts[1]) {
+            const timeParts = parts[1].split(':');
+            pickerHour.value = (timeParts[0] || '00').padStart(2, '0');
+            pickerMinute.value = (timeParts[1] || '00').padStart(2, '0');
+            pickerSecond.value = (timeParts[2] || '00').padStart(2, '0');
+          }
+        } else if (currentVal.includes('-')) {
+          pickerDate.value = currentVal;
+          const now = new Date();
+          pickerHour.value = String(now.getHours()).padStart(2, '0');
+          pickerMinute.value = String(now.getMinutes()).padStart(2, '0');
+          pickerSecond.value = String(now.getSeconds()).padStart(2, '0');
+        }
+      } else {
+        const now = new Date();
+        const y = now.getFullYear();
+        const m = String(now.getMonth() + 1).padStart(2, '0');
+        const d = String(now.getDate()).padStart(2, '0');
+        pickerDate.value = `${y}-${m}-${d}`;
+        pickerHour.value = String(now.getHours()).padStart(2, '0');
+        pickerMinute.value = String(now.getMinutes()).padStart(2, '0');
+        pickerSecond.value = String(now.getSeconds()).padStart(2, '0');
+      }
+
+      showDateTimePickerDialog.value = true;
+    };
+
+    const setPickerToNow = () => {
+      const now = new Date();
+      const y = now.getFullYear();
+      const m = String(now.getMonth() + 1).padStart(2, '0');
+      const d = String(now.getDate()).padStart(2, '0');
+      pickerDate.value = `${y}-${m}-${d}`;
+      pickerHour.value = String(now.getHours()).padStart(2, '0');
+      pickerMinute.value = String(now.getMinutes()).padStart(2, '0');
+      pickerSecond.value = String(now.getSeconds()).padStart(2, '0');
+      showToast('現在の日時をセットしました');
+    };
+
+    const applyDateTimePicker = () => {
+      if (!pickerDate.value) {
+        showToast('日付を選択してください');
+        return;
+      }
+      if (isTimeMode.value) {
+        inputValue.value = `${pickerDate.value} ${pickerHour.value}:${pickerMinute.value}:${pickerSecond.value}`;
+      } else {
+        inputValue.value = pickerDate.value;
+      }
+      showDateTimePickerDialog.value = false;
+      showToast('設定値を更新しました');
     };
 
     // 最長共通プレフィックス（LCP）を計算
@@ -507,21 +582,17 @@ const app = createApp({
 
       let nextVal = '';
       if (matches.length === 1) {
-        // 1件のみマッチ: 完全補完
+        // 1件のみマッチ: 完全補完 (末尾 @ なし)
         nextVal = matches[0];
       } else {
-        // 複数件マッチ: 最長共通プレフィックスを計算
-        let lcp = getLongestCommonPrefix(matches);
-        // 末尾が '@' の場合（完全なKeyでない中間共通部分の場合）、サジェスト絞り込みを正常に働かせるため末尾 '@' を除去
-        if (lcp.endsWith('@') && lcp !== '@') {
-          lcp = lcp.slice(0, -1);
-        }
+        // 複数件マッチ: 最長共通プレフィックスを計算 (共通階層: @facility@)
+        const lcp = getLongestCommonPrefix(matches);
 
         if (lcp.length > current.length) {
-          // 共通部分まで補完 (例: @faci -> @facility)
+          // 共通部分まで補完 (例: @faci -> @facility@)
           nextVal = lcp;
         } else {
-          // すでに共通部分終端（例: @facility）の場合、第1候補をセット
+          // すでに共通部分終端（例: @facility@）の場合、第1候補をセット (末尾 @ なし)
           nextVal = matches[0];
         }
       }
@@ -537,19 +608,32 @@ const app = createApp({
       }
     };
 
-    // サジェスト候補リスト（検索用フォーマット）
+    // サジェスト候補リスト（検索用フォーマット: title は純粋な Key 名）
     const keySuggestions = computed(() => {
       return dictionary.map(d => ({
-        title: `${d.path} (${d.name_ja})`,
+        title: d.path,
         value: d.path,
+        path: d.path,
         category: d.category,
         level: d.level || (d.required ? 'required' : 'optional'),
         required: d.required,
         type: d.type,
         name_ja: d.name_ja,
+        name_en: d.name_en || '',
         example: d.example
       }));
     });
+
+    // Combobox 用カスタムフィルター (Keyパス、日本語名、英語名での絞り込み)
+    const customKeyFilter = (value, queryText, item) => {
+      if (!queryText) return true;
+      const q = queryText.toLowerCase().trim();
+      const raw = item.raw || item;
+      const path = (raw.path || raw.value || '').toLowerCase();
+      const nameJa = (raw.name_ja || '').toLowerCase();
+      const nameEn = (raw.name_en || '').toLowerCase();
+      return path.includes(q) || nameJa.includes(q) || nameEn.includes(q);
+    };
 
     // 現在入力済みのKey-Value一覧（スキーマメタ情報付き）
     const existingKeys = computed(() => {
@@ -1238,6 +1322,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
       inputValue,
       currentSchema,
       keySuggestions,
+      customKeyFilter,
       existingKeys,
       requiredStatus,
       recommendedStatus,
@@ -1258,8 +1343,20 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
       canUndo,
       canRedo,
       copyYaml,
-      pasteFromClipboard,
       setCurrentDate,
+      // 日時選択ダイアログ
+      showDateTimePickerDialog,
+      pickerDate,
+      pickerHour,
+      pickerMinute,
+      pickerSecond,
+      isTimeMode,
+      hoursList,
+      minutesList,
+      secondsList,
+      openDateTimePicker,
+      setPickerToNow,
+      applyDateTimePicker,
       handleKeyTabComplete,
       snackbarText,
       showSnackbar,
