@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>xutils - X-ray Analysis & Synchrotron Experiment Utilities</title>
     <meta name="description"
-        content="xutils: Web utilities for X-ray absorption (XAFS) and scattering (SAXS) measurement and analysis, including samxam, p4xms, p4xmq, RetroCog, Epiphany, and calq.">
+        content="xutils: Web utilities for X-ray absorption (XAFS) and scattering (SAXS) measurement, parameter design, data analysis, and repository metadata editing, including samxam, p4xms, p4xmq, RetroCog, Epiphany, Pedagogue, and calq.">
 
     <!-- Fonts -->
     <link
@@ -78,6 +78,12 @@
             border: 1px solid #bbf7d0;
         }
 
+        .badge-data {
+            background-color: #faf5ff;
+            color: #6b21a8;
+            border: 1px solid #e9d5ff;
+        }
+
         .feature-chip {
             font-size: 0.75rem;
             color: #64748b;
@@ -116,7 +122,7 @@
                         </div>
                         <p class="text-subtitle-1 text-grey-darken-2 mb-3" style="line-height: 1.6;">
                             X線吸収微細構造（<strong>XAFS</strong>）および
-                            X線小角散乱（<strong>SAXS</strong>）の実験準備・測定パラメータ設計・データ解析支援のためのWebユーティリティ集です。
+                            X線小角散乱（<strong>SAXS</strong>）における実験準備・測定パラメータ設計・データ解析から、リポジトリ登録用メタデータの作成までを支援するWebユーティリティ集です。
                         </p>
                         <v-divider class="my-4"></v-divider>
                     </header>
@@ -309,6 +315,44 @@
                         </v-row>
                     </section>
 
+                    <!-- DATA セクション -->
+                    <section class="mb-10">
+                        <div class="d-flex align-center mb-4">
+                            <span class="section-badge badge-data mr-3">DATA</span>
+                            <h2 class="text-h6 font-weight-bold text-grey-darken-3 mb-0">データ管理・メタデータ支援</h2>
+                        </div>
+
+                        <v-row>
+                            <!-- Pedagogue -->
+                            <v-col cols="12" md="6" lg="4">
+                                <v-card class="tool-card pa-4" elevation="0" href="pedagogue/index.html" @click="launchApp('pedagogue', $event)">
+                                    <div class="mb-1">
+                                        <div class="serif-title text-h6 font-weight-bold" style="color: #581c87;">Pedagogue
+                                        </div>
+                                    </div>
+                                    <div class="text-caption font-weight-medium text-purple-darken-3 mb-2">
+                                        MDR XAFS メタデータ作成・編集
+                                    </div>
+                                    <p class="text-body-2 text-grey-darken-2 flex-grow-1 mb-3"
+                                        style="line-height: 1.5;">
+                                        日本XAFS研究会（JXS）共通仕様およびMDR XAFS DBに準拠したメタデータ（YAML/JSON）を作成・編集・検証し、既存データの安全な取り込みや差分マージを行います。
+                                    </p>
+                                    <div class="mb-3">
+                                        <span class="feature-chip">MDR XAFS DB</span>
+                                        <span class="feature-chip">JXS仕様準拠</span>
+                                        <span class="feature-chip">YAML/JSON編集</span>
+                                    </div>
+                                    <div class="d-flex justify-end pt-2" style="border-top: 1px dashed #e2e8f0;">
+                                        <v-btn size="small" variant="text" color="purple-darken-3"
+                                            append-icon="mdi-arrow-right">
+                                            起動する
+                                        </v-btn>
+                                    </div>
+                                </v-card>
+                            </v-col>
+                        </v-row>
+                    </section>
+
                     <!-- 補足・仕様情報 -->
                     <footer class="pt-4 pb-6" style="border-top: 1px solid #e2e8f0;">
                         <div
@@ -348,6 +392,7 @@
             'retrocog': 'retrocog/index.html',
             'epiphany': 'epiphany/index.html',
             'calq': 'calq/index.html',
+            'pedagogue': 'pedagogue/index.html',
         };
 
         createApp({

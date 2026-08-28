@@ -1,0 +1,1235 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pedagogue - MDR XAFS Metadata Editor</title>
+  
+  <!-- Fonts & Icons -->
+  <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;500&family=Roboto:wght@300;400;500;700&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/@mdi/font@7.x/css/materialdesignicons.min.css" rel="stylesheet">
+  
+  <!-- Vuetify 3 CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/vuetify@3.5.9/dist/vuetify.min.css" rel="stylesheet">
+  
+  <!-- Highlight.js (VS 2015 / VS Code high-contrast dark theme) -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/vs2015.min.css">
+  
+  <style>
+    body {
+      font-family: 'Roboto', 'Noto Sans JP', sans-serif;
+      background-color: #f5f7fa;
+    }
+    .font-mono {
+      font-family: 'Roboto Mono', monospace !important;
+    }
+    .yaml-preview-card {
+      min-height: 500px;
+      height: 100%;
+    }
+    @media (max-width: 959.98px) {
+      .yaml-preview-card {
+        height: 550px !important;
+        min-height: 550px !important;
+      }
+    }
+    .yaml-preview {
+      background-color: #1e1e1e;
+      color: #d4d4d4;
+      border-radius: 0;
+      padding: 12px;
+      font-size: 0.875rem;
+      line-height: 1.5;
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      overflow-y: auto;
+      white-space: pre;
+    }
+    .yaml-line {
+      transition: background-color 0.15s ease;
+      border-radius: 3px;
+      min-height: 22px;
+      line-height: 1.5;
+    }
+    .yaml-line.clickable-line {
+      cursor: pointer;
+    }
+    .yaml-line.clickable-line:hover {
+      background-color: rgba(255, 255, 255, 0.12);
+    }
+    .yaml-line.active-line {
+      background-color: rgba(25, 118, 210, 0.35) !important;
+      border-left: 3px solid #64B5F6;
+    }
+    .v-overlay__content:has(.custom-tooltip-content) {
+      padding: 0 !important;
+      background: transparent !important;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
+    }
+    .drop-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(25, 118, 210, 0.85);
+      z-index: 9999;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      pointer-events: none;
+    }
+    /* AI hint */
+    .sr-only {
+      position: absolute !important;
+      height: 1px;
+      width: 1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0 !important;
+      padding: 0 !important;
+      margin: 0 !important;
+    }
+    .help-drawer-content {
+      font-size: 0.92rem;
+      line-height: 1.85;
+      color: #1e293b;
+    }
+    .help-drawer-content h1 {
+      font-size: 1.35rem;
+      color: #1976D2;
+      border-bottom: 2px solid #1976D2;
+      padding-bottom: 8px;
+      margin-bottom: 16px;
+    }
+    .help-drawer-content h2 {
+      font-size: 1.15rem;
+      color: #334155;
+      border-left: 4px solid #1976D2;
+      padding-left: 8px;
+      margin-top: 28px;
+      margin-bottom: 14px;
+    }
+    .help-drawer-content h3 {
+      font-size: 1.0rem;
+      color: #475569;
+      margin-top: 20px;
+      margin-bottom: 10px;
+    }
+    .help-drawer-content p {
+      margin: 12px 0 16px 0;
+    }
+    .help-drawer-content ul {
+      padding-left: 1.4em;
+      margin: 12px 0 18px 0;
+    }
+    .help-drawer-content li {
+      margin-bottom: 12px;
+    }
+    .help-drawer-content code {
+      font-family: 'Roboto Mono', monospace;
+      background-color: #f1f5f9;
+      padding: 2px 5px;
+      border-radius: 3px;
+      font-size: 0.85em;
+      color: #0f172a;
+    }
+    .help-drawer-content .badge-req {
+      background-color: #ff5722;
+      color: white;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 0.75rem;
+      font-weight: bold;
+    }
+    .help-drawer-content .badge-rec {
+      background-color: #009688;
+      color: white;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 0.75rem;
+      font-weight: bold;
+    }
+    .help-drawer-content .note {
+      background-color: #f0fdf4;
+      border-left: 4px solid #22c55e;
+      padding: 12px 16px;
+      margin: 16px 0 20px 0;
+      border-radius: 0 4px 4px 0;
+      font-size: 0.88rem;
+      line-height: 1.75;
+    }
+    .help-drawer-content .warn {
+      background-color: #fffbeb;
+      border-left: 4px solid #f59e0b;
+      padding: 12px 16px;
+      margin: 16px 0 20px 0;
+      border-radius: 0 4px 4px 0;
+      font-size: 0.88rem;
+      line-height: 1.75;
+    }
+    .help-drawer-content hr {
+      border: none;
+      border-top: 1px solid #e2e8f0;
+      margin: 28px 0;
+    }
+    .help-drawer-content table.ref-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 14px 0 20px 0;
+      font-size: 0.82rem;
+    }
+    .help-drawer-content table.ref-table th, 
+    .help-drawer-content table.ref-table td {
+      border: 1px solid #cbd5e1;
+      padding: 8px 10px;
+      vertical-align: top;
+    }
+    .help-drawer-content table.ref-table th {
+      background-color: #f1f5f9;
+      font-weight: bold;
+      color: #1e293b;
+    }
+  </style>
+</head>
+<body>
+  <div id="app">
+    <v-app
+      @dragover.prevent="isDraggingOver = true"
+      @dragleave.prevent="isDraggingOver = false"
+      @drop.prevent="handleDrop"
+    >
+      <!-- D&D 全画面オーバーレイ -->
+      <v-fade-transition>
+        <div v-if="isDraggingOver" class="drop-overlay">
+          <v-icon icon="mdi-cloud-upload" size="80" class="mb-4 text-white"></v-icon>
+          <div class="text-h5 font-weight-bold mb-2">ここに YAML / JSON ファイルをドロップ</div>
+          <div class="text-subtitle-1">既存のメタデータと自動マージ・衝突判定を行います</div>
+        </div>
+      </v-fade-transition>
+
+      <!-- 隠しファイル入力要素 -->
+      <input 
+        type="file" 
+        ref="fileInputRef" 
+        id="fileInput"
+        style="display: none;" 
+        accept=".yml,.yaml,.json" 
+        @change="handleFileInput"
+      >
+
+      <!-- Top App Bar with Integrated Menu Bar -->
+      <v-app-bar color="primary" density="compact" elevation="2">
+        <!-- アプリ名 / ブランドメニュー (Pedagogue) -->
+        <v-menu transition="slide-y-transition">
+          <template v-slot:activator="{ props }">
+            <v-btn 
+              variant="text" 
+              v-bind="props" 
+              class="text-none font-weight-bold mr-1 px-2 text-white"
+              style="font-size: 1.05rem;"
+            >
+              Pedagogue
+              <v-icon icon="mdi-chevron-down" end size="16"></v-icon>
+            </v-btn>
+          </template>
+          <v-list density="compact" class="py-1" min-width="260">
+            <v-list-item prepend-icon="mdi-information-outline" @click="showAboutDialog = true; aboutTab = 'overview'">
+              <v-list-item-title>Pedagogue について</v-list-item-title>
+              <v-list-item-subtitle class="text-caption text-grey">{{ appVersion }} (JXS 20230203準拠)</v-list-item-subtitle>
+            </v-list-item>
+          </v-list>
+        </v-menu>
+
+        <!-- メニューバー: ファイル (File) -->
+        <v-menu transition="slide-y-transition">
+          <template v-slot:activator="{ props }">
+            <v-btn variant="text" size="small" v-bind="props" class="text-none font-weight-medium">
+              ファイル
+              <v-icon icon="mdi-chevron-down" end size="16"></v-icon>
+            </v-btn>
+          </template>
+          <v-list density="compact" class="py-1">
+            <v-list-item prepend-icon="mdi-file-import-outline" @click="$refs.fileInputRef ? $refs.fileInputRef.click() : document.getElementById('fileInput').click()">
+              <v-list-item-title>ファイルから取り込み (YAML/JSON)...</v-list-item-title>
+            </v-list-item>
+
+            <!-- 保存サブメニュー (階層化) -->
+            <v-menu location="end" open-on-hover :open-delay="60" :close-delay="100" submenu>
+              <template v-slot:activator="{ props }">
+                <v-list-item v-bind="props" prepend-icon="mdi-content-save-outline" append-icon="mdi-chevron-right">
+                  <v-list-item-title>保存</v-list-item-title>
+                </v-list-item>
+              </template>
+              <v-list density="compact" class="py-1">
+                <v-list-item prepend-icon="mdi-file-code-outline" @click="saveYamlFile">
+                  <v-list-item-title>YAML形式 (metadata.yml)</v-list-item-title>
+                </v-list-item>
+                <v-list-item prepend-icon="mdi-code-json" @click="saveJsonFile">
+                  <v-list-item-title>JSON形式 (metadata.json)</v-list-item-title>
+                </v-list-item>
+              </v-list>
+            </v-menu>
+
+            <v-divider class="my-1"></v-divider>
+            <v-list-item prepend-icon="mdi-trash-can-outline" base-color="error" @click="clearAll">
+              <v-list-item-title>新規作成 (全クリア)</v-list-item-title>
+            </v-list-item>
+          </v-list>
+        </v-menu>
+
+        <!-- メニューバー: 編集 (Edit) -->
+        <v-menu transition="slide-y-transition">
+          <template v-slot:activator="{ props }">
+            <v-btn variant="text" size="small" v-bind="props" class="text-none font-weight-medium">
+              編集
+              <v-icon icon="mdi-chevron-down" end size="16"></v-icon>
+            </v-btn>
+          </template>
+          <v-list density="compact" class="py-1">
+            <v-list-item prepend-icon="mdi-undo" :disabled="!canUndo" @click="undo">
+              <v-list-item-title class="d-flex justify-space-between align-center">
+                <span>元に戻す (Undo)</span>
+                <span class="text-caption text-grey ml-4">Ctrl+Z</span>
+              </v-list-item-title>
+            </v-list-item>
+            <v-list-item prepend-icon="mdi-redo" :disabled="!canRedo" @click="redo">
+              <v-list-item-title class="d-flex justify-space-between align-center">
+                <span>やり直す (Redo)</span>
+                <span class="text-caption text-grey ml-4">Ctrl+Y</span>
+              </v-list-item-title>
+            </v-list-item>
+
+            <v-divider class="my-1"></v-divider>
+
+            <v-list-item prepend-icon="mdi-content-copy" @click="copyYaml">
+              <v-list-item-title>YAMLをコピー</v-list-item-title>
+            </v-list-item>
+            <v-list-item prepend-icon="mdi-clipboard-arrow-down-outline" @click="pasteFromClipboard">
+              <v-list-item-title>クリップボードから取り込み (貼付)...</v-list-item-title>
+            </v-list-item>
+          </v-list>
+        </v-menu>
+
+        <!-- メニューバー: ヘルプ (Help) -->
+        <v-menu transition="slide-y-transition">
+          <template v-slot:activator="{ props }">
+            <v-btn variant="text" size="small" v-bind="props" class="text-none font-weight-medium">
+              ヘルプ
+              <v-icon icon="mdi-chevron-down" end size="16"></v-icon>
+            </v-btn>
+          </template>
+          <v-list density="compact" class="py-1" min-width="240">
+            <v-list-item prepend-icon="mdi-help-circle-outline" @click="showHelpDrawer = true">
+              <v-list-item-title>ヘルプ ＆ 仕様リファレンス</v-list-item-title>
+            </v-list-item>
+            <v-divider class="my-1"></v-divider>
+            <v-list-item prepend-icon="mdi-information-outline" @click="showHelpDialog = true">
+              <v-list-item-title>MDR XAFS DB について</v-list-item-title>
+            </v-list-item>
+          </v-list>
+        </v-menu>
+
+        <v-spacer></v-spacer>
+
+        <!-- 必須項目進捗バッジ -->
+        <v-chip 
+          :color="requiredStatus.isComplete ? 'success' : 'deep-orange'" 
+          variant="elevated" 
+          class="mr-2 font-weight-bold"
+          size="small"
+        >
+          <v-icon :icon="requiredStatus.isComplete ? 'mdi-check-circle' : 'mdi-alert-circle'" start></v-icon>
+          必須: {{ requiredStatus.progress }}
+        </v-chip>
+
+        <!-- 推奨項目進捗バッジ -->
+        <v-chip 
+          :color="recommendedStatus.isComplete ? 'success' : 'teal'" 
+          variant="elevated" 
+          class="mr-2 font-weight-bold"
+          size="small"
+        >
+          <v-icon :icon="recommendedStatus.isComplete ? 'mdi-check-circle' : 'mdi-lightbulb-outline'" start></v-icon>
+          推奨: {{ recommendedStatus.progress }}
+        </v-chip>
+
+        <!-- 仕様外Key警告バッジ (仕様外項目が存在する場合のみ表示) -->
+        <v-chip 
+          v-if="customKeysStatus.count > 0"
+          color="amber-darken-4" 
+          variant="elevated" 
+          class="mr-2 font-weight-bold"
+          size="small"
+        >
+          <v-icon icon="mdi-alert" start></v-icon>
+          仕様外: {{ customKeysStatus.count }} 件
+        </v-chip>
+
+        <!-- 縦区切り線 -->
+        <v-divider 
+          vertical 
+          class="mx-2 my-auto" 
+          style="height: 20px; border-color: rgba(255, 255, 255, 0.4); opacity: 0.8;"
+        ></v-divider>
+
+        <!-- 設定済み項目数バッジ (グレー / 右端) -->
+        <v-chip 
+          color="grey-darken-2" 
+          variant="elevated" 
+          class="mr-2 font-weight-bold text-white"
+          size="small"
+        >
+          <v-icon icon="mdi-format-list-bulleted" start></v-icon>
+          設定済: {{ existingKeys.length }} 件
+        </v-chip>
+      </v-app-bar>
+
+      <!-- ------------------------------------------------------------- -->
+      <!-- ヘルプ ＆ スキーマリファレンス 右サイドドロワー (プッシュ配置) -->
+      <!-- ------------------------------------------------------------- -->
+      <v-navigation-drawer 
+        v-model="showHelpDrawer" 
+        location="right" 
+        width="460"
+      >
+        <!-- ドロワーヘッダー -->
+        <v-toolbar color="blue-grey-darken-3" density="compact">
+          <v-icon icon="mdi-help-circle-outline" class="ml-3 mr-2" color="white"></v-icon>
+          <v-toolbar-title class="text-subtitle-2 font-weight-bold text-white">
+            ヘルプ ＆ 仕様リファレンス
+          </v-toolbar-title>
+          <v-spacer></v-spacer>
+          <v-btn icon="mdi-open-in-new" variant="text" size="small" color="white" title="別タブで開く (help.html)" @click="openHelpInNewTab"></v-btn>
+          <v-btn icon="mdi-close" variant="text" size="small" color="white" title="閉じる" @click="showHelpDrawer = false"></v-btn>
+        </v-toolbar>
+
+        <!-- ドロワー内タブ -->
+        <v-tabs v-model="helpTab" bg-color="grey-lighten-4" color="primary" density="compact" grow>
+          <v-tab value="guide" class="text-none font-weight-bold">
+            <v-icon icon="mdi-book-open-page-variant-outline" size="18" class="mr-1"></v-icon>
+            操作ガイド
+          </v-tab>
+          <v-tab value="schema" class="text-none font-weight-bold">
+            <v-icon icon="mdi-format-list-checks" size="18" class="mr-1"></v-icon>
+            JXSスキーマ辞書 ({{ filteredSchemaList.length }})
+          </v-tab>
+        </v-tabs>
+
+        <v-window v-model="helpTab">
+          <!-- タブ1: アプリ操作ガイド -->
+          <v-window-item value="guide">
+            <div class="pa-4 help-drawer-content" style="max-height: calc(100vh - 96px); overflow-y: auto;">
+              <div v-html="helpContent"></div>
+            </div>
+          </v-window-item>
+
+          <!-- タブ2: JXSスキーマ辞書リファレンス -->
+          <v-window-item value="schema">
+            <div class="pa-3 bg-grey-lighten-4 border-b">
+              <!-- 検索バー -->
+              <v-text-field
+                v-model="schemaSearchQuery"
+                prepend-inner-icon="mdi-magnify"
+                label="Key・日本語名・説明を検索..."
+                variant="outlined"
+                density="compact"
+                hide-details
+                clearable
+                bg-color="white"
+                class="mb-2"
+              ></v-text-field>
+
+              <!-- カテゴリフィルタ -->
+              <div class="d-flex align-center flex-wrap gap-1 mb-2">
+                <span class="text-caption font-weight-bold text-grey-darken-2 mr-1">カテゴリ:</span>
+                <v-chip 
+                  v-for="cat in ['ALL', 'data_info', 'sample', 'facility', 'instrument', 'measurement', 'files']"
+                  :key="cat"
+                  size="x-small"
+                  :variant="schemaFilterCategory === cat ? 'flat' : 'outlined'"
+                  :color="schemaFilterCategory === cat ? 'primary' : 'grey-darken-1'"
+                  class="mr-1 mb-1 font-weight-bold cursor-pointer"
+                  @click="schemaFilterCategory = cat"
+                >
+                  {{ cat === 'ALL' ? 'すべて' : cat }}
+                </v-chip>
+              </div>
+
+              <!-- 重要度レベルフィルタ -->
+              <div class="d-flex align-center gap-1">
+                <span class="text-caption font-weight-bold text-grey-darken-2 mr-1">重要度:</span>
+                <v-chip 
+                  v-for="lvl in [{ id: 'ALL', label: 'すべて' }, { id: 'required', label: '必須', color: 'deep-orange' }, { id: 'recommended', label: '推奨', color: 'teal' }, { id: 'optional', label: '任意', color: 'grey' }]"
+                  :key="lvl.id"
+                  size="x-small"
+                  :variant="schemaFilterLevel === lvl.id ? 'flat' : 'outlined'"
+                  :color="schemaFilterLevel === lvl.id ? (lvl.color || 'primary') : 'grey-darken-1'"
+                  class="mr-1 font-weight-bold cursor-pointer"
+                  @click="schemaFilterLevel = lvl.id"
+                >
+                  {{ lvl.label }}
+                </v-chip>
+              </div>
+            </div>
+
+            <!-- スキーマ項目一覧 -->
+            <div class="pa-3" style="max-height: calc(100vh - 215px); overflow-y: auto;">
+              <div v-if="filteredSchemaList.length === 0" class="text-center pa-6 text-grey text-caption">
+                条件に一致するスキーマ項目がありません
+              </div>
+              <v-card 
+                v-for="item in filteredSchemaList" 
+                :key="item.path"
+                variant="outlined"
+                class="mb-3 pa-3 bg-white"
+                hover
+                @click="selectSchemaKeyFromHelp(item.path)"
+              >
+                <div class="d-flex align-center justify-space-between mb-1">
+                  <div class="d-flex align-center">
+                    <v-chip 
+                      size="x-small" 
+                      :color="item.level === 'required' ? 'deep-orange' : (item.level === 'recommended' ? 'teal' : 'grey')" 
+                      class="mr-1 font-weight-bold"
+                    >
+                      {{ item.level === 'required' ? '必須' : (item.level === 'recommended' ? '推奨' : '任意') }}
+                    </v-chip>
+                    <span class="font-weight-bold text-body-2 text-grey-darken-3">{{ item.name_ja }}</span>
+                  </div>
+                  <v-chip size="x-small" variant="tonal" color="blue-grey-darken-1" class="font-mono">
+                    {{ item.type }}
+                  </v-chip>
+                </div>
+
+                <div class="text-caption font-mono text-primary font-weight-medium mb-1">
+                  {{ item.path }}
+                </div>
+
+                <div class="text-caption text-grey-darken-2 mb-1">
+                  {{ item.description }}
+                </div>
+
+                <div v-if="item.enum" class="text-caption text-grey-darken-1 mb-1">
+                  <span class="font-weight-bold">選択肢:</span> <code>{{ item.enum.join(', ') }}</code>
+                </div>
+
+                <div v-if="item.example" class="text-caption text-grey-darken-1">
+                  <span class="font-weight-bold">例:</span> <code>{{ item.example }}</code>
+                </div>
+
+                <div class="d-flex justify-end mt-1">
+                  <span class="text-caption text-primary" style="font-size: 0.72rem;">
+                    <v-icon icon="mdi-cursor-default-click" size="12" class="mr-1"></v-icon>クリックで入力対象にセット
+                  </span>
+                </div>
+              </v-card>
+            </div>
+          </v-window-item>
+        </v-window>
+      </v-navigation-drawer>
+
+      <!-- Main Content -->
+      <v-main>
+        <v-container fluid class="pa-4">
+          <v-row>
+            <!-- 左ペイン: 入力コンソール (幅 55%) -->
+            <v-col cols="12" md="7">
+              <!-- カード1: メタデータ編集フォーム -->
+              <v-card elevation="3" class="mb-4 rounded-lg">
+                <v-card-item class="bg-blue-grey-lighten-5 py-3 px-4 border-b">
+                  <v-card-title class="text-subtitle-1 font-weight-bold text-blue-grey-darken-3 d-flex align-center">
+                    <v-icon icon="mdi-file-document-edit-outline" class="mr-2" color="primary"></v-icon>
+                    メタデータ編集
+                  </v-card-title>
+                </v-card-item>
+
+                <v-card-text class="pa-5">
+                  <!-- Key 入力 (Combobox サジェスト付き) -->
+                  <v-combobox
+                    v-model="selectedKeyPath"
+                    v-model:search="keySearch"
+                    :items="keySuggestions"
+                    item-title="title"
+                    item-value="value"
+                    :custom-filter="customKeyFilter"
+                    :return-object="false"
+                    label="Key (例: @facility@name, @measurement@edges[0].element)"
+                    placeholder="Keyを入力または選択 (日本語・英語で検索可能)"
+                    variant="outlined"
+                    density="comfortable"
+                    clearable
+                    class="font-mono mb-3"
+                    hide-details="auto"
+                    @keydown.tab="handleKeyTabComplete"
+                  >
+                    <template v-slot:item="{ props, item }">
+                      <v-list-item v-bind="props" class="py-1">
+                        <template v-slot:prepend>
+                          <v-chip 
+                            size="x-small" 
+                            :color="item.raw.level === 'required' ? 'deep-orange' : (item.raw.level === 'recommended' ? 'teal' : 'grey')" 
+                            class="mr-2 font-weight-bold"
+                          >
+                            {{ item.raw.level === 'required' ? '必須' : (item.raw.level === 'recommended' ? '推奨' : '任意') }}
+                          </v-chip>
+                        </template>
+                        <v-list-item-title class="font-mono text-body-2 font-weight-medium">
+                          {{ item.raw.path }} <span class="text-grey-darken-2 font-sans font-weight-regular" style="font-size: 0.85em;">({{ item.raw.name_ja }})</span>
+                        </v-list-item-title>
+                        <v-list-item-subtitle class="text-caption">
+                          型: {{ item.raw.type }} | 例: {{ item.raw.example }}
+                        </v-list-item-subtitle>
+                      </v-list-item>
+                    </template>
+                  </v-combobox>
+
+                  <!-- 選択中Keyのスキーマ属性ヒント表示 -->
+                  <v-expand-transition>
+                    <div 
+                      v-if="currentSchema" 
+                      class="mb-4 pa-3 rounded border"
+                      :class="currentSchema.isCustom ? 'bg-amber-lighten-5 border-amber-lighten-2' : (currentSchema.level === 'local' ? 'bg-blue-lighten-5 border-blue-lighten-2' : 'bg-grey-lighten-4 border-grey-lighten-2')"
+                    >
+                      <div class="d-flex align-center mb-1">
+                        <span 
+                          class="text-subtitle-2 font-weight-bold mr-2"
+                          :class="currentSchema.isCustom ? 'text-amber-darken-4' : 'text-primary'"
+                        >
+                          <v-icon v-if="currentSchema.isCustom" icon="mdi-alert" size="18" class="mr-1"></v-icon>
+                          {{ currentSchema.name_ja }}
+                        </span>
+                        <span v-if="currentSchema.name_en" class="text-caption text-grey mr-2">({{ currentSchema.name_en }})</span>
+                        <v-chip 
+                          size="x-small" 
+                          :color="currentSchema.level === 'required' ? 'deep-orange' : (currentSchema.level === 'recommended' ? 'teal' : (currentSchema.isCustom ? 'amber-darken-3' : 'secondary'))" 
+                          class="mr-1 font-weight-bold"
+                        >
+                          {{ currentSchema.level === 'required' ? '必須' : (currentSchema.level === 'recommended' ? '推奨' : (currentSchema.level === 'local' ? '独自拡張' : (currentSchema.isCustom ? '仕様外' : '任意'))) }}
+                        </v-chip>
+                        <v-chip size="x-small" variant="outlined" class="mr-1">
+                          型: {{ currentSchema.type }}
+                        </v-chip>
+                      </div>
+                      <div 
+                        class="text-caption font-weight-medium"
+                        :class="currentSchema.isCustom ? 'text-amber-darken-4' : 'text-grey-darken-2'"
+                      >
+                        {{ currentSchema.description }}
+                      </div>
+                      <div v-if="currentSchema.example !== undefined" class="text-caption text-blue-grey mt-1 font-mono">
+                        例: {{ currentSchema.example }}
+                      </div>
+                    </div>
+                  </v-expand-transition>
+
+                  <!-- Value 入力 -->
+                  <div class="d-flex align-center gap-2">
+                    <!-- Enum の場合はコンボボックス (候補選択 + 自由入力) -->
+                    <v-combobox
+                      v-if="currentSchema && currentSchema.enum"
+                      v-model="inputValue"
+                      :items="currentSchema.enum"
+                      label="設定値 (Value 選択・入力)"
+                      placeholder="候補から選択するか、直接入力"
+                      variant="outlined"
+                      density="comfortable"
+                      class="flex-grow-1 font-mono"
+                      hide-details="auto"
+                      @keydown.enter="applyValue"
+                    ></v-combobox>
+
+                    <!-- 通常はテキストフィールド (日付型の場合はカレンダーピッカー ＆ 現在日時補完ボタン付き) -->
+                    <v-text-field
+                      v-else
+                      v-model="inputValue"
+                      :label="currentSchema && currentSchema.type === 'date' ? (currentSchema.path.includes('measured_time') ? '設定値 (日時: YYYY-MM-DD HH:mm:ss)' : '設定値 (日付: YYYY-MM-DD)') : '設定値 (Value)'"
+                      :placeholder="currentSchema && currentSchema.type === 'date' ? (currentSchema.path.includes('measured_time') ? 'YYYY-MM-DD HH:mm:ss' : 'YYYY-MM-DD') : '値を入力してください'"
+                      variant="outlined"
+                      density="comfortable"
+                      class="flex-grow-1 font-mono"
+                      hide-details="auto"
+                      @keydown.enter="applyValue"
+                    >
+                      <template v-if="currentSchema && currentSchema.type === 'date'" v-slot:append-inner>
+                        <!-- 日時・日付選択ダイアログ起動ボタン -->
+                        <v-btn
+                          size="small"
+                          variant="tonal"
+                          color="primary"
+                          class="px-2 font-weight-bold"
+                          style="height: 32px;"
+                          :title="currentSchema.path.includes('measured_time') ? '測定日時（過去・現在）の選択ダイアログを開く' : '日付の選択ダイアログを開く'"
+                          @click.stop="openDateTimePicker"
+                        >
+                          <v-icon :icon="currentSchema.path.includes('measured_time') ? 'mdi-calendar-clock' : 'mdi-calendar-month'" class="mr-1"></v-icon>
+                          {{ currentSchema.path.includes('measured_time') ? '日時選択' : '日付選択' }}
+                        </v-btn>
+                      </template>
+                    </v-text-field>
+
+                    <!-- 適用・削除ボタン -->
+                    <v-btn 
+                      color="primary" 
+                      variant="flat" 
+                      height="48"
+                      class="ml-2 px-5 font-weight-bold" 
+                      prepend-icon="mdi-check"
+                      @click="applyValue"
+                    >
+                      適用 (Enter)
+                    </v-btn>
+                    <v-btn 
+                      color="grey-darken-1" 
+                      variant="text" 
+                      height="48"
+                      width="48"
+                      class="ml-1" 
+                      title="このKeyを削除"
+                      :disabled="!selectedKeyPath"
+                      @click="deleteKey(selectedKeyPath)"
+                    >
+                      <v-icon icon="mdi-trash-can-outline" size="24"></v-icon>
+                    </v-btn>
+                  </div>
+                </v-card-text>
+              </v-card>
+
+              <!-- カード2 & 2.5: 必須・推奨の未入力 ToDo リスト (横並び左右分割・全件表示固定長) -->
+              <v-row class="mb-4" dense>
+                <!-- 左: ⚠️ 未入力の必須項目 -->
+                <v-col cols="12" sm="6">
+                  <v-card elevation="2" class="rounded-lg border overflow-hidden" style="height: 600px;" :color="requiredStatus.isComplete ? 'green-lighten-5' : 'deep-orange-lighten-5'">
+                    <v-card-item class="py-2 px-3 border-b" :class="requiredStatus.isComplete ? 'bg-success text-white' : 'bg-deep-orange text-white'">
+                      <v-card-title class="text-caption font-weight-bold d-flex align-center text-white">
+                        <v-icon :icon="requiredStatus.isComplete ? 'mdi-check-circle' : 'mdi-alert-circle'" class="mr-1 text-white" size="18"></v-icon>
+                        {{ requiredStatus.isComplete ? '必須項目はすべて完了' : `未入力の必須項目 (${requiredStatus.unfilledList.length})` }}
+                      </v-card-title>
+                    </v-card-item>
+                    
+                    <v-card-text class="pa-0">
+                      <v-list v-if="!requiredStatus.isComplete" density="compact" class="bg-transparent py-0" style="height: 550px; overflow-y: auto;">
+                        <v-list-item
+                          v-for="item in requiredStatus.unfilledList"
+                          :key="item.path"
+                          class="border-b px-3 cursor-pointer"
+                          style="min-height: 32px; padding-top: 2px !important; padding-bottom: 2px !important;"
+                          @click="selectKey(item.path)"
+                        >
+                          <v-list-item-title class="font-mono text-body-2 font-weight-bold text-deep-orange-darken-4 text-truncate">
+                            {{ item.path }}
+                          </v-list-item-title>
+                          <v-list-item-subtitle class="text-grey-darken-2 text-truncate" style="font-size: 0.725rem;">
+                            ({{ item.name_ja }})
+                          </v-list-item-subtitle>
+                        </v-list-item>
+                      </v-list>
+                      <div v-else class="text-caption text-success font-weight-bold text-center py-6">
+                        ✓ すべての必須項目が完了しました
+                      </div>
+                    </v-card-text>
+                  </v-card>
+                </v-col>
+
+                <!-- 右: 💡 未入力の推奨項目 -->
+                <v-col cols="12" sm="6">
+                  <v-card elevation="2" class="rounded-lg border overflow-hidden" style="height: 600px;" :color="recommendedStatus.isComplete ? 'green-lighten-5' : 'teal-lighten-5'">
+                    <v-card-item class="py-2 px-3 border-b" :class="recommendedStatus.isComplete ? 'bg-success text-white' : 'bg-teal-darken-1 text-white'">
+                      <v-card-title class="text-caption font-weight-bold d-flex align-center text-white">
+                        <v-icon :icon="recommendedStatus.isComplete ? 'mdi-check-circle' : 'mdi-lightbulb-on-outline'" class="mr-1 text-white" size="18"></v-icon>
+                        {{ recommendedStatus.isComplete ? '推奨項目はすべて完了' : `未入力の推奨項目 (${recommendedStatus.unfilledList.length})` }}
+                      </v-card-title>
+                    </v-card-item>
+                    
+                    <v-card-text class="pa-0">
+                      <v-list v-if="!recommendedStatus.isComplete" density="compact" class="bg-transparent py-0" style="height: 550px; overflow-y: auto;">
+                        <v-list-item
+                          v-for="item in recommendedStatus.unfilledList"
+                          :key="item.path"
+                          class="border-b px-3 cursor-pointer"
+                          style="min-height: 32px; padding-top: 2px !important; padding-bottom: 2px !important;"
+                          @click="selectKey(item.path)"
+                        >
+                          <v-list-item-title class="font-mono text-body-2 font-weight-bold text-teal-darken-4 text-truncate">
+                            {{ item.path }}
+                          </v-list-item-title>
+                          <v-list-item-subtitle class="text-grey-darken-2 text-truncate" style="font-size: 0.725rem;">
+                            ({{ item.name_ja }})
+                          </v-list-item-subtitle>
+                        </v-list-item>
+                      </v-list>
+                      <div v-else class="text-caption text-success font-weight-bold text-center py-6">
+                        ✓ すべての推奨項目が完了しました
+                      </div>
+                    </v-card-text>
+                  </v-card>
+                </v-col>
+              </v-row>
+            </v-col>
+
+            <!-- 右ペイン: リアルタイムYAMLプレビュー (幅 45%) -->
+            <v-col cols="12" md="5" class="d-flex flex-column pb-4">
+              <v-card elevation="2" class="yaml-preview-card rounded-lg overflow-hidden d-flex flex-column bg-grey-darken-4 flex-grow-1">
+                <v-card-item class="bg-grey-darken-3 text-white py-2 px-3 border-b flex-shrink-0">
+                  <div class="d-flex justify-space-between align-center">
+                    <v-card-title class="text-subtitle-2 font-weight-bold font-mono d-flex align-center">
+                      <v-icon icon="mdi-code-json" class="mr-2"></v-icon>
+                      <span>metadata.yml</span>
+                      <span 
+                        v-if="isDirty" 
+                        class="text-amber-accent-2 ml-1 font-weight-black" 
+                        title="未保存の変更があります"
+                        style="font-size: 1.1rem; line-height: 1;"
+                      >*</span>
+                      <span class="text-grey ml-1 font-sans text-caption">(Preview)</span>
+                    </v-card-title>
+                    <div class="d-flex align-center">
+                      <v-btn 
+                        variant="text" 
+                        size="small" 
+                        :color="showYamlTooltips ? 'amber-accent-2' : 'grey-lighten-1'" 
+                        :prepend-icon="showYamlTooltips ? 'mdi-lightbulb-on' : 'mdi-lightbulb-outline'"
+                        class="mr-2"
+                        @click="showYamlTooltips = !showYamlTooltips"
+                        :title="showYamlTooltips ? 'ホバーヒントを非表示にする' : 'ホバーヒントを表示する'"
+                      >
+                        ヒント: {{ showYamlTooltips ? 'ON' : 'OFF' }}
+                      </v-btn>
+                      <v-btn 
+                        variant="text" 
+                        size="small" 
+                        color="white" 
+                        prepend-icon="mdi-content-copy"
+                        @click="copyYaml"
+                      >
+                        コピー
+                      </v-btn>
+                    </div>
+                  </div>
+                </v-card-item>
+                <v-card-text class="pa-0 flex-grow-1 overflow-hidden d-flex flex-column bg-grey-darken-4" style="min-height: 0; position: relative;">
+                  <div class="yaml-preview font-mono hljs">
+                    <template v-for="line in yamlLines" :key="line.index">
+                      <v-tooltip 
+                        v-if="line.isClickable"
+                        :disabled="!showYamlTooltips"
+                        :open-delay="400"
+                        location="top start"
+                      >
+                        <template v-slot:activator="{ props }">
+                          <div 
+                            v-bind="props"
+                            class="yaml-line px-2"
+                            :class="{ 
+                              'clickable-line': true, 
+                              'active-line': selectedKeyPath === line.path 
+                            }"
+                            @click="selectKey(line.path)"
+                            v-html="line.highlightedHtml"
+                          ></div>
+                        </template>
+                        <div 
+                          class="custom-tooltip-content pa-2 rounded-md text-white font-sans text-caption"
+                          :class="line.level === 'required' ? 'bg-deep-orange-darken-1' : (line.level === 'recommended' ? 'bg-teal-darken-1' : (line.isCustom ? 'bg-amber-darken-4' : (line.level === 'local' ? 'bg-blue-darken-2' : 'bg-grey-darken-3')))"
+                        >
+                          <div class="font-weight-bold d-flex align-center mb-0-5">
+                            <span class="mr-1 font-weight-black">[{{ line.level === 'required' ? '必須' : (line.level === 'recommended' ? '推奨' : (line.isCustom ? '⚠️ 仕様外' : (line.level === 'local' ? '💡 独自拡張' : '任意')))}}]</span>
+                            <span>{{ line.name_ja }}</span>
+                          </div>
+                          <div class="font-mono text-white opacity-80" style="font-size: 11px;">
+                            {{ line.path }}
+                          </div>
+                        </div>
+                      </v-tooltip>
+
+                      <!-- クリック不可な親行・空行 -->
+                      <div 
+                        v-else
+                        class="yaml-line px-2"
+                        v-html="line.highlightedHtml"
+                      ></div>
+                    </template>
+                  </div>
+                </v-card-text>
+              </v-card>
+            </v-col>
+          </v-row>
+        </v-container>
+      </v-main>
+
+      <!-- ------------------------------------------------------------- -->
+      <!-- 新規作成 (全クリア) 未保存確認ダイアログ -->
+      <!-- ------------------------------------------------------------- -->
+      <v-dialog v-model="showConfirmClearDialog" max-width="480px" persistent>
+        <v-card>
+          <v-card-item class="bg-amber-lighten-5 py-3 border-b">
+            <v-card-title class="text-subtitle-1 font-weight-bold text-amber-darken-4 d-flex align-center">
+              <v-icon icon="mdi-alert-circle" class="mr-2" color="amber-darken-3"></v-icon>
+              未保存の変更があります
+            </v-card-title>
+          </v-card-item>
+
+          <v-card-text class="pa-4 text-body-2 text-grey-darken-3">
+            現在編集中のメタデータ（全 {{ existingKeys.length }} 項目）は保存されていません。<br>
+            データを全クリアして新規作成しますか？（未保存の変更は失われます）
+          </v-card-text>
+
+          <v-card-actions class="pa-3 bg-grey-lighten-4 border-t justify-end">
+            <v-btn variant="outlined" color="grey-darken-1" @click="showConfirmClearDialog = false">
+              キャンセル
+            </v-btn>
+            <v-btn variant="flat" color="error" class="ml-2 font-weight-bold" prepend-icon="mdi-trash-can-outline" @click="executeClear">
+              破棄して新規作成
+            </v-btn>
+          </v-card-actions>
+        </v-card>
+      </v-dialog>
+
+      <!-- ------------------------------------------------------------- -->
+      <!-- 衝突解決ダイアログ (Modal) -->
+      <!-- ------------------------------------------------------------- -->
+      <v-dialog v-model="showConflictDialog" max-width="850px" persistent>
+        <v-card>
+          <v-card-item class="bg-amber-lighten-5 py-3 border-b">
+            <v-card-title class="text-subtitle-1 font-weight-bold text-amber-darken-4 d-flex align-center">
+              <v-icon icon="mdi-alert-circle" class="mr-2" color="amber-darken-3"></v-icon>
+              データの衝突が検出されました (計 {{ conflictList.length }} 件)
+            </v-card-title>
+            <v-card-subtitle class="text-caption text-grey-darken-2">
+              「{{ loadedFileName }}」内の項目に、既存データと値が異なる項目があります。既存を維持するか上書きするかを選択してください。
+            </v-card-subtitle>
+          </v-card-item>
+
+          <v-card-text class="pa-4">
+            <!-- 一括選択ボタン (左: 維持, 右: 上書き) -->
+            <div class="d-flex align-center gap-2 mb-3">
+              <span class="text-caption font-weight-bold text-grey-darken-2 mr-2">一括操作:</span>
+              <v-btn size="small" variant="tonal" color="secondary" class="mr-2 font-weight-medium" prepend-icon="mdi-shield-check-outline" @click="setAllConflictActions('skip')">
+                すべて維持 (既存優先)
+              </v-btn>
+              <v-btn size="small" variant="tonal" color="primary" class="font-weight-medium" prepend-icon="mdi-file-replace-outline" @click="setAllConflictActions('overwrite')">
+                すべて上書き (ファイル優先)
+              </v-btn>
+            </div>
+
+            <!-- 衝突テーブル (ネイティブ table を使用してブラウザのDOMパース破損を防止) -->
+            <div class="border rounded" style="max-height: 450px; overflow-y: auto;">
+              <table class="w-100 font-mono text-caption" style="border-collapse: collapse;">
+                <thead style="position: sticky; top: 0; z-index: 2;">
+                  <tr class="bg-grey-lighten-4 border-b">
+                    <th class="text-left pa-3 font-weight-bold bg-grey-lighten-4" style="min-width: 240px;">スキーマ項目 (項目名 / Key)</th>
+                    <th class="text-left pa-3 font-weight-bold bg-grey-lighten-4" style="width: 25%;">現在の値 (既存)</th>
+                    <th class="text-left pa-3 font-weight-bold bg-grey-lighten-4" style="width: 25%;">読込ファイルの値</th>
+                    <th class="text-center pa-3 font-weight-bold bg-grey-lighten-4" style="width: 150px;">処理方法</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-for="item in conflictList" :key="item.path" class="border-b">
+                    <td class="pa-3">
+                      <div class="d-flex align-center mb-1">
+                        <v-chip 
+                          size="x-small" 
+                          :color="item.level === 'required' ? 'deep-orange' : (item.level === 'recommended' ? 'teal' : 'grey')" 
+                          class="mr-1 font-weight-bold"
+                        >
+                          {{ item.level === 'required' ? '必須' : (item.level === 'recommended' ? '推奨' : '任意') }}
+                        </v-chip>
+                        <span class="font-weight-bold text-body-2 text-grey-darken-3">{{ item.name_ja }}</span>
+                      </div>
+                      <div class="text-caption font-mono text-primary">{{ item.path }}</div>
+                    </td>
+                    <td class="pa-3">
+                      <div class="pa-2 bg-deep-orange-lighten-5 rounded border text-deep-orange-darken-3 font-weight-medium">
+                        {{ item.currentVal === '' ? '(空文字)' : item.currentVal }}
+                      </div>
+                    </td>
+                    <td class="pa-3">
+                      <div class="pa-2 bg-teal-lighten-5 rounded border text-teal-darken-3 font-weight-medium">
+                        <span v-if="item.incomingVal === null || item.incomingVal === '' || item.incomingVal === undefined" class="text-grey font-italic">
+                          (空値 / 削除)
+                        </span>
+                        <span v-else>{{ item.incomingVal }}</span>
+                      </div>
+                    </td>
+                    <td class="text-center pa-3">
+                      <v-btn-toggle
+                        v-model="item.action"
+                        mandatory
+                        density="compact"
+                        rounded="pill"
+                        color="primary"
+                        size="small"
+                      >
+                        <v-btn value="skip" size="small" class="px-2 font-weight-bold" :color="item.action === 'skip' ? 'grey-darken-2' : undefined">
+                          維持
+                        </v-btn>
+                        <v-btn value="overwrite" size="small" class="px-2 font-weight-bold" :color="item.action === 'overwrite' ? 'primary' : undefined">
+                          上書き
+                        </v-btn>
+                      </v-btn-toggle>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </v-card-text>
+
+          <v-divider></v-divider>
+
+          <v-card-actions class="pa-3">
+            <v-spacer></v-spacer>
+            <v-btn variant="text" color="grey-darken-1" @click="cancelConflictResolution">
+              キャンセル
+            </v-btn>
+            <v-btn variant="flat" color="primary" class="font-weight-bold px-4" prepend-icon="mdi-check" @click="applyConflictResolution">
+              決定
+            </v-btn>
+          </v-card-actions>
+        </v-card>
+      </v-dialog>
+
+      <!-- ------------------------------------------------------------- -->
+      <!-- 日時・日付選択ダイアログ (過去の日時・日付を精密に指定可能) -->
+      <!-- ------------------------------------------------------------- -->
+      <v-dialog v-model="showDateTimePickerDialog" max-width="440px">
+        <v-card class="rounded-lg">
+          <v-toolbar color="primary" density="comfortable">
+            <v-icon :icon="isTimeMode ? 'mdi-calendar-clock' : 'mdi-calendar-month'" class="ml-3 mr-2 text-white"></v-icon>
+            <v-toolbar-title class="text-subtitle-1 font-weight-bold text-white">
+              {{ isTimeMode ? '測定日時の選択' : '日付の選択' }}
+            </v-toolbar-title>
+            <v-spacer></v-spacer>
+            <v-btn icon="mdi-close" variant="text" size="small" color="white" @click="showDateTimePickerDialog = false"></v-btn>
+          </v-toolbar>
+
+          <v-card-text class="pa-4">
+            <!-- 日付入力欄 (HTML5 標準のネイティブ date ピッカー) -->
+            <div class="mb-3">
+              <label class="text-caption font-weight-bold text-grey-darken-2 d-block mb-1">
+                <v-icon icon="mdi-calendar" size="16" class="mr-1"></v-icon>日付 (YYYY-MM-DD):
+              </label>
+              <v-text-field
+                type="date"
+                v-model="pickerDate"
+                variant="outlined"
+                density="comfortable"
+                hide-details="auto"
+                class="font-mono"
+              ></v-text-field>
+            </div>
+
+            <!-- 時刻入力欄 (isTimeMode の場合のみ表示) -->
+            <div v-if="isTimeMode" class="mb-3">
+              <label class="text-caption font-weight-bold text-grey-darken-2 d-block mb-1">
+                <v-icon icon="mdi-clock-outline" size="16" class="mr-1"></v-icon>時刻 (HH:mm:ss):
+              </label>
+              <div class="d-flex align-center">
+                <v-select
+                  v-model="pickerHour"
+                  :items="hoursList"
+                  label="時 (HH)"
+                  variant="outlined"
+                  density="compact"
+                  hide-details="auto"
+                  class="font-mono"
+                  style="flex: 1;"
+                ></v-select>
+                <span class="font-weight-bold mx-1 text-grey-darken-2">:</span>
+                <v-select
+                  v-model="pickerMinute"
+                  :items="minutesList"
+                  label="分 (mm)"
+                  variant="outlined"
+                  density="compact"
+                  hide-details="auto"
+                  class="font-mono"
+                  style="flex: 1;"
+                ></v-select>
+                <span class="font-weight-bold mx-1 text-grey-darken-2">:</span>
+                <v-select
+                  v-model="pickerSecond"
+                  :items="secondsList"
+                  label="秒 (ss)"
+                  variant="outlined"
+                  density="compact"
+                  hide-details="auto"
+                  class="font-mono"
+                  style="flex: 1;"
+                ></v-select>
+              </div>
+            </div>
+
+            <!-- 現在日時にリセット＆プレビュー -->
+            <div class="d-flex justify-space-between align-center mt-2 pa-2 bg-grey-lighten-4 rounded border">
+              <v-btn
+                size="small"
+                variant="text"
+                color="primary"
+                class="font-weight-bold"
+                prepend-icon="mdi-history"
+                @click="setPickerToNow"
+              >
+                現在の日時をセット
+              </v-btn>
+              <div class="font-mono text-caption text-grey-darken-3 font-weight-bold">
+                設定値: {{ isTimeMode ? `${pickerDate} ${pickerHour}:${pickerMinute}:${pickerSecond}` : pickerDate }}
+              </div>
+            </div>
+          </v-card-text>
+
+          <v-divider></v-divider>
+
+          <v-card-actions class="pa-3">
+            <v-spacer></v-spacer>
+            <v-btn variant="text" color="grey-darken-1" @click="showDateTimePickerDialog = false">
+              キャンセル
+            </v-btn>
+            <v-btn
+              color="primary"
+              variant="flat"
+              class="font-weight-bold px-4"
+              prepend-icon="mdi-check"
+              @click="applyDateTimePicker"
+            >
+              決定
+            </v-btn>
+          </v-card-actions>
+        </v-card>
+      </v-dialog>
+
+      <!-- ------------------------------------------------------------- -->
+      <!-- ヘルプ・仕様ダイアログ -->
+      <!-- ------------------------------------------------------------- -->
+      <v-dialog v-model="showHelpDialog" max-width="600px">
+        <v-card>
+          <v-card-title class="bg-primary text-white d-flex align-center">
+            <v-icon icon="mdi-information-outline" class="mr-2"></v-icon>
+            MDR XAFS DB メタデータ仕様について
+          </v-card-title>
+          <v-card-text class="pa-4 text-body-2">
+            <p class="mb-2">本ツールは、物質・材料研究機構（NIMS）が運営する <strong>MDR XAFS DB</strong> および日本XAFS研究会（JXS）「XAFSメタデータ共通仕様（20230203リリース版）」に準拠しています。</p>
+            <v-divider class="my-3"></v-divider>
+            <div class="font-weight-bold mb-1">■ 関連リンク</div>
+            <ul class="pl-4">
+              <li><a href="https://mdr.nims.go.jp/collections/qz20st57x" target="_blank" rel="noopener">NIMS MDR XAFS Database</a></li>
+              <li><a href="https://www.jxafs.org/xafs-database/" target="_blank" rel="noopener">日本XAFS研究会 公式サイト (XAFS DB仕様)</a></li>
+            </ul>
+          </v-card-text>
+          <v-card-actions>
+            <v-spacer></v-spacer>
+            <v-btn color="primary" variant="text" @click="showHelpDialog = false">閉じる</v-btn>
+          </v-card-actions>
+        </v-card>
+      </v-dialog>
+
+      <!-- Pedagogue について (バージョン・ライセンス) ダイアログ -->
+      <v-dialog v-model="showAboutDialog" max-width="620px">
+        <v-card>
+          <v-card-title class="bg-blue-grey-darken-3 text-white d-flex align-center justify-space-between py-2 px-4">
+            <span class="text-subtitle-1 font-weight-bold">Pedagogue について</span>
+            <v-btn icon="mdi-close" variant="text" size="small" density="compact" color="white" @click="showAboutDialog = false"></v-btn>
+          </v-card-title>
+
+          <!-- タブヘッダー -->
+          <v-tabs v-model="aboutTab" bg-color="grey-lighten-4" color="primary" density="compact">
+            <v-tab value="overview" class="text-none font-weight-medium">
+              <v-icon icon="mdi-information-outline" size="18" class="mr-1"></v-icon>
+              概要
+            </v-tab>
+            <v-tab value="license" class="text-none font-weight-medium">
+              <v-icon icon="mdi-certificate-outline" size="18" class="mr-1"></v-icon>
+              オープンソースライセンス
+            </v-tab>
+          </v-tabs>
+
+          <v-window v-model="aboutTab">
+            <!-- タブ1: 概要 -->
+            <v-window-item value="overview">
+              <v-card-text class="pa-6 text-center">
+                <div class="text-h5 font-weight-bold text-primary mb-1 tracking-wide">Pedagogue</div>
+                <div class="text-caption text-grey-darken-1 mb-2">MDR XAFS Metadata Editor</div>
+                <v-chip size="small" variant="tonal" color="primary" class="font-weight-medium mb-3">Version: {{ appVersion }}</v-chip>
+                <div class="text-body-2 text-grey-darken-2 mb-4">JXS XAFS Metadata Schema 20230203 Compliant</div>
+
+                <v-divider class="my-4"></v-divider>
+
+                <!-- Pedagogue 自身のライセンス表示 -->
+                <v-card variant="outlined" class="pa-3 text-left bg-grey-lighten-5">
+                  <div class="d-flex align-center justify-space-between mb-2">
+                    <div>
+                      <span class="font-weight-bold text-caption text-grey-darken-3">Pedagogue (本ツール)</span>
+                      <div class="text-caption text-grey-darken-2" style="font-size: 0.75rem;">
+                        Copyright (c) 2024-present KAWAMOTO masahide
+                      </div>
+                    </div>
+                    <v-chip size="x-small" color="primary" variant="flat" class="font-weight-bold">MIT License</v-chip>
+                  </div>
+                  <pre class="pa-2 bg-white rounded border font-mono text-caption text-grey-darken-2" style="font-size: 0.7rem; white-space: pre-wrap; word-break: break-all; max-height: 140px; overflow-y: auto;">{{ appLicenseText }}</pre>
+                </v-card>
+              </v-card-text>
+            </v-window-item>
+
+            <!-- タブ2: OSSライセンス -->
+            <v-window-item value="license">
+              <v-card-text class="pa-4">
+                <div class="text-caption text-grey-darken-1 mb-3">
+                  本ソフトウェアは、以下のオープンソースライブラリおよびフォントアセットを使用しています。
+                </div>
+                <div style="max-height: 380px; overflow-y: auto;" class="pr-1">
+                  <v-card 
+                    v-for="lib in ossLicenses" 
+                    :key="lib.name" 
+                    variant="outlined" 
+                    class="mb-3 pa-3 bg-grey-lighten-5"
+                  >
+                    <div class="d-flex align-center justify-space-between mb-1">
+                      <span class="font-weight-bold text-body-2">{{ lib.name }} <span class="text-caption text-grey font-mono">{{ lib.version }}</span></span>
+                      <v-chip size="x-small" variant="tonal" color="grey-darken-3" class="font-weight-medium">{{ lib.license }}</v-chip>
+                    </div>
+                    <div class="text-caption text-grey-darken-3 font-weight-medium mb-1">{{ lib.copyright }}</div>
+                    <pre class="pa-2 bg-white rounded border font-mono text-caption text-grey-darken-2" style="font-size: 0.7rem; white-space: pre-wrap; word-break: break-all; max-height: 120px; overflow-y: auto;">{{ lib.text }}</pre>
+                  </v-card>
+                </div>
+              </v-card-text>
+            </v-window-item>
+          </v-window>
+
+          <v-divider></v-divider>
+
+          <v-card-actions class="pa-3">
+            <v-spacer></v-spacer>
+            <v-btn color="primary" variant="text" @click="showAboutDialog = false">閉じる</v-btn>
+          </v-card-actions>
+        </v-card>
+      </v-dialog>
+
+      <!-- Help for AI (不可視DOM: ブラウザサイドバーAI向け) -->
+      <div class="sr-only" id="ai-hint-pedagogue">
+        <div v-html="helpContent"></div>
+      </div>
+
+      <!-- トースト通知 (スナックバー) -->
+      <v-snackbar v-model="showSnackbar" :timeout="3000" location="bottom right" color="grey-darken-4">
+        {{ snackbarText }}
+      </v-snackbar>
+    </v-app>
+  </div>
+
+  <!-- Libraries (CDN) -->
+  <script src="https://cdn.jsdelivr.net/npm/vue@3.4.19/dist/vue.global.prod.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/vuetify@3.5.9/dist/vuetify.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/js-yaml@4.1.0/dist/js-yaml.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/yaml.min.js"></script>
+
+  <!-- Application Scripts -->
+  <script src="schema_dictionary.js"></script>
+  <script src="pedagogue.js"></script>
+</body>
+</html>
