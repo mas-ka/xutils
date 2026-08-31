@@ -145,4 +145,174 @@ export class File9809 {
             ].concat(a)
         })
     }
+
+    // JXS XAFSメタデータ共通仕様（20230203版）準拠のYAMLを生成
+    generateMetadataYAML(fileName) {
+        // パスを除去して純粋なファイル名からベース名と拡張子を取得
+        const cleanName = (fileName || 'data.dat').split(/[/\\]/).pop();
+        const lastDot = cleanName.lastIndexOf('.');
+        const baseName = lastDot > 0 ? cleanName.substring(0, lastDot) : cleanName;
+        const ext = lastDot > 0 ? cleanName.substring(lastDot + 1) : 'dat';
+
+        // 1. data_info
+        const today = new Date().toISOString().split('T')[0];
+
+        // 2. facility
+        let facilityName = '';
+        let beamline = '';
+        const lines = this.headerText.split(/\r?\n/);
+        if (lines.length > 0) {
+            const firstLineTokens = lines[0].trim().split(/\s+/);
+            if (firstLineTokens.length >= 3) {
+                facilityName = firstLineTokens[1];
+                beamline = firstLineTokens[2];
+            } else if (firstLineTokens.length === 2) {
+                facilityName = firstLineTokens[1];
+            }
+        }
+        // KEK-PF 正規化
+        if (facilityName === 'KEK-PF' || facilityName === 'PF') {
+            facilityName = 'Photon Factory';
+        }
+
+        // Ring情報
+        let ringInfo = null;
+        for (const line of lines) {
+            const match = line.match(/Ring\s*:\s*([\d.]+)\s*GeV\s*([\d.]+)\s*mA\s*-\s*([\d.]+)\s*mA/i);
+            if (match) {
+                ringInfo = {
+                    energy: parseFloat(match[1]),
+                    energy_unit: 'GeV',
+                    start_current: parseFloat(match[2]),
+                    start_current_unit: 'mA',
+                    end_current: parseFloat(match[3]),
+                    end_current_unit: 'mA'
+                };
+                break;
+            }
+        }
+
+        // 3. files
+        // headerlines の計算: ファイル先頭から「Offset」行（実データ開始直前の行）までの行数
+        const allLines = this.allText.split(/\r?\n/);
+        let headerLinesCount = 0;
+        for (let i = 0; i < allLines.length; i++) {
+            if (allLines[i].includes('Offset')) {
+                headerLinesCount = i + 1; // 1-indexedの行数
+                break;
+            }
+        }
+        if (headerLinesCount === 0) {
+            const angleIdx = allLines.findIndex(l => l.includes('Angle(c)'));
+            if (angleIdx !== -1) {
+                headerLinesCount = angleIdx + 3;
+            }
+        }
+
+        // 4. instrument
+        let crystalMaterial = 'Si';
+        let crystalPlane = '111';
+        let crystalD = this.d || 3.13551;
+        let crystalDUnit = 'angstrom';
+
+        for (const line of lines) {
+            const monoMatch = line.match(/Mono\s*:\s*([A-Za-z]+)\s*\(([^)]+)\)\s*D=\s*([\d.]+)\s*([A-Za-z]+)/i);
+            if (monoMatch) {
+                const matRaw = monoMatch[1].trim();
+                crystalMaterial = matRaw.charAt(0).toUpperCase() + matRaw.slice(1).toLowerCase();
+                crystalPlane = monoMatch[2].trim();
+                crystalD = parseFloat(monoMatch[3]);
+                const unitRaw = monoMatch[4].trim();
+                crystalDUnit = (unitRaw.toUpperCase() === 'A' || unitRaw.toLowerCase() === 'angstrom') ? 'angstrom' : unitRaw.toLowerCase();
+                break;
+            }
+        }
+
+        // 5. measurement
+        let startTime = '';
+        let endTime = '';
+        if (lines.length > 1) {
+            // 2行目の日時マッチング: YY.MM.DD HH:mm - YY.MM.DD HH:mm
+            const dateMatch = lines[1].match(/(\d{2,4})[./-](\d{2})[./-](\d{2})\s+(\d{2}:\d{2}(?::\d{2})?)\s*-\s*(\d{2,4})[./-](\d{2})[./-](\d{2})\s+(\d{2}:\d{2}(?::\d{2})?)/);
+            if (dateMatch) {
+                const formatYear = (yStr) => {
+                    if (yStr.length === 4) return yStr;
+                    const y = parseInt(yStr, 10);
+                    return (y >= 80 ? 1900 + y : 2000 + y).toString();
+                };
+                const formatTime = (tStr) => (tStr.split(':').length === 2 ? tStr + ':00' : tStr);
+                startTime = `${formatYear(dateMatch[1])}-${dateMatch[2]}-${dateMatch[3]} ${formatTime(dateMatch[4])}`;
+                endTime = `${formatYear(dateMatch[5])}-${dateMatch[6]}-${dateMatch[7]} ${formatTime(dateMatch[8])}`;
+            }
+        }
+
+        // Points
+        let dataPoints = this.dataBody ? this.dataBody.length : 0;
+        for (const line of lines) {
+            const pointsMatch = line.match(/Points\s*=\s*(\d+)/i);
+            if (pointsMatch) {
+                dataPoints = parseInt(pointsMatch[1], 10);
+                break;
+            }
+        }
+
+        // Block count
+        let blockCount = 1;
+        if (this.blockText) {
+            const bLines = this.blockText.trim().split(/\r?\n/).filter(l => l.trim().length > 0);
+            if (bLines.length > 1) {
+                blockCount = bLines.length - 1; // ヘッダ行を除く
+            }
+        }
+
+        // YAMLの組み立て
+        let yml = `data_info:\n`;
+        yml += `  deposite_time:\n`;
+        yml += `    create_time: "${today}"\n`;
+        yml += `  metadata_format:\n`;
+        yml += `    version: XAFS.20230203\n`;
+
+        yml += `facility:\n`;
+        yml += `  name: ${facilityName}\n`;
+        if (beamline) {
+            yml += `  beamline: ${beamline}\n`;
+        }
+        if (ringInfo) {
+            yml += `  ring:\n`;
+            yml += `    energy: ${ringInfo.energy}\n`;
+            yml += `    energy_unit: ${ringInfo.energy_unit}\n`;
+            yml += `    start_current: ${ringInfo.start_current}\n`;
+            yml += `    start_current_unit: ${ringInfo.start_current_unit}\n`;
+            yml += `    end_current: ${ringInfo.end_current}\n`;
+            yml += `    end_current_unit: ${ringInfo.end_current_unit}\n`;
+        }
+
+        yml += `files:\n`;
+        yml += `- file:\n`;
+        yml += `  - name: ${baseName}\n`;
+        yml += `  description: experimental\n`;
+        yml += `  extension: ${ext}\n`;
+        yml += `  format: 9809\n`;
+        yml += `  headerlines: ${headerLinesCount}\n`;
+
+        yml += `instrument:\n`;
+        yml += `  monochromator:\n`;
+        yml += `    detail:\n`;
+        yml += `      crystal_material: ${crystalMaterial}\n`;
+        yml += `      crystal_plane: "${crystalPlane}"\n`;
+        yml += `      crystal_d: ${crystalD}\n`;
+        yml += `      crystal_d_unit: ${crystalDUnit}\n`;
+
+        yml += `measurement:\n`;
+        if (startTime || endTime) {
+            yml += `  measured_time:\n`;
+            if (startTime) yml += `    start_time: "${startTime}"\n`;
+            if (endTime) yml += `    end_time: "${endTime}"\n`;
+        }
+        yml += `  section:\n`;
+        yml += `    number: ${blockCount}\n`;
+        yml += `    data_points: ${dataPoints}\n`;
+
+        return yml;
+    }
 }

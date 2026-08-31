@@ -190,6 +190,11 @@
                 :color="isCorrect9809 ? 'grey-darken-1' : 'red-darken-1'">
                 <v-btn icon="mdi-page-layout-header" style="pointer-events: none; opacity: 1;"></v-btn>
                 <v-toolbar-title text="Header"></v-toolbar-title>
+                <v-spacer></v-spacer>
+                <v-btn :disabled="numLoaded < 1" @click="onClickExportMetadataYAML">
+                    <v-icon>mdi-file-code-outline</v-icon>
+                    <v-tooltip activator="parent" location="top">export 9809 metadata YAML</v-tooltip>
+                </v-btn>
             </v-toolbar>
             <pre class="ma-2" style="font-family: 'Roboto Mono'; 
                             font-size: 12px; 

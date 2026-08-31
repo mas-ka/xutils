@@ -550,6 +550,31 @@ createApp({
             }
         }
 
+        // 9809メタデータYAMLのエクスポート処理
+        const onClickExportMetadataYAML = () => {
+            if (numLoaded.value < 1) return
+
+            // パスが含まれている場合は末尾のファイル名のみを抽出
+            const rawFileName = currFileName.value.split(/[/\\]/).pop()
+            let baseName = rawFileName
+            const lastDotIdx = baseName.lastIndexOf('.')
+            if (lastDotIdx > 0) {
+                baseName = baseName.substring(0, lastDotIdx)
+            }
+            const exportFileName = `${baseName}_9809_metadata.yml`
+
+            // Format9809からYAML文字列を生成
+            const yamlStr = curr9809File.generateMetadataYAML(rawFileName)
+
+            // ダウンロードの実行
+            const blob = new Blob([yamlStr], { type: 'text/yaml;charset=utf-8' })
+            const link = document.createElement('a')
+            link.href = URL.createObjectURL(blob)
+            link.download = exportFileName
+            link.click()
+            URL.revokeObjectURL(link.href)
+        }
+
         onMounted(() => {
             fetch('./help.html')
                 .then(res => {
@@ -575,7 +600,7 @@ createApp({
             firstFile, prevFile, nextFile, lastFile,
             Numerator, Denominator, ColsNum, ColsDen, applyLn, showDevider,
             handleSelect, isAxisInEnergy, handleSwitch, onClickAngle, onClickEnergy,
-            licenseHTML, license_dialog, exportAgenda_dialog, onClickExportAgendaOK, onClickExportThumbnail, elementList, selectedElement, selectedEdge,
+            licenseHTML, license_dialog, exportAgenda_dialog, onClickExportAgendaOK, onClickExportThumbnail, onClickExportMetadataYAML, elementList, selectedElement, selectedEdge,
             showHelp, hasHelp, helpContent,
         }
     }
