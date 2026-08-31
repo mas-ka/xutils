@@ -33,7 +33,10 @@
             <li><b>show blocks</b>: </li><br />
             <p>測定時のスキャンブロック境界エネルギーをグラフ上に縦破線で表示します。</p><br />
             <li><b>Angle(o) / Energy(o)</b>: </li><br />
-            <p>X軸の表示をブラッグ角<small> [deg.] </small>またはエネルギー<small> [keV] </small>に切り替えます。</p>
+            <p>X軸の表示をブラッグ角<small> [deg.] </small>またはエネルギー<small> [keV] </small>に切り替えます。</p><br />
+            <li><b><i class="mdi mdi-image-outline"></i> サムネイル保存</b>: </li><br />
+            <p>MDR XAFSデータベース登録用のサムネイル画像（1280×1280 px、正方形PNG形式）を生成して保存します。<br />
+                X軸は Energy [eV]、Y軸は現在の分子/分母/apply Log設定（μT または Intensity）に応じたグラフが出力されます。</p>
         </ul><br />
         <p>　グラフはブラウザウィンドウのサイズに応じて拡大縮小されます。</p></br />
         <p>　グラフ右上のアクションボタンから、PNG形式での画像保存、ズーム、範囲選択等の操作も可能です。またグラフのダブルクリックで描画範囲をリセットできます。</p></br />
@@ -49,6 +52,10 @@
     <div id="Header">
         <h3><i class="mdi mdi-page-layout-header mr-1"></i> Header</h3><br />
         <p>　9809形式ファイルに含まれるヘッダ情報部（施設・BL名、測定日時、分光器設定など）を表示します。</p><br />
+        <ul style="padding-left: 1.5em;">
+            <li><b><i class="mdi mdi-file-code-outline"></i> メタデータエクスポート</b>: </li><br />
+            <p>9809ヘッダから施設・ビームライン名、分光器（結晶・面間隔）、測定日時、測定点数等の情報を抽出し、MDR XAFSデータベース登録用のメタデータYAMLファイル（.yml）を生成して保存します。</p>
+        </ul><br />
         <p>※標準的な9809形式に準拠していないファイルの場合はヘッダー部の表示が赤く警告表示されます。</p>
     </div>
     <br />

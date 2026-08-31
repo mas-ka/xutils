@@ -444,6 +444,137 @@ createApp({
             URL.revokeObjectURL(link.href)
         }
 
+        // サムネイル画像のエクスポート処理
+        const onClickExportThumbnail = async () => {
+            if (numLoaded.value < 1) return
+
+            // パスが含まれている場合は末尾のファイル名のみを抽出
+            const rawFileName = currFileName.value.split(/[/\\]/).pop()
+            let baseName = rawFileName
+            const lastDotIdx = baseName.lastIndexOf('.')
+            if (lastDotIdx > 0) {
+                baseName = baseName.substring(0, lastDotIdx)
+            }
+            const exportFileName = `${baseName}_thumbnail.png`
+
+            const thumbData = [{
+                x: curr9809File.dataArray.map((a) => a[1] * 1000.0),
+                y: curr9809File.dataArray.map((a) => {
+                    const N = (Numerator.value == 0) ? 1.0 : a[Numerator.value + 1]
+                    const D = (Denominator.value == 0) ? 1.0 : a[Denominator.value + 1]
+                    if (applyLn.value) {
+                        return Math.log(N / D)
+                    } else {
+                        return (N / D)
+                    }
+                }),
+                type: 'scatter',
+                mode: 'lines',
+                line: {
+                    color: '#1f77b4',
+                    width: 2.5
+                }
+            }]
+
+            const yAxisTitle = applyLn.value ? 'μT' : 'Intensity [arb. unit]'
+
+            const thumbLayout = {
+                title: {
+                    text: baseName,
+                    font: {
+                        size: 32
+                    },
+                    y: 0.96
+                },
+                width: 1280,
+                height: 1280,
+                plot_bgcolor: '#ffffff',
+                paper_bgcolor: '#ffffff',
+                xaxis: {
+                    title: {
+                        text: 'Energy [eV]',
+                        font: { size: 28 }
+                    },
+                    tickfont: { size: 22 },
+                    ticks: 'outside',
+                    tickwidth: 2,
+                    ticklen: 8,
+                    showline: true,
+                    mirror: true,
+                    linewidth: 2,
+                    showgrid: false,
+                    zeroline: false,
+                    autorange: true,
+                    tickformat: 'd'
+                },
+                yaxis: {
+                    title: {
+                        text: yAxisTitle,
+                        font: { size: 28 }
+                    },
+                    tickfont: { size: 22 },
+                    ticks: 'outside',
+                    tickwidth: 2,
+                    ticklen: 8,
+                    showline: true,
+                    mirror: true,
+                    linewidth: 2,
+                    showgrid: false,
+                    zeroline: false,
+                    autorange: true
+                },
+                margin: {
+                    t: 90,
+                    b: 110,
+                    l: 120,
+                    r: 60
+                }
+            }
+
+            try {
+                const dataUrl = await Plotly.toImage({
+                    data: thumbData,
+                    layout: thumbLayout
+                }, {
+                    format: 'png',
+                    width: 1280,
+                    height: 1280
+                })
+
+                const link = document.createElement('a')
+                link.href = dataUrl
+                link.download = exportFileName
+                link.click()
+            } catch (error) {
+                console.error('Failed to export thumbnail:', error)
+            }
+        }
+
+        // 9809メタデータYAMLのエクスポート処理
+        const onClickExportMetadataYAML = () => {
+            if (numLoaded.value < 1) return
+
+            // パスが含まれている場合は末尾のファイル名のみを抽出
+            const rawFileName = currFileName.value.split(/[/\\]/).pop()
+            let baseName = rawFileName
+            const lastDotIdx = baseName.lastIndexOf('.')
+            if (lastDotIdx > 0) {
+                baseName = baseName.substring(0, lastDotIdx)
+            }
+            const exportFileName = `${baseName}_9809_metadata.yml`
+
+            // Format9809からYAML文字列を生成
+            const yamlStr = curr9809File.generateMetadataYAML(rawFileName)
+
+            // ダウンロードの実行
+            const blob = new Blob([yamlStr], { type: 'text/yaml;charset=utf-8' })
+            const link = document.createElement('a')
+            link.href = URL.createObjectURL(blob)
+            link.download = exportFileName
+            link.click()
+            URL.revokeObjectURL(link.href)
+        }
+
         onMounted(() => {
             fetch('./help.html')
                 .then(res => {
@@ -469,7 +600,7 @@ createApp({
             firstFile, prevFile, nextFile, lastFile,
             Numerator, Denominator, ColsNum, ColsDen, applyLn, showDevider,
             handleSelect, isAxisInEnergy, handleSwitch, onClickAngle, onClickEnergy,
-            licenseHTML, license_dialog, exportAgenda_dialog, onClickExportAgendaOK, elementList, selectedElement, selectedEdge,
+            licenseHTML, license_dialog, exportAgenda_dialog, onClickExportAgendaOK, onClickExportThumbnail, onClickExportMetadataYAML, elementList, selectedElement, selectedEdge,
             showHelp, hasHelp, helpContent,
         }
     }
