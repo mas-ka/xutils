@@ -29,8 +29,9 @@ createApp({
         const showDevider = ref(false)
         const isAxisInEnergy = ref(true)
         // その他
-        const licenseHTML = ref('')
         const license_dialog = ref(false)
+        const aboutTab = ref('overview')
+        const appLicenseText = ref('Loading LICENSE...')
         const exportAgenda_dialog = ref(false)
         const elementList = ref(elements)
         const selectedElement = ref(null)
@@ -38,6 +39,57 @@ createApp({
         const showHelp = ref(false)
         const hasHelp = ref(false)
         const helpContent = ref('')
+
+        // オープンソースライセンス一覧
+        const ossLicenses = [
+            {
+                name: 'Vue.js',
+                version: '3.x',
+                license: 'MIT License',
+                copyright: 'Copyright (c) 2018-present Yuxi (Evan) You',
+                text: `Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.`
+            },
+            {
+                name: 'Vuetify',
+                version: '3.12.6',
+                license: 'MIT License',
+                copyright: 'Copyright (c) 2016-2024 John Jeremy Leider',
+                text: `Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.`
+            },
+            {
+                name: 'Plotly.js',
+                version: '3.6.0',
+                license: 'MIT License',
+                copyright: 'Copyright (c) 2016-2024 Plotly Technologies Inc.',
+                text: `Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.`
+            },
+            {
+                name: 'Material Design Icons',
+                version: '5.x / 7.x (@mdi/font)',
+                license: 'Apache 2.0 / SIL OFL 1.1',
+                copyright: 'Copyright (c) Pictogrammers',
+                text: 'Icons licensed under Apache License 2.0. Fonts licensed under SIL Open Font License 1.1.'
+            },
+            {
+                name: 'Google Fonts (Noto Serif, Roboto Mono)',
+                version: 'Web Fonts',
+                license: 'SIL OFL 1.1 / Apache 2.0',
+                copyright: 'Copyright (c) Google LLC',
+                text: 'Noto Serif licensed under SIL Open Font License 1.1. Roboto Mono licensed under Apache License 2.0.'
+            }
+        ]
 
         // ローカルの宣言
         let curr9809File = new File9809()
@@ -575,22 +627,38 @@ createApp({
             URL.revokeObjectURL(link.href)
         }
 
-        onMounted(() => {
-            fetch('./help.html')
-                .then(res => {
-                    if (res.ok) {
-                        hasHelp.value = true;
-                        return res.text();
-                    }
-                    throw new Error('help.html not found');
-                })
-                .then(text => {
-                    helpContent.value = text;
-                })
-                .catch(e => {
-                    hasHelp.value = false;
-                    console.log('No help available');
-                });
+        // ヘルプを別タブで開く
+        const openHelpInNewTab = function () {
+            window.open('./help.html', '_blank')
+        }
+
+        onMounted(async () => {
+            // LICENSE 取得
+            try {
+                const res = await fetch('./LICENSE')
+                if (res.ok) {
+                    appLicenseText.value = await res.text()
+                } else {
+                    appLicenseText.value = 'Failed to load LICENSE file.'
+                }
+            } catch (err) {
+                appLicenseText.value = 'Failed to load LICENSE file.'
+            }
+
+            // help.html 取得
+            try {
+                const helpRes = await fetch('./help.html')
+                if (helpRes.ok) {
+                    const fullHtml = await helpRes.text()
+                    const parser = new DOMParser()
+                    const doc = parser.parseFromString(fullHtml, 'text/html')
+                    const helpElem = doc.getElementById('help_text')
+                    helpContent.value = helpElem ? helpElem.innerHTML : fullHtml
+                    hasHelp.value = true
+                }
+            } catch (e) {
+                console.error('Failed to load help.html', e)
+            }
         })
 
         return {
@@ -600,8 +668,8 @@ createApp({
             firstFile, prevFile, nextFile, lastFile,
             Numerator, Denominator, ColsNum, ColsDen, applyLn, showDevider,
             handleSelect, isAxisInEnergy, handleSwitch, onClickAngle, onClickEnergy,
-            licenseHTML, license_dialog, exportAgenda_dialog, onClickExportAgendaOK, onClickExportThumbnail, onClickExportMetadataYAML, elementList, selectedElement, selectedEdge,
-            showHelp, hasHelp, helpContent,
+            license_dialog, aboutTab, appLicenseText, ossLicenses, exportAgenda_dialog, onClickExportAgendaOK, onClickExportThumbnail, onClickExportMetadataYAML, elementList, selectedElement, selectedEdge,
+            showHelp, hasHelp, helpContent, openHelpInNewTab,
         }
     }
 }).use(createVuetify()).mount('#app')
