@@ -966,6 +966,7 @@ const app = createApp({
     const showConflictDialog = ref(false);
     const conflictList = ref([]);
     const pendingNonConflicts = ref([]);
+    const pendingLoadedObject = ref(null);
     const loadedFileName = ref('');
 
     // ファイル処理の共通エントリーポイント
@@ -984,6 +985,7 @@ const app = createApp({
         }
 
         loadedFileName.value = fileName;
+        pendingLoadedObject.value = loadedObj;
         const incomingEntries = PathUtils.flatten(loadedObj);
         const conflicts = [];
         const nonConflicts = [];
@@ -1028,6 +1030,7 @@ const app = createApp({
           }
           dataObject.value = SchemaSorter.sortObject(dataObject.value);
           isDirty.value = true;
+          pendingLoadedObject.value = null;
           showToast(`「${fileName}」から ${nonConflicts.length} 項目を取り込みました`);
         } else {
           // 衝突あり: ダイアログ表示
@@ -1047,7 +1050,7 @@ const app = createApp({
       }
     };
 
-    // 衝突解消の適用
+    // 衝突解消の適用 (マージ)
     const applyConflictResolution = () => {
       saveHistory();
 
@@ -1076,7 +1079,39 @@ const app = createApp({
       dataObject.value = SchemaSorter.sortObject(dataObject.value);
       isDirty.value = true;
       showConflictDialog.value = false;
+      conflictList.value = [];
+      pendingNonConflicts.value = [];
+      pendingLoadedObject.value = null;
       showToast(`マージ完了: ${overwrittenCount + pendingNonConflicts.value.length} 項目を反映、${skippedCount} 項目をスキップしました`);
+    };
+
+    // 既存データを全破棄して読み込みファイルで置換（全クリアして開く）
+    const replaceAllWithLoadedData = () => {
+      if (!pendingLoadedObject.value) {
+        showToast('読み込み対象のデータがありません');
+        showConflictDialog.value = false;
+        return;
+      }
+
+      saveHistory();
+
+      // ディープコピーしてスキーマ定義順に整列してセット
+      dataObject.value = SchemaSorter.sortObject(JSON.parse(JSON.stringify(pendingLoadedObject.value)));
+
+      // 選択中キーの入力欄を更新
+      if (selectedKeyPath.value) {
+        const val = PathUtils.get(dataObject.value, selectedKeyPath.value);
+        inputValue.value = (val !== undefined && val !== null) ? val : '';
+      }
+
+      isDirty.value = false;
+      const fileName = loadedFileName.value || 'ファイル';
+      showConflictDialog.value = false;
+      conflictList.value = [];
+      pendingNonConflicts.value = [];
+      pendingLoadedObject.value = null;
+
+      showToast(`「${fileName}」を読み込みました (既存データを全クリア)`);
     };
 
     // 衝突解決のキャンセル
@@ -1084,6 +1119,7 @@ const app = createApp({
       showConflictDialog.value = false;
       conflictList.value = [];
       pendingNonConflicts.value = [];
+      pendingLoadedObject.value = null;
       showToast('読み込みをキャンセルしました');
     };
 
@@ -1324,6 +1360,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
       loadedFileName,
       setAllConflictActions,
       applyConflictResolution,
+      replaceAllWithLoadedData,
       cancelConflictResolution,
       handleFileInput,
       handleDrop,
