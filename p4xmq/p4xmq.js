@@ -7,7 +7,8 @@ createApp({
     setup() {
         // refの宣言
         const licenseDialog = ref(false)
-        const licenseContent = ref('')
+        const aboutTab = ref('overview')
+        const appLicenseText = ref('Loading LICENSE...')
         const helpContent = ref('')
         const showHelp = ref(false)
         const hasHelp = ref(false)
@@ -25,17 +26,73 @@ createApp({
         const snackbar = ref(false)             // 通知スナックバーの表示フラグ
         const snackbarText = ref('')            // 通知スナックバーのテキスト
 
-        onMounted(async () => {
-            try {
-                const res = await fetch('license.html')
-                licenseContent.value = await res.text()
-            } catch (e) {
-                console.error('Failed to load license.html', e)
+        // オープンソースライセンス一覧
+        const ossLicenses = [
+            {
+                name: 'Vue.js',
+                version: '3.x',
+                license: 'MIT License',
+                copyright: 'Copyright (c) 2018-present Yuxi (Evan) You',
+                text: `Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.`
+            },
+            {
+                name: 'Vuetify',
+                version: '3.12.6',
+                license: 'MIT License',
+                copyright: 'Copyright (c) 2016-2024 John Jeremy Leider',
+                text: `Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.`
+            },
+            {
+                name: 'Material Design Icons',
+                version: '5.x / 7.x (@mdi/font)',
+                license: 'Apache 2.0 / SIL OFL 1.1',
+                copyright: 'Copyright (c) Pictogrammers',
+                text: 'Icons licensed under Apache License 2.0. Fonts licensed under SIL Open Font License 1.1.'
+            },
+            {
+                name: 'Google Fonts (Noto Serif, Roboto Mono)',
+                version: 'Web Fonts',
+                license: 'SIL OFL 1.1 / Apache 2.0',
+                copyright: 'Copyright (c) Google LLC',
+                text: 'Noto Serif licensed under SIL Open Font License 1.1. Roboto Mono licensed under Apache License 2.0.'
             }
+        ]
+
+        // ヘルプを別タブで開く
+        const openHelpInNewTab = function () {
+            window.open('./help.html', '_blank')
+        }
+
+        onMounted(async () => {
+            // LICENSE 取得
             try {
-                const resHelp = await fetch('help.html')
+                const res = await fetch('./LICENSE')
+                if (res.ok) {
+                    appLicenseText.value = await res.text()
+                } else {
+                    appLicenseText.value = 'Failed to load LICENSE file.'
+                }
+            } catch (e) {
+                appLicenseText.value = 'Failed to load LICENSE file.'
+            }
+
+            // help.html 取得
+            try {
+                const resHelp = await fetch('./help.html')
                 if (resHelp.ok) {
-                    helpContent.value = await resHelp.text()
+                    const fullHtml = await resHelp.text()
+                    const parser = new DOMParser()
+                    const doc = parser.parseFromString(fullHtml, 'text/html')
+                    const helpElem = doc.getElementById('help_text')
+                    helpContent.value = helpElem ? helpElem.innerHTML : fullHtml
                     hasHelp.value = true
                 }
             } catch (e) {
@@ -327,18 +384,14 @@ createApp({
 
         return {
             formatF, eV2deg, eV2k,
-            licenseDialog,
-            licenseContent,
-            helpContent,
-            showHelp,
-            hasHelp,
+            licenseDialog, aboutTab, appLicenseText, ossLicenses,
+            helpContent, showHelp, hasHelp, openHelpInNewTab,
             xtals,
             selectedXtal,
             changeXtalPlane,
             elementNames,
             selectedElement, selectedEdge,
             edges,
-            selectedEdge,
             selectedEdgeValue,
             availableEdges,
             Ebegin, Eend, Estep,
