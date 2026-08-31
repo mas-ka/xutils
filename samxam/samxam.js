@@ -7,10 +7,52 @@ createApp({
     setup() {
         // refの宣言
         const licenseDialog = ref(false)
-        const licenseContent = ref('')
+        const aboutTab = ref('overview')
+        const appLicenseText = ref('Loading LICENSE...')
         const helpContent = ref('')
         const showHelp = ref(false)
         const hasHelp = ref(false)
+
+        // オープンソースライセンス一覧
+        const ossLicenses = [
+            {
+                name: 'Vue.js',
+                version: '3.x',
+                license: 'MIT License',
+                copyright: 'Copyright (c) 2018-present Yuxi (Evan) You',
+                text: `Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.`
+            },
+            {
+                name: 'Vuetify',
+                version: '3.12.6',
+                license: 'MIT License',
+                copyright: 'Copyright (c) 2016-2024 John Jeremy Leider',
+                text: `Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.`
+            },
+            {
+                name: 'Material Design Icons',
+                version: '5.x / 7.x (@mdi/font)',
+                license: 'Apache 2.0 / SIL OFL 1.1',
+                copyright: 'Copyright (c) Pictogrammers',
+                text: 'Icons licensed under Apache License 2.0. Fonts licensed under SIL Open Font License 1.1.'
+            },
+            {
+                name: 'Google Fonts (Noto Serif, Roboto Mono)',
+                version: 'Web Fonts',
+                license: 'SIL OFL 1.1 / Apache 2.0',
+                copyright: 'Copyright (c) Google LLC',
+                text: 'Noto Serif licensed under SIL Open Font License 1.1. Roboto Mono licensed under Apache License 2.0.'
+            }
+        ]
+
         const Elements = ref(Victoreens.elements)
         const ElementNamesZ = ref(Victoreens.getElementNamesZ())
         const Lambda = ref(1.380840)        // Cu-K [Å]
@@ -378,8 +420,68 @@ createApp({
         })
 
 
+        // 各行全体の警告クラス判定
+        const getRow4Class = function () {
+            if (Res_4.value < 0) return 'bg-red-lighten-5 text-red-darken-4'
+            if (Res_4.value >= 0 && Res_4.value < 0.1) return 'bg-amber-lighten-5 text-amber-darken-4'
+            return ''
+        }
+
+        const getRow2Class = function () {
+            if (Res_2.value < 0) return 'bg-red-lighten-5 text-red-darken-4'
+            if (Res_2.value >= 0 && Res_2.value < 0.1) return 'bg-amber-lighten-5 text-amber-darken-4'
+            return ''
+        }
+
+        const getRow1Class = function () {
+            if (Res_1.value < 0 || MuT_H_1.value > 4.0) return 'bg-red-lighten-5 text-red-darken-4'
+            if ((Res_1.value >= 0 && Res_1.value < 0.1) || (MuT_H_1.value > 2.5 && MuT_H_1.value <= 4.0)) return 'bg-amber-lighten-5 text-amber-darken-4'
+            return ''
+        }
+
+        const getRowOClass = function () {
+            if (Res_o.value < 0 || MuT_H_o.value > 4.0) return 'bg-red-lighten-5 text-red-darken-4'
+            if ((Res_o.value >= 0 && Res_o.value < 0.1) || (MuT_H_o.value > 2.5 && MuT_H_o.value <= 4.0)) return 'bg-amber-lighten-5 text-amber-darken-4'
+            return ''
+        }
+
+        // ヘルプを別タブで開く
+        const openHelpInNewTab = function () {
+            window.open('./help.html', '_blank')
+        }
+
+        onMounted(async () => {
+            // LICENSE 取得
+            try {
+                const res = await fetch('./LICENSE')
+                if (res.ok) {
+                    appLicenseText.value = await res.text()
+                } else {
+                    appLicenseText.value = 'Failed to load LICENSE file.'
+                }
+            } catch (err) {
+                appLicenseText.value = 'Failed to load LICENSE file.'
+            }
+
+            // help.html 取得
+            try {
+                const helpRes = await fetch('./help.html')
+                if (helpRes.ok) {
+                    const fullHtml = await helpRes.text()
+                    const parser = new DOMParser()
+                    const doc = parser.parseFromString(fullHtml, 'text/html')
+                    const helpElem = doc.getElementById('help_text')
+                    helpContent.value = helpElem ? helpElem.innerHTML : fullHtml
+                    hasHelp.value = true
+                }
+            } catch (e) {
+                console.error('Failed to load help.html', e)
+            }
+        })
+
         return {
-            licenseDialog, licenseContent, helpContent, showHelp, hasHelp,
+            licenseDialog, aboutTab, appLicenseText, ossLicenses, helpContent, showHelp, hasHelp, openHelpInNewTab,
+            getRow4Class, getRow2Class, getRow1Class, getRowOClass,
             TYPE_SAMPLE, sampleType, Lambda,
             Foil_R,
             Pellet_D, Pellet_Def, Pellet_T, Pellet_Medium, Pellet_Medium_Z, Pellet_Medium_Ratio, Pellet_Medium_Weight, Pellet_Medium_Z_last, Pellet_Medium_Ratio_last,
