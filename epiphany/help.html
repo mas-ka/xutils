@@ -1,47 +1,413 @@
-<div id="help_text">
-    <div id="introduction">
-        <p>　このアプリはSAGA-LSでの蛍光XAFS測定で得られる<b>2次元スペクトログラムデータ</b>（TIFF形式）を読み込み、事後的に<b>ROI</b>を設定・再調整して、<b>μt（蛍光収量スペクトル）</b>を再計算し、9809形式のファイルとして出力するためのツールです。
-        </p>
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Epiphany - ヘルプ ＆ 仕様リファレンス</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;500&family=Roboto:wght@300;400;500;700&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/@mdi/font@7.x/css/materialdesignicons.min.css" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Roboto', 'Noto Sans JP', sans-serif;
+            background-color: #f8fafc;
+            color: #1e293b;
+            line-height: 1.85;
+            margin: 0;
+            padding: 24px 16px;
+        }
+        .container {
+            max-width: 960px;
+            margin: 0 auto;
+            background: #ffffff;
+            padding: 36px 40px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.08);
+        }
+        /* 上部タブバー (Pedagogue準拠) */
+        .tab-bar {
+            display: flex;
+            border-bottom: 2px solid #e2e8f0;
+            margin-bottom: 28px;
+            gap: 8px;
+        }
+        .tab-btn {
+            background: none;
+            border: none;
+            padding: 12px 20px;
+            font-size: 1rem;
+            font-weight: bold;
+            color: #64748b;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s;
+        }
+        .tab-btn:hover {
+            color: #1976D2;
+        }
+        .tab-btn.active {
+            color: #1976D2;
+            border-bottom-color: #1976D2;
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+
+        h1 {
+            color: #1976D2;
+            border-bottom: 2px solid #1976D2;
+            padding-bottom: 12px;
+            margin-top: 0;
+            margin-bottom: 20px;
+            font-size: 1.65rem;
+        }
+        h2 {
+            color: #334155;
+            border-left: 4px solid #1976D2;
+            padding-left: 12px;
+            margin-top: 36px;
+            margin-bottom: 16px;
+            font-size: 1.25rem;
+        }
+        h3 {
+            color: #475569;
+            margin-top: 28px;
+            margin-bottom: 12px;
+            font-size: 1.05rem;
+        }
+        p {
+            margin: 12px 0 16px 0;
+            color: #334155;
+        }
+        ul {
+            padding-left: 1.6em;
+            margin: 14px 0 20px 0;
+        }
+        li {
+            margin-bottom: 12px;
+        }
+        code, pre {
+            font-family: 'Roboto Mono', monospace;
+            background-color: #f1f5f9;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.88em;
+            color: #0f172a;
+        }
+        pre.code-block {
+            padding: 12px 16px;
+            line-height: 1.6;
+            overflow-x: auto;
+            border: 1px solid #e2e8f0;
+            margin: 14px 0;
+        }
+        .note {
+            background-color: #f0fdf4;
+            border-left: 4px solid #22c55e;
+            padding: 14px 18px;
+            margin: 18px 0 22px 0;
+            border-radius: 0 6px 6px 0;
+            font-size: 0.92rem;
+            line-height: 1.75;
+        }
+        .warn {
+            background-color: #fffbeb;
+            border-left: 4px solid #f59e0b;
+            padding: 14px 18px;
+            margin: 18px 0 22px 0;
+            border-radius: 0 6px 6px 0;
+            font-size: 0.92rem;
+            line-height: 1.75;
+        }
+        hr {
+            border: none;
+            border-top: 1px solid #e2e8f0;
+            margin: 32px 0;
+        }
+        .help-section {
+            margin-bottom: 28px;
+        }
+
+        /* 仕様テーブル用スタイル */
+        table.spec-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 16px 0 24px 0;
+            font-size: 0.9rem;
+        }
+        table.spec-table th, table.spec-table td {
+            border: 1px solid #cbd5e1;
+            padding: 10px 12px;
+            text-align: left;
+        }
+        table.spec-table th {
+            background-color: #f1f5f9;
+            color: #334155;
+            font-weight: bold;
+        }
+        table.spec-table td.center {
+            text-align: center;
+        }
+        table.spec-table td.mono {
+            font-family: 'Roboto Mono', monospace;
+            font-size: 0.85em;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <!-- 上部タブバー -->
+    <div class="tab-bar">
+        <button id="btn-guide" class="tab-btn active" onclick="switchTab('guide')">
+            <i class="mdi mdi-book-open-page-variant-outline"></i> 操作ガイド
+        </button>
+        <button id="btn-spec" class="tab-btn" onclick="switchTab('spec')">
+            <i class="mdi mdi-file-code-outline"></i> TIFFデータ構造仕様
+        </button>
     </div>
-    <br />
-    <hr /><br />
-    <div id="Spectrogram">
-        <h3>Spectrogram</h3><br />
-        <p>　スペクトログラムデータの読み込み・表示とROIの設定を行います。</p><br />
-        <ul style="padding-left: 1.5em;">
-            <li><b><i class="mdi mdi-import"></i> TIFファイルの読み込み</b>: </li><br />
-            <p>インポートボタンをクリックしてTIFファイル<small>（.tif, .tiff）</small>を選択するか、カード上にファイルをドラッグ＆ドロップして読み込みます。</p><br />
-            <li><b><i class="mdi mdi-page-layout-header"></i> 9809ヘッダの表示</b>: </li><br />
-            <p>TIFファイル内に埋め込まれている9809形式のメタデータヘッダ情報をダイアログで表示・確認できます。</p><br />
-            <li><b>ヒートマップ<small>（左側）</small></b>: </li><br />
-            <p>励起エネルギー（横軸）× 蛍光エネルギー（縦軸）における蛍光強度<small>（CPS: count per second）</small>を2次元カラーマップで表示します。</p><br />
-            <p>下部のスライダーをドラッグすることで、観察する励起エネルギー位置（ヒートマップ内の青い縦線）を変更できます。このエネルギーでの蛍光Ｘ線強度が右側ヒストグラムに表示されます。</p><br />
-            <li><b>ヒストグラム<small>（右側）</small></b>: </li><br />
-            <p>ヒートマップ下部スライダーで設定した励起エネルギーにおける「蛍光エネルギー（縦軸）× 蛍光強度（横軸）」の2次元ヒストグラムを表示します。</p><br />
-            <p>右の縦スライダーで蛍光エネルギーに対する ROI <small>(积分範囲の下限・上限)</small>を設定します。ROIの変更に伴い、ヒストグラムの赤色領域および下部のPost-productive
-                μtがリアルタイムに再計算・更新されます。</p><br />
-            <p>※ヒストグラム上でマウスドラッグによるズーム操作が可能です。ズームしたエネルギー範囲に応じて、左側のヒートマップも自動的にズームします。ダブルクリックで描画範囲をリセットできます。</p><br />
-        </ul>
+
+    <!-- ============================================================= -->
+    <!-- タブ1: 操作ガイド -->
+    <!-- ============================================================= -->
+    <div id="tab-guide" class="tab-content active">
+        <div id="help_text_guide">
+            <div id="introduction" class="help-section">
+                <h1>Epiphany - 操作マニュアル ＆ 仕様リファレンス</h1>
+                <p>　<strong>Epiphany</strong> は、蛍光XAFS測定で得られた2次元スペクトログラムデータ（TIFF形式）を読み込み、事後的にROI（関心領域）を設定・調整して蛍光収量スペクトル（μt）を再計算し、日本の放射光施設標準フォーマット（9809形式）のファイルとして書き出すためのツールです。</p>
+            </div>
+
+            <hr />
+
+            <div id="spectrogram" class="help-section">
+                <h2>Spectrogram</h2>
+                <p>　スペクトログラムデータの読み込み、2次元ヒートマップ表示、およびROIの設定を行います。</p>
+                <ul style="padding-left: 1.4em;">
+                    <li><b><i class="mdi mdi-import"></i> TIFファイルの読み込み</b>: ツールバー右上の【<i class="mdi mdi-import"></i>】ボタンをクリックしてTIFFファイル（<code>.tif</code>, <code>.tiff</code>）を選択するか、カード上へ直接ファイルをドラッグ＆ドロップして読み込みます。</li>
+                    <li><b><i class="mdi mdi-page-layout-header"></i> 9809ヘッダの表示</b>: ツールバーの【<i class="mdi mdi-page-layout-header"></i>】ボタンをクリックすると、TIFFファイル内に埋め込まれた9809形式のヘッダ情報をダイアログで確認できます。</li>
+                    <li><b>ヒートマップ（左側パネル）</b>:
+                        <ul style="margin-top: 6px;">
+                            <li>励起エネルギー（横軸）× 蛍光エネルギー（縦軸）における蛍光X線強度（CPS: count per second）を2次元カラーマップで表示します。</li>
+                            <li>下部のエネルギースライダーを動かすことで、注目する励起エネルギー位置（ヒートマップ内の青い縦カーソル）を変更できます。</li>
+                        </ul>
+                    </li>
+                    <li><b>ヒストグラム（右側パネル）</b>:
+                        <ul style="margin-top: 6px;">
+                            <li>選択された励起エネルギーにおける「蛍光エネルギー（縦軸）× 蛍光強度（横軸）」の1次元エネルギースペクトルを表示します。</li>
+                            <li>右端の縦型レンジスライダーを動かして、蛍光ピークに対する <b>ROI（積分範囲の下限・上限）</b> を設定します。ROIの変更に伴い、ヒストグラム内の赤色塗りつぶし領域および下部のPost-productive μtスペクトルがリアルタイムに再計算・更新されます。</li>
+                            <li>ヒストグラム上でマウスドラッグによるズーム操作が可能です。ズームしたエネルギー範囲に連動して左側のヒートマップも自動的に拡大表示されます（ダブルクリックで描画範囲をリセット）。</li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+
+            <hr />
+
+            <div id="mut" class="help-section">
+                <h2>Post-productive μt</h2>
+                <p>　設定されたROIに基づいて再計算された蛍光XAFSスペクトル（μt）の確認とエクスポートを行います。</p>
+                <ul style="padding-left: 1.4em;">
+                    <li><b>μtスペクトルグラフ</b>:
+                        <ul style="margin-top: 6px;">
+                            <li>横軸を励起エネルギー <code>[eV]</code>、縦軸を <code>ROI内総カウント / I₀</code>（規格化蛍光収量）としてプロットしたスペクトルを表示します。</li>
+                            <li>グラフ右上のアクションバーから、PNG画像保存・ズーム・パン・範囲選択等の操作が可能です（ダブルクリックで描画範囲をリセット）。</li>
+                        </ul>
+                    </li>
+                    <li><b><i class="mdi mdi-export"></i> 9809ファイルのエクスポート</b>:
+                        <ul style="margin-top: 6px;">
+                            <li>ツールバー右上の【<i class="mdi mdi-export"></i>】ボタンをクリックすると、現在のROI設定で積分・再計算されたデータを日本の放射光施設標準フォーマットである「9809形式ファイル（<code>.dat</code>）」としてダウンロード保存します。</li>
+                            <li>出力ファイル名には、設定されたROI範囲（例: <code>_pp0120-0250.dat</code>）が自動付与されます。</li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+
+            <hr />
+
+            <div id="license" class="help-section">
+                <h2>License</h2>
+                <p>　<strong>Epiphany</strong> のライセンスは MIT License（The MIT License）です。</p>
+                <p>　Copyright (c) 2024-present KAWAMOTO masahide</p>
+                <p>※使用するライブラリを含めた詳細は、タイトルバー右上の【ライセンス】ボタン（<i class="mdi mdi-license"></i>）をクリックしてご確認ください。</p>
+            </div>
+        </div>
     </div>
-    <br />
-    <hr /><br />
-    <div id="MuT">
-        <h3>Post-productive &#x03BCt</h3><br />
-        <p>　設定されたROIに基づいて再計算された蛍光XAFSスペクトル（μt）の確認とエクスポートを行います。</p><br />
-        <ul style="padding-left: 1.5em;">
-            <li><b>μtスペクトルグラフ</b>: </li><br />
-            <p>横軸を励起エネルギー<small> [eV] </small>、縦軸をROI内総カウント / I<sub>0</sub> としてプロットしたスペクトルを表示します。</p><br />
-            <p>グラフ右上のアクションボタンから、PNG形式での画像保存・ズーム・範囲選択等の操作も可能です。またグラフのダブルクリックで描画範囲をリセットできます。</p></br />
-            <li><b><i class="mdi mdi-export"></i> 9809ファイルのエクスポート</b>: </li><br />
-            <p>現在のROI設定で積分・計算されたデータを「9809形式ファイル<small>（.dat）</small>」としてエクスポート・保存します。<br />
-                ※ファイル名には自動的に設定されたROI範囲<small>（例: _pp0120-0250.dat）</small>が付与されます。</p>
-        </ul>
-    </div>
-    <br />
-    <hr /><br />
-    <div id="License">
-        <h3>License</h3><br />
-        <p>このアプリのライセンスは"The MIT License (MIT)"です。</p><br />
-        <p>使用するライブラリを含めた詳細は【ライセンス】ボタン<i class="mdi mdi-license mr-1"></i>をクリックしてください。</p>
+
+    <!-- ============================================================= -->
+    <!-- タブ2: TIFFデータ構造仕様 -->
+    <!-- ============================================================= -->
+    <div id="tab-spec" class="tab-content">
+        <div id="help_text_spec">
+            <div class="help-section">
+                <h1>TIFF（スペクトログラム）データ構造仕様</h1>
+                <p>　Epiphanyが処理する2次元スペクトログラムTIFFファイルの内部データフォーマット仕様です。</p>
+
+                <div class="note">
+                    <strong>💡 TIFF形式の基本プロパティ:</strong>
+                    <ul style="margin: 6px 0 0 0; padding-left: 1.4em;">
+                        <li><b>ページ構成</b>: シングルページ（多素子検出器では素子ごとに別ファイル）</li>
+                        <li><b>ストリップ構成</b>: 1ストリップ</li>
+                        <li><b>圧縮</b>: なし（無圧縮）</li>
+                        <li><b>ピクセルフォーマット</b>: <code>32-bit IEEE float</code>（いわゆる32ビットグレイ）</li>
+                        <li><b>バイトオーダー</b>: native（作成ホストマシン依存、通常はリトルエンディアン）</li>
+                        <li><b>ImageDescription (Tag 270)</b>: 測定時の「9809」出力ファイルヘッダ部分（該当素子分）がテキストとして格納</li>
+                    </ul>
+                </div>
+
+                <h2>1. 画素値のエンコード仕様（逆数格納）</h2>
+                <p>　TIFF画像内の各画素値は、元の数値情報を逆数化して <b><code>0.0 〜 1.0</code> の小数値</b> として収められています。</p>
+                <p>　したがって、TIFFファイルから画素配列を読み込んだ後、再度逆数化（<code>1.0 / pixel_value</code>）を行うことで元の実数値を復元します。</p>
+
+                <div class="note">
+                    <strong>💡 逆数格納の理由:</strong><br />
+                    　32-bit IEEE float 形式の TIFF では画素値を <code>0.0 〜 1.0</code> の範囲で扱う仕様となっているため、実測データ（エネルギー値やカウント値など）をこの規格範囲内に収めて画像として正常に保持・互換性を確保する目的で、元の数値を逆数化して格納しています。
+                </div>
+
+                <div class="warn">
+                    <strong>⚠️ 有効数字および丸め誤差に関する注意:</strong><br />
+                    　数値を逆数化して <code>32-bit IEEE float</code>（仮数部23ビット、十進有効数字 約6〜7桁）に格納し、復元時に再度逆数化を行うため、浮動小数点除算の丸めにより有効数字が約6桁程度に制限されます。<br />
+                    　通常の蛍光XAFS測定におけるカウント値（数十万カウント以下）やエネルギー値の実用上は十分な精度を保ちますが、厳密な整数カウント値等とは最下位桁で微小な差（丸め誤差）が生じ得る点に留意してください。
+                </div>
+
+                <h2>2. 画像サイズ（解像度）</h2>
+                <ul style="padding-left: 1.4em;">
+                    <li><b>水平画素数（Width）</b>: <code>DSPのチャンネル数 + 8</code></li>
+                    <li><b>垂直画素数（Height）</b>: <code>測定エネルギー点数 + 1</code></li>
+                </ul>
+
+                <h2>3. 画素データ配置（レイアウト）</h2>
+
+                <h3>【第0行: 全体ヘッダ行】</h3>
+                <p>　画像データの1行目（水平インデックス <code>y = 0</code>）は、全体パラメータおよび各チャンネルの蛍光エネルギーが格納されます。</p>
+
+                <table class="spec-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 120px;">画素位置 [x]</th>
+                            <th style="width: 160px;">データ型</th>
+                            <th>格納される情報・説明</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="mono center">[0, 1]</td>
+                            <td class="mono">Double (Float32 x2)</td>
+                            <td>分光結晶の格子面間隔 <code>d [Å]</code></td>
+                        </tr>
+                        <tr>
+                            <td class="mono center">[2]</td>
+                            <td class="mono">Float32</td>
+                            <td>蛍光検出器の素子番号 <code>detId</code>（単一素子の場合は 1）</td>
+                        </tr>
+                        <tr>
+                            <td class="mono center">[3]</td>
+                            <td class="mono">Float32</td>
+                            <td>バージョン番号 <code>version</code>（現行形式は <code>1</code>、旧形式は <code>0</code>）</td>
+                        </tr>
+                        <tr>
+                            <td class="mono center">[4, 5]</td>
+                            <td class="mono">Double (Float32 x2)</td>
+                            <td>I₀ 検出器のオフセット値 <code>offsetI0</code></td>
+                        </tr>
+                        <tr>
+                            <td class="mono center">[6, 7]</td>
+                            <td class="mono">Float32 x2</td>
+                            <td>予約領域（常に <code>0.0</code>）</td>
+                        </tr>
+                        <tr>
+                            <td class="mono center">[8..]</td>
+                            <td class="mono">Float32 配列</td>
+                            <td>各チャンネルの蛍光エネルギー値 <code>[eV]</code></td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <h3>【第1行以降: 各測定点データ行】</h3>
+                <p>　画像データの2行目以降（水平インデックス <code>y = 1 〜 Height-1</code>）は、各測定エネルギーにおける分光器角度およびスペクトルデータが格納されます。</p>
+
+                <table class="spec-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 120px;">画素位置 [x]</th>
+                            <th style="width: 160px;">データ型</th>
+                            <th>格納される情報・説明</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="mono center">[0, 1]</td>
+                            <td class="mono">Double (Float32 x2)</td>
+                            <td>この測定点での分光器 θ<sub>B</sub> 実測角度 <code>[degree]</code></td>
+                        </tr>
+                        <tr>
+                            <td class="mono center">[2]</td>
+                            <td class="mono">Float32</td>
+                            <td>蛍光検出器のリアルタイム <code>t_real [sec.]</code></td>
+                        </tr>
+                        <tr>
+                            <td class="mono center">[3]</td>
+                            <td class="mono">Float32</td>
+                            <td>蛍光検出器のライブタイム <code>t_live [sec.]</code>（取得不可時は <code>0.0</code>）</td>
+                        </tr>
+                        <tr>
+                            <td class="mono center">[4, 5]</td>
+                            <td class="mono">Double (Float32 x2)</td>
+                            <td>オフセット減算済みの I₀ 検出器カウント値</td>
+                        </tr>
+                        <tr>
+                            <td class="mono center">[6, 7]</td>
+                            <td class="mono">Double (Float32 x2)</td>
+                            <td>ICR（Input Count Rate）総カウント値（取得不可時は <code>0.0</code>）</td>
+                        </tr>
+                        <tr>
+                            <td class="mono center">[8..]</td>
+                            <td class="mono">Float32 配列</td>
+                            <td>該当測定エネルギーにおける各チャンネルのカウント値 <code>CNT [count]</code><br />
+                            ※ CPS = CNT / <i>t</i><sub>real</sub></td>
+                        </tr>
+                    </tbody>
+                </table>
+                <p style="font-size: 0.85rem; color: #64748b; margin-top: 8px;">※ <code>Double (Float32 x2)</code> と表記された項目は、連続する2画素（Float32 各4バイト）をリトルエンディアンで結合した 64-bit IEEE double です。</p>
+            </div>
+        </div>
     </div>
 </div>
+
+<script>
+    function switchTab(tabId) {
+        document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+        
+        const btn = document.getElementById('btn-' + tabId);
+        const content = document.getElementById('tab-' + tabId);
+        if (btn && content) {
+            btn.classList.add('active');
+            content.classList.add('active');
+        }
+    }
+
+    // 初期化時のURLハッシュ判定
+    window.addEventListener('DOMContentLoaded', () => {
+        const hash = window.location.hash;
+        if (hash === '#spec' || hash === '#tiff-spec') {
+            switchTab('spec');
+        } else {
+            switchTab('guide');
+        }
+    });
+
+    window.addEventListener('hashchange', () => {
+        const hash = window.location.hash;
+        if (hash === '#spec' || hash === '#tiff-spec') {
+            switchTab('spec');
+        } else {
+            switchTab('guide');
+        }
+    });
+</script>
+</body>
+</html>
