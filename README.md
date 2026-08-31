@@ -10,12 +10,12 @@
 
 | ツール名 | カテゴリ | 概要 | リンク |
 | :--- | :--- | :--- | :--- |
-| **[samxam](file:///d:/workspace/SAGA-LS/xutils/samxam/README.md)** | XAFS / 参照 | 全元素の吸収端・蛍光X線・Auger電子エネルギー参照 ＆ 標準XAFSスペクトル閲覧 | [samxam/index.html](file:///d:/workspace/SAGA-LS/xutils/samxam/index.html) |
-| **[P4XMS](file:///d:/workspace/SAGA-LS/xutils/p4xms/README.md)** | XAFS / 測定設計 | ステップスキャン（Step Scan）XAFS測定パラメータ設計 ＆ PF新フォーマット出力 | [p4xms/index.html](file:///d:/workspace/SAGA-LS/xutils/p4xms/index.html) |
-| **[P4XMQ](file:///d:/workspace/SAGA-LS/xutils/p4xmq/README.md)** | XAFS / 測定設計 | クイックスキャン（QXAFS）測定パラメータ設計 ＆ PF新フォーマット出力 | [p4xmq/index.html](file:///d:/workspace/SAGA-LS/xutils/p4xmq/index.html) |
-| **[RetroCog](file:///d:/workspace/SAGA-LS/xutils/retrocog/README.md)** | 結晶・回折 / 計算 | 全7晶系対応の逆格子・実格子定数計算、面間隔・ブラッグ角・エネルギー相互換算 | [retrocog/index.html](file:///d:/workspace/SAGA-LS/xutils/retrocog/index.html) |
+| **[samxam](file:///d:/workspace/SAGA-LS/xutils/samxam/README.md)** | XAFS / 試料作製 | XAFS測定における試料作製条件（ペレット必要重量・フォイル最適膜厚）の計算 | [samxam/index.html](file:///d:/workspace/SAGA-LS/xutils/samxam/index.html) |
+| **[P4XMS](file:///d:/workspace/SAGA-LS/xutils/p4xms/README.md)** | XAFS / 測定設計 | Stepスキャン方式によるXAFS測定パラメータ設計 ＆ Agendaファイル入出力 | [p4xms/index.html](file:///d:/workspace/SAGA-LS/xutils/p4xms/index.html) |
+| **[P4XMQ](file:///d:/workspace/SAGA-LS/xutils/p4xmq/README.md)** | XAFS / 測定設計 | Quickスキャン方式によるXAFS測定パラメータ設計 ＆ Agendaファイル入出力 | [p4xmq/index.html](file:///d:/workspace/SAGA-LS/xutils/p4xmq/index.html) |
+| **[RetroCog](file:///d:/workspace/SAGA-LS/xutils/retrocog/README.md)** | XAFS / データ確認 | 9809形式XAFS測定データビューア ＆ MDRメタデータ・Agendaエクスポート | [retrocog/index.html](file:///d:/workspace/SAGA-LS/xutils/retrocog/index.html) |
 | **[Epiphany](file:///d:/workspace/SAGA-LS/xutils/epiphany/README.md)** | XAFS / 解析 | 蛍光XAFS 2次元スペクトログラム（TIFF）のROI事後設定 ＆ 9809形式エクスポート | [epiphany/index.html](file:///d:/workspace/SAGA-LS/xutils/epiphany/index.html) |
-| **[calq](file:///d:/workspace/SAGA-LS/xutils/calq/README.md)** | SAXS / 測定設計 | SAXS/WAXS測定における散乱ベクトル（Q-range: q, s, 2θ, d）の測定可能範囲計算 | [calq/index.html](file:///d:/workspace/SAGA-LS/xutils/calq/index.html) |
+| **[calq](file:///d:/workspace/SAGA-LS/xutils/calq/README.md)** | SAXS / 測定設計 | SAXS/WAXS測定における散乱ベクトル（Q-range）測定可能範囲の計算 | [calq/index.html](file:///d:/workspace/SAGA-LS/xutils/calq/index.html) |
 | **[Pedagogue](file:///d:/workspace/SAGA-LS/xutils/pedagogue/README.md)** | メタデータ / 編集 | NIMS MDR XAFS DB ＆ 日本XAFS研究会（JXS）標準メタデータエディタ | [pedagogue/index.html](file:///d:/workspace/SAGA-LS/xutils/pedagogue/index.html) |
 
 ---
@@ -37,12 +37,12 @@
 xutils/
 ├── index.html              # 統合ポータル画面 (iframe または タブ切り替え)
 ├── welcome.html            # ポータルウェルカム・ツール紹介画面
-├── samxam/                 # 元素別エネルギー・スペクトル参照ツール
-├── p4xms/                  # ステップスキャンXAFS測定設計ツール
-├── p4xmq/                  # QXAFS測定設計ツール
-├── retrocog/               # 結晶格子・逆格子・回折角計算ツール
+├── samxam/                 # XAFS試料作製量計算ツール
+├── p4xms/                  # StepスキャンXAFS測定設計ツール
+├── p4xmq/                  # QuickスキャンXAFS測定設計ツール
+├── retrocog/               # 9809形式XAFSデータビューア
 ├── epiphany/               # スペクトログラムROI再計算ツール
-├── calq/                   # X線透過率・検出器ガス最適化ツール
+├── calq/                   # SAXS/WAXS Q-range計算ツール
 └── pedagogue/              # JXS/MDR XAFSメタデータエディタ
 ```
 
